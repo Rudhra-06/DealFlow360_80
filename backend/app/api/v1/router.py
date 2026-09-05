@@ -12,6 +12,8 @@ from app.api.v1.discount_policies import router as discount_policies_router
 from app.api.v1.inventory import router as inventory_router
 from app.api.v1.product_categories import router as product_categories_router
 from app.api.v1.products import router as products_router
+from app.api.v1.quotations import router as quotations_router
+from app.api.v1.recommendation_rules import router as recommendation_rules_router
 from app.api.v1.warehouses import router as warehouses_router
 from app.db.session import get_db
 
@@ -26,6 +28,10 @@ api_router.include_router(inventory_router, prefix="/inventory", tags=["Inventor
 api_router.include_router(discount_policies_router, prefix="/discount-policies", tags=["Discount Policies"])
 api_router.include_router(approval_policies_router, prefix="/approval-policies", tags=["Approval Policies"])
 api_router.include_router(billing_plans_router, prefix="/billing-plans", tags=["Billing Plans"])
+api_router.include_router(quotations_router, prefix="/quotations", tags=["Quotations"])
+api_router.include_router(recommendation_rules_router, prefix="/recommendation-rules", tags=["Recommendation Rules"])
+
+
 
 
 @api_router.get("/health", tags=["Health"])

@@ -27,12 +27,16 @@ class ApprovalPolicy(Base):
     __tablename__ = "approval_policies"
     __table_args__ = (
         CheckConstraint(
-            "discount_above_pct IS NOT NULL OR margin_below_pct IS NOT NULL OR payment_terms_above_days IS NOT NULL",
+            "discount_above_pct IS NOT NULL OR margin_below_pct IS NOT NULL OR payment_terms_above_days IS NOT NULL OR blended_risk_above IS NOT NULL",
             name="ck_approval_policies_at_least_one_trigger",
         ),
         CheckConstraint(
             "payment_terms_above_days IS NULL OR payment_terms_above_days >= 0",
             name="ck_approval_policies_payment_terms_nonnegative",
+        ),
+        CheckConstraint(
+            "blended_risk_above IS NULL OR (blended_risk_above >= 0 AND blended_risk_above <= 100)",
+            name="ck_approval_policies_blended_risk_range",
         ),
         CheckConstraint(
             "effective_to IS NULL OR effective_to > effective_from",
@@ -48,6 +52,7 @@ class ApprovalPolicy(Base):
     discount_above_pct: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2), nullable=True)
     margin_below_pct: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2), nullable=True)
     payment_terms_above_days: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    blended_risk_above: Mapped[Optional[Decimal]] = mapped_column(Numeric(6, 2), nullable=True)
     approval_role: Mapped[str] = mapped_column(String(50), nullable=False)
     priority: Mapped[int] = mapped_column(Integer, nullable=False, server_default="100")
     effective_from: Mapped[datetime] = mapped_column(

@@ -251,8 +251,7 @@
       modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) closeHandler();
       });
-    }
-  };
+    },
 
     /**
      * Show a lightweight Toast notification.

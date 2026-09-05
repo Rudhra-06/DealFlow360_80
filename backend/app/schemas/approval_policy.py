@@ -18,6 +18,9 @@ class ApprovalPolicyBase(BaseModel):
     payment_terms_above_days: Optional[int] = Field(
         None, ge=0, description="Trigger approval if payment terms > N days"
     )
+    blended_risk_above: Optional[Decimal] = Field(
+        None, ge=Decimal("0.00"), le=Decimal("100.00"), description="Trigger approval if blended risk score > %"
+    )
     approval_role: str = Field(..., description="Required operational approver role (SALES_MANAGER or FINANCE_OPERATIONS)")
     priority: int = Field(100, description="Priority ranking (lower integer = higher priority)")
     effective_from: Optional[datetime] = Field(None, description="Policy effective start timestamp")
@@ -35,6 +38,7 @@ class ApprovalPolicyUpdate(BaseModel):
     discount_above_pct: Optional[Decimal] = Field(None, ge=Decimal("0.00"), le=Decimal("100.00"))
     margin_below_pct: Optional[Decimal] = Field(None, ge=Decimal("-100.00"), le=Decimal("100.00"))
     payment_terms_above_days: Optional[int] = Field(None, ge=0)
+    blended_risk_above: Optional[Decimal] = Field(None, ge=Decimal("0.00"), le=Decimal("100.00"))
     approval_role: Optional[str] = None
     priority: Optional[int] = None
     effective_from: Optional[datetime] = None

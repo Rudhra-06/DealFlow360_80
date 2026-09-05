@@ -113,7 +113,21 @@ Warehouse
 4. **`products`**: Product catalog items with SKU, list price, cost price, and category FK.
 5. **`warehouses`**: Storage locations.
 6. **`inventory`**: Stock levels per warehouse/product (`on_hand_qty`, `reserved_qty`).
-7. **`discount_policies`**: Configurable commercial discount rules and precedence.
-8. **`approval_policies`**: Configurable approval threshold triggers and approver roles.
-9. **`billing_plans`**: Billing frequency and payment due day definitions (`ONE_TIME`, `RECURRING`).
+## 5. Phase 3 Data Models
+
+### ER Diagram Architecture
+
+```text
+Quotation
+   ├──< QuoteLine (FK -> Product, FK -> BillingPlan, FK -> DiscountPolicy)
+   ├──< QuoteRiskReason
+   └──< QuoteAuditEvent (FK -> User actor)
+```
+
+### Phase 3 Tables Overview
+1. **`quotations`**: Quotation header records (`quote_number`, `customer_id`, `sales_rep_id`, `status`, `currency`, `order_discount_pct`, financial totals, `blended_risk_score`, `risk_level`).
+2. **`quotation_lines`**: Quotation line items (`product_id`, `quantity`, `unit_list_price` snapshot, `unit_cost` snapshot, line discount %, effective discount %, totals, margin %, `resolved_discount_policy_id`, policy snapshots, risk level).
+3. **`quote_risk_reasons`**: Transactional explainable risk reasons (`code`, `severity`, `message`, `actual_value`, `threshold_value`).
+4. **`quote_audit_events`**: Transaction audit trail (`event_type`, `actor_user_id`, `from_status`, `to_status`, `reason`, `event_metadata`).
+
 

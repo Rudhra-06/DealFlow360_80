@@ -70,6 +70,36 @@ class PolicyAmbiguityError(ServiceError):
     pass
 
 
+class QuoteNotFoundError(ResourceNotFoundError):
+    """Raised when a requested quotation cannot be found."""
+    pass
+
+
+class QuoteLineNotFoundError(ResourceNotFoundError):
+    """Raised when a requested quotation line cannot be found."""
+    pass
+
+
+class QuoteNotEditableError(ServiceError):
+    """Raised when attempting to edit a quotation in a non-editable state."""
+    pass
+
+
+class QuoteAccessDeniedError(ServiceError):
+    """Raised when a user attempts an unauthorized operation on a quotation."""
+    pass
+
+
+class CurrencyMismatchError(ServiceError):
+    """Raised when adding a product line whose currency does not match quotation currency."""
+    pass
+
+
+class QuotationValidationError(ServiceError):
+    """Raised when quotation rules or parameters violate domain constraints."""
+    pass
+
+
 __all__ = [
     "ServiceError",
     "UserAlreadyExistsError",
@@ -87,6 +117,13 @@ __all__ = [
     "InventoryValidationError",
     "CommercialPolicyValidationError",
     "PolicyAmbiguityError",
+    "QuoteNotFoundError",
+    "QuoteLineNotFoundError",
+    "QuoteNotEditableError",
+    "QuoteAccessDeniedError",
+    "CurrencyMismatchError",
+    "QuotationValidationError",
 ]
+
 
 

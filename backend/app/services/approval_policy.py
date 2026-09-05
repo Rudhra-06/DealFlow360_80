@@ -31,6 +31,7 @@ class ApprovalPolicyService:
         discount_above_pct: Optional[Decimal],
         margin_below_pct: Optional[Decimal],
         payment_terms_above_days: Optional[int],
+        blended_risk_above: Optional[Decimal],
         approval_role: str,
         priority: int,
         effective_from: datetime,
@@ -44,9 +45,9 @@ class ApprovalPolicyService:
             )
 
         # 2. At least one trigger requirement
-        if discount_above_pct is None and margin_below_pct is None and payment_terms_above_days is None:
+        if discount_above_pct is None and margin_below_pct is None and payment_terms_above_days is None and blended_risk_above is None:
             raise CommercialPolicyValidationError(
-                "ApprovalPolicy must specify at least one threshold trigger (discount_above_pct, margin_below_pct, or payment_terms_above_days)."
+                "ApprovalPolicy must specify at least one threshold trigger (discount_above_pct, margin_below_pct, payment_terms_above_days, or blended_risk_above)."
             )
 
         # 3. Threshold bounds validation
@@ -61,6 +62,10 @@ class ApprovalPolicyService:
         if payment_terms_above_days is not None:
             if payment_terms_above_days < 0:
                 raise CommercialPolicyValidationError("payment_terms_above_days must be non-negative (>= 0).")
+
+        if blended_risk_above is not None:
+            if blended_risk_above < Decimal("0.00") or blended_risk_above > Decimal("100.00"):
+                raise CommercialPolicyValidationError("blended_risk_above must be between 0.00 and 100.00.")
 
         # 4. Effective date ordering check
         if effective_to is not None and effective_to <= effective_from:
@@ -83,6 +88,7 @@ class ApprovalPolicyService:
                 discount_above_pct=obj_in.discount_above_pct,
                 margin_below_pct=obj_in.margin_below_pct,
                 payment_terms_above_days=obj_in.payment_terms_above_days,
+                blended_risk_above=obj_in.blended_risk_above,
                 approval_role=obj_in.approval_role,
                 priority=obj_in.priority,
                 effective_from=eff_from,
@@ -113,6 +119,7 @@ class ApprovalPolicyService:
         final_disc_above = patch_data.get("discount_above_pct", policy.discount_above_pct)
         final_margin_below = patch_data.get("margin_below_pct", policy.margin_below_pct)
         final_terms_above = patch_data.get("payment_terms_above_days", policy.payment_terms_above_days)
+        final_risk_above = patch_data.get("blended_risk_above", policy.blended_risk_above)
         final_role = patch_data.get("approval_role", policy.approval_role)
         final_priority = patch_data.get("priority", policy.priority)
         final_eff_from = patch_data.get("effective_from", policy.effective_from)
@@ -126,6 +133,7 @@ class ApprovalPolicyService:
                 discount_above_pct=final_disc_above,
                 margin_below_pct=final_margin_below,
                 payment_terms_above_days=final_terms_above,
+                blended_risk_above=final_risk_above,
                 approval_role=final_role,
                 priority=final_priority,
                 effective_from=final_eff_from,
