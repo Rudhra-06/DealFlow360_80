@@ -10,13 +10,11 @@ backend_dir = Path(__file__).resolve().parent.parent
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
-from app.repositories.customer_tier import CustomerTierRepository
-from app.repositories.product import ProductRepository
-from app.repositories.product_category import ProductCategoryRepository
 from app.schemas.customer_tier import CustomerTierCreate
 from app.schemas.discount_policy import DiscountPolicyCreate, DiscountPolicyUpdate
 from app.schemas.product import ProductCreate
 from app.schemas.product_category import ProductCategoryCreate
+from app.services.customer_tier import CustomerTierService
 from app.services.discount_policy import DiscountPolicyService
 from app.services.exceptions import (
     CommercialPolicyValidationError,
@@ -24,6 +22,8 @@ from app.services.exceptions import (
     InvalidReferenceError,
     PolicyAmbiguityError,
 )
+from app.services.product import ProductService
+from app.services.product_category import ProductCategoryService
 
 
 @pytest.mark.anyio
@@ -52,14 +52,13 @@ async def test_discount_policy_global(db_session: AsyncSession):
 @pytest.mark.anyio
 async def test_discount_policy_tier_and_product_scopes(db_session: AsyncSession):
     """Verify tier-scoped, category-scoped, and product-scoped discount policy creation."""
-    tier_repo = CustomerTierRepository()
-    cat_repo = ProductCategoryRepository()
-    prod_repo = ProductRepository()
+    tier_service = CustomerTierService(db_session)
+    cat_service = ProductCategoryService(db_session)
+    prod_service = ProductService(db_session)
 
-    tier = await tier_repo.create_tier(db_session, CustomerTierCreate(name=f"GOLD_{uuid.uuid4().hex[:6]}"))
-    cat = await cat_repo.create_category(db_session, ProductCategoryCreate(name=f"HARDWARE_{uuid.uuid4().hex[:6]}"))
-    prod = await prod_repo.create_product(
-        db_session,
+    tier = await tier_service.create_tier(CustomerTierCreate(name=f"GOLD_{uuid.uuid4().hex[:6]}"))
+    cat = await cat_service.create_category(ProductCategoryCreate(name=f"HARDWARE_{uuid.uuid4().hex[:6]}"))
+    prod = await prod_service.create_product(
         ProductCreate(
             sku=f"SKU_{uuid.uuid4().hex[:6]}",
             name="Laptop Pro",
@@ -97,13 +96,11 @@ async def test_discount_policy_tier_and_product_scopes(db_session: AsyncSession)
 @pytest.mark.anyio
 async def test_invalid_product_and_category_scope_rejected(db_session: AsyncSession):
     """Verify creating policy with both product_id and product_category_id is rejected."""
-    tier_repo = CustomerTierRepository()
-    cat_repo = ProductCategoryRepository()
-    prod_repo = ProductRepository()
+    cat_service = ProductCategoryService(db_session)
+    prod_service = ProductService(db_session)
 
-    cat = await cat_repo.create_category(db_session, ProductCategoryCreate(name=f"CAT_{uuid.uuid4().hex[:6]}"))
-    prod = await prod_repo.create_product(
-        db_session,
+    cat = await cat_service.create_category(ProductCategoryCreate(name=f"CAT_{uuid.uuid4().hex[:6]}"))
+    prod = await prod_service.create_product(
         ProductCreate(
             sku=f"SKU_{uuid.uuid4().hex[:6]}",
             name="Widget",
@@ -165,14 +162,13 @@ async def test_discount_effective_date_ordering(db_session: AsyncSession):
 @pytest.mark.anyio
 async def test_discount_policy_precedence_resolution(db_session: AsyncSession):
     """Verify get_applicable_policy resolves deterministic precedence order."""
-    tier_repo = CustomerTierRepository()
-    cat_repo = ProductCategoryRepository()
-    prod_repo = ProductRepository()
+    tier_service = CustomerTierService(db_session)
+    cat_service = ProductCategoryService(db_session)
+    prod_service = ProductService(db_session)
 
-    tier = await tier_repo.create_tier(db_session, CustomerTierCreate(name=f"PLATINUM_{uuid.uuid4().hex[:6]}"))
-    cat = await cat_repo.create_category(db_session, ProductCategoryCreate(name=f"SOFTWARE_{uuid.uuid4().hex[:6]}"))
-    prod = await prod_repo.create_product(
-        db_session,
+    tier = await tier_service.create_tier(CustomerTierCreate(name=f"PLATINUM_{uuid.uuid4().hex[:6]}"))
+    cat = await cat_service.create_category(ProductCategoryCreate(name=f"SOFTWARE_{uuid.uuid4().hex[:6]}"))
+    prod = await prod_service.create_product(
         ProductCreate(
             sku=f"SKU_PREC_{uuid.uuid4().hex[:6]}",
             name="Cloud Suite",

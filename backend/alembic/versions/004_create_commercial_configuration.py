@@ -1,6 +1,6 @@
 """create commercial configuration tables
 
-Revision ID: 004_create_commercial_configuration
+Revision ID: 004_commercial_config
 Revises: 003_create_core_master_data
 Create Date: 2026-09-05 16:15:00.000000
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '004_create_commercial_configuration'
+revision: str = '004_commercial_config'
 down_revision: Union[str, None] = '003_create_core_master_data'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

@@ -10,10 +10,10 @@ if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
 from app.core.roles import RoleName
-from app.repositories.customer_tier import CustomerTierRepository
 from app.schemas.approval_policy import ApprovalPolicyCreate, ApprovalPolicyUpdate
 from app.schemas.customer_tier import CustomerTierCreate
 from app.services.approval_policy import ApprovalPolicyService
+from app.services.customer_tier import CustomerTierService
 from app.services.exceptions import CommercialPolicyValidationError
 
 
@@ -71,8 +71,8 @@ async def test_approval_policy_invalid_role_rejected(db_session: AsyncSession):
 @pytest.mark.anyio
 async def test_approval_policy_multiple_overlapping_triggers_allowed(db_session: AsyncSession):
     """Verify multiple ApprovalPolicies with different triggers can legitimately coexist for same tier."""
-    tier_repo = CustomerTierRepository()
-    tier = await tier_repo.create_tier(db_session, CustomerTierCreate(name=f"SILVER_{uuid.uuid4().hex[:6]}"))
+    tier_service = CustomerTierService(db_session)
+    tier = await tier_service.create_tier(CustomerTierCreate(name=f"SILVER_{uuid.uuid4().hex[:6]}"))
     await db_session.commit()
 
     service = ApprovalPolicyService(db_session)
