@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
+    # Development & Demo User Bootstrap Configuration
+    DEMO_USER_PASSWORD: str = "replace-with-local-demo-password"
+
     # Optional full DATABASE_URL override
     DATABASE_URL: str | None = None
 
