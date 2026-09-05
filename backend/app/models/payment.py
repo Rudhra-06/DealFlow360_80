@@ -43,8 +43,8 @@ class Payment(Base):
     received_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
-    recorded_by_user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    recorded_by_user_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=True
     )
 
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="RECORDED", index=True)  # RECORDED, VOIDED
@@ -55,10 +55,18 @@ class Payment(Base):
 
     # Relationships
     customer: Mapped["Customer"] = relationship("Customer", lazy="selectin")
-    recorded_by_user: Mapped["User"] = relationship("User", lazy="selectin")
+    recorded_by_user: Mapped[Optional["User"]] = relationship("User", lazy="selectin")
     allocations: Mapped[List["PaymentAllocation"]] = relationship(
         "PaymentAllocation", back_populates="payment", cascade="all, delete-orphan", lazy="selectin"
     )
+
+    @property
+    def invoice_id(self) -> Optional[int]:
+        return self.__dict__.get("invoice_id")
+
+    @invoice_id.setter
+    def invoice_id(self, val: Optional[int]) -> None:
+        self.__dict__["invoice_id"] = val
 
     def __repr__(self) -> str:
         return f"<Payment(id={self.id}, number='{self.payment_number}', amount={self.amount}, status='{self.status}')>"

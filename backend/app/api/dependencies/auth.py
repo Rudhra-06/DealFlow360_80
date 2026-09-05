@@ -74,3 +74,10 @@ async def get_current_user(
         )
 
     return user
+
+
+# Re-export RBAC dependency for backward-compatibility with modules expecting require_roles in auth
+from app.api.dependencies.rbac import require_roles  # noqa: F401
+
+get_current_active_user = get_current_user
+

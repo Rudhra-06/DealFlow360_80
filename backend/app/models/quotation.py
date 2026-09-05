@@ -77,6 +77,16 @@ class Quotation(Base):
         Numeric(5, 2), nullable=False, server_default="0.00"
     )
 
+    @property
+    def effective_discount_pct(self) -> Decimal:
+        if self.weighted_effective_discount_pct is not None:
+            return Decimal(str(self.weighted_effective_discount_pct))
+        return Decimal(str(self.order_discount_pct or 0))
+
+    @property
+    def quotation_number(self) -> str:
+        return self.quote_number
+
     # Risk metrics
     blended_risk_score: Mapped[Decimal] = mapped_column(
         Numeric(5, 2), nullable=False, server_default="0.00"

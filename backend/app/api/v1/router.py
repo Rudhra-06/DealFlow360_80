@@ -23,8 +23,8 @@ from app.api.v1.quotations import router as quotations_router
 from app.api.v1.recommendation_rules import router as recommendation_rules_router
 from app.api.v1.shipments import router as shipments_router
 from app.api.v1.warehouses import router as warehouses_router
-from app.api.v1.deal_health import deal_health_router
-from app.api.v1.deal_alerts import deal_alerts_router
+from app.api.v1.deal_health import router as deal_health_router
+from app.api.v1.deal_alerts import router as deal_alerts_router
 from app.api.v1.analytics import router as analytics_router
 from app.api.v1.reports import router as reports_router
 from app.api.v1.system import router as system_router

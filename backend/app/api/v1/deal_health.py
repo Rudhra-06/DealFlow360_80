@@ -174,3 +174,7 @@ async def run_bulk_deal_health_scan(
     service = DealHealthService(db)
     as_of = payload.as_of if payload else None
     return await service.run_bulk_scan(as_of=as_of)
+
+
+deal_health_router = router
+

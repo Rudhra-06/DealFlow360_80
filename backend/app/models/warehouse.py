@@ -41,5 +41,14 @@ class Warehouse(Base):
         "Inventory", back_populates="warehouse"
     )
 
+    @property
+    def priority(self) -> int:
+        return self.fulfillment_priority
+
+    @priority.setter
+    def priority(self, val: int) -> None:
+        self.fulfillment_priority = val
+
     def __repr__(self) -> str:
+
         return f"<Warehouse(id={self.id}, code='{self.code}', name='{self.name}', is_active={self.is_active})>"

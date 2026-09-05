@@ -15,21 +15,35 @@ from app.services.customer_360 import Customer360Service
 from tests.conftest import get_or_create_role
 
 
+from app.models.customer_tier import CustomerTier
+from app.models.customer_portal_access import CustomerPortalAccess
+
+
 @pytest.mark.asyncio
 async def test_customer_portal_data_leak_prevention(db_session: AsyncSession):
     role_cust = await get_or_create_role(db_session, RoleName.CUSTOMER)
-    cust_user = User(email="sec_cust@test.com", password_hash="hash", full_name="Sec Cust", is_active=True)
-    cust_user.roles.append(role_cust)
-    db_session.add(cust_user)
+    role_rep = await get_or_create_role(db_session, RoleName.SALES_REP)
+    rep = User(email="sec_rep@test.com", hashed_password="hash", full_name="Sec Rep", role_id=role_rep.id, is_active=True)
+    cust_user = User(email="sec_cust@test.com", hashed_password="hash", full_name="Sec Cust", role_id=role_cust.id, is_active=True)
+    db_session.add_all([rep, cust_user])
     await db_session.flush()
 
-    cust = Customer(customer_code="CUST-SEC-01", company_name="Sec Corp")
+    tier = CustomerTier(name="Tier Sec 1")
+    db_session.add(tier)
+    await db_session.flush()
+
+    cust = Customer(customer_code="CUST-SEC-01", name="Sec Corp", tier_id=tier.id)
     db_session.add(cust)
     await db_session.flush()
 
+    cpa = CustomerPortalAccess(user_id=cust_user.id, customer_id=cust.id, is_active=True)
+    db_session.add(cpa)
+    await db_session.flush()
+
     quote = Quotation(
-        quotation_number="QT-SEC-001",
+        quote_number="QT-SEC-001",
         customer_id=cust.id,
+        sales_rep_id=rep.id,
         status="SENT_TO_CUSTOMER",
         currency="USD",
         net_total=Decimal("5000.00"),
@@ -55,12 +69,15 @@ async def test_customer_portal_data_leak_prevention(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_customer_360_forbidden_for_customer_role(db_session: AsyncSession):
     role_cust = await get_or_create_role(db_session, RoleName.CUSTOMER)
-    cust_user = User(email="sec_cust_360@test.com", password_hash="hash", full_name="Sec Cust 360", is_active=True)
-    cust_user.roles.append(role_cust)
+    cust_user = User(email="sec_cust_360@test.com", hashed_password="hash", full_name="Sec Cust 360", role_id=role_cust.id, is_active=True)
     db_session.add(cust_user)
     await db_session.flush()
 
-    cust = Customer(customer_code="CUST-SEC-02", company_name="Sec 360 Corp")
+    tier2 = CustomerTier(name="Tier Sec 2")
+    db_session.add(tier2)
+    await db_session.flush()
+
+    cust = Customer(customer_code="CUST-SEC-02", name="Sec 360 Corp", tier_id=tier2.id)
     db_session.add(cust)
     await db_session.commit()
 
@@ -70,3 +87,4 @@ async def test_customer_360_forbidden_for_customer_role(db_session: AsyncSession
     with pytest.raises(HTTPException) as exc_info:
         await service.get_customer_360(cust.id, cust_user)
     assert exc_info.value.status_code == 403
+

@@ -21,10 +21,12 @@ class QuoteVersionService:
     async def create_version_snapshot(
         self,
         quotation_id: int,
-        source_type: str,
+        source_type: str = "INITIAL",
         created_by_user_id: Optional[int] = None,
         source_negotiation_request_id: Optional[int] = None,
         approval_status: str = "APPROVED",
+        change_summary: Optional[str] = None,
+        **kwargs,
     ) -> QuoteVersion:
         # 1. Lock quote row and calculate next version number safely
         quote = await self.quote_repo.get_by_id(self.db, quotation_id)

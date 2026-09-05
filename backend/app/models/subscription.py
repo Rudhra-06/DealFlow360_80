@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
@@ -33,14 +33,33 @@ class Subscription(Base):
         CheckConstraint("interval_months >= 1", name="ck_subscriptions_interval_months_ge_one"),
     )
 
+    def __init__(self, **kwargs: Any) -> None:
+        start_date = kwargs.get("start_date")
+        if start_date:
+            if "current_period_start" not in kwargs or kwargs["current_period_start"] is None:
+                kwargs["current_period_start"] = start_date
+            interval = kwargs.get("interval_months", 1)
+            if "current_period_end" not in kwargs or kwargs["current_period_end"] is None:
+                kwargs["current_period_end"] = start_date + timedelta(days=30 * interval)
+            if "next_billing_date" not in kwargs or kwargs["next_billing_date"] is None:
+                kwargs["next_billing_date"] = start_date + timedelta(days=30 * interval)
+        if "quantity" not in kwargs or kwargs["quantity"] is None:
+            kwargs["quantity"] = Decimal("1.0000")
+        if "unit_price" not in kwargs or kwargs["unit_price"] is None:
+            if "monthly_recurring_revenue" in kwargs and kwargs["monthly_recurring_revenue"] is not None:
+                kwargs["unit_price"] = Decimal(str(kwargs["monthly_recurring_revenue"]))
+            else:
+                kwargs["unit_price"] = Decimal("0.00")
+        super().__init__(**kwargs)
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     subscription_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
 
     sales_order_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("sales_orders.id", ondelete="RESTRICT"), nullable=False, index=True
     )
-    sales_order_line_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("sales_order_lines.id", ondelete="RESTRICT"), nullable=False, index=True
+    sales_order_line_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("sales_order_lines.id", ondelete="RESTRICT"), nullable=True, index=True
     )
     customer_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("customers.id", ondelete="RESTRICT"), nullable=False, index=True
@@ -89,6 +108,30 @@ class Subscription(Base):
         interval = self.interval_months if (self.interval_months and self.interval_months > 0) else 1
         total = Decimal(str(self.quantity or 0)) * Decimal(str(self.unit_price or 0))
         return (total / Decimal(str(interval))).quantize(Decimal("0.01"))
+
+    @monthly_recurring_revenue.setter
+    def monthly_recurring_revenue(self, value: Any) -> None:
+        if value is not None:
+            self.unit_price = Decimal(str(value))
+            if not self.quantity:
+                self.quantity = Decimal("1.0000")
+            if not self.interval_months:
+                self.interval_months = 1
+
+    @property
+    def billing_frequency(self) -> str:
+        return "MONTHLY" if self.interval_months == 1 else f"{self.interval_months}_MONTHS"
+
+    @billing_frequency.setter
+    def billing_frequency(self, value: str) -> None:
+        if value == "MONTHLY":
+            self.interval_months = 1
+        elif value == "QUARTERLY":
+            self.interval_months = 3
+        elif value in ("ANNUAL", "YEARLY"):
+            self.interval_months = 12
+        else:
+            self.interval_months = 1
 
     def __repr__(self) -> str:
         return f"<Subscription(id={self.id}, number='{self.subscription_number}', status='{self.status}')>"

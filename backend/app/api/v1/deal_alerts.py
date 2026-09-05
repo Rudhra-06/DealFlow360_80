@@ -184,3 +184,7 @@ async def escalate_alert(
         return await action_service.escalate(alert_id, msg, current_user)
     except ResourceNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+deal_alerts_router = router
+

@@ -26,16 +26,17 @@ class ReportExportService:
         self, req: ReportExportRequest, current_user: User
     ) -> Tuple[bytes, str, str]:
         # Enforce RBAC
-        role_names = [r.name for r in current_user.roles] if hasattr(current_user, "roles") else []
-        if "CUSTOMER" in role_names:
+        user_role = current_user.role.name if current_user.role else ""
+        if user_role == "CUSTOMER":
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Customers are not permitted to access report exports"
             )
 
         sales_rep_id = req.sales_rep_id
-        if "SALES_REP" in role_names and "ADMIN" not in role_names and "SALES_MANAGER" not in role_names:
+        if user_role == "SALES_REP":
             sales_rep_id = current_user.id
+
 
         # Retrieve dataset based on report_type
         title = req.report_type.value.replace("_", " ").title()

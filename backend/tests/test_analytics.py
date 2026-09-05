@@ -16,6 +16,7 @@ from app.models.sales_order import SalesOrder
 from app.models.invoice import Invoice
 from app.models.payment import Payment
 from app.models.subscription import Subscription
+from app.models.billing_plan import BillingPlan
 from app.services.analytics import AnalyticsService
 from tests.conftest import get_or_create_role
 
@@ -23,8 +24,7 @@ from tests.conftest import get_or_create_role
 @pytest.mark.asyncio
 async def test_executive_overview_and_multi_currency(db_session: AsyncSession):
     role_admin = await get_or_create_role(db_session, RoleName.ADMIN)
-    rep = User(email="analytics_rep@test.com", password_hash="hash", full_name="Analytics Rep", is_active=True)
-    rep.roles.append(role_admin)
+    rep = User(email="analytics_rep@test.com", hashed_password="hash", full_name="Analytics Rep", role_id=role_admin.id, is_active=True)
     db_session.add(rep)
     await db_session.flush()
 
@@ -32,32 +32,35 @@ async def test_executive_overview_and_multi_currency(db_session: AsyncSession):
     db_session.add(tier)
     await db_session.flush()
 
-    cust = Customer(customer_code="CUST-ANA-01", company_name="Analytics Corp", tier_id=tier.id, assigned_sales_rep_id=rep.id)
+    cust = Customer(customer_code="CUST-ANA-01", name="Analytics Corp", tier_id=tier.id)
     db_session.add(cust)
     await db_session.flush()
 
     # USD Quote & Order
     q_usd = Quotation(
-        quotation_number="QT-USD-001",
+        quote_number="QT-USD-001",
         customer_id=cust.id,
         sales_rep_id=rep.id,
         status="CUSTOMER_CONFIRMED",
         currency="USD",
         net_total=Decimal("10000.00"),
-        effective_discount_pct=Decimal("10.00"),
+        order_discount_pct=Decimal("10.00"),
+        weighted_effective_discount_pct=Decimal("10.00"),
         margin_pct=Decimal("30.00"),
     )
     # EUR Quote & Order
     q_eur = Quotation(
-        quotation_number="QT-EUR-001",
+        quote_number="QT-EUR-001",
         customer_id=cust.id,
         sales_rep_id=rep.id,
         status="CUSTOMER_CONFIRMED",
         currency="EUR",
         net_total=Decimal("5000.00"),
-        effective_discount_pct=Decimal("5.00"),
+        order_discount_pct=Decimal("5.00"),
+        weighted_effective_discount_pct=Decimal("5.00"),
         margin_pct=Decimal("40.00"),
     )
+
     db_session.add_all([q_usd, q_eur])
     await db_session.flush()
 
@@ -74,7 +77,19 @@ async def test_executive_overview_and_multi_currency(db_session: AsyncSession):
     db_session.add(pay_usd)
     await db_session.flush()
 
-    sub_usd = Subscription(subscription_number="SUB-USD-001", customer_id=cust.id, status="ACTIVE", currency="USD", monthly_recurring_revenue=Decimal("500.00"), billing_frequency="MONTHLY", start_date=datetime.now(timezone.utc))
+    plan_usd = BillingPlan(
+        code="BP-ANA-MONTHLY",
+        name="Analytics Monthly",
+        billing_type="RECURRING",
+        billing_interval_months=1,
+        proration_method="DAILY",
+        cancellation_method="END_OF_PERIOD",
+        is_active=True,
+    )
+    db_session.add(plan_usd)
+    await db_session.flush()
+
+    sub_usd = Subscription(subscription_number="SUB-USD-001", customer_id=cust.id, sales_order_id=so_usd.id, billing_plan_id=plan_usd.id, status="ACTIVE", currency="USD", monthly_recurring_revenue=Decimal("500.00"), billing_frequency="MONTHLY", start_date=datetime.now(timezone.utc))
     db_session.add(sub_usd)
     await db_session.commit()
 

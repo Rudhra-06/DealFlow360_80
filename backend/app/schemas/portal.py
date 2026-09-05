@@ -88,3 +88,8 @@ class PortalQuoteVersionRead(BaseModel):
     lines: List[PortalQuoteVersionLineRead] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# Customer-safe quotation detail schema alias
+PortalQuotationDetail = PortalQuotationRead
+

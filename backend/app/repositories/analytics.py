@@ -37,7 +37,7 @@ def safe_rate(numerator: Any, denominator: Any) -> Optional[Decimal]:
         return None
     num_dec = Decimal(str(numerator)) if numerator is not None else Decimal("0")
     den_dec = Decimal(str(denominator))
-    return (num_dec / den_dec * Decimal("100")).round(2)
+    return (num_dec / den_dec * Decimal("100")).quantize(Decimal("0.01"))
 
 
 class AnalyticsRepository:
@@ -120,8 +120,8 @@ class AnalyticsRepository:
             "backordered_order_count": so_res.backordered or 0,
             "invoice_count": inv_count,
             "active_subscription_count": sub_count,
-            "average_approval_time_hours": Decimal(str(avg_approval_hours)).round(2) if avg_approval_hours is not None else None,
-            "average_negotiation_cycle_hours": Decimal(str(avg_neg_hours)).round(2) if avg_neg_hours is not None else None,
+            "average_approval_time_hours": Decimal(str(avg_approval_hours)).quantize(Decimal("0.01")) if avg_approval_hours is not None else None,
+            "average_negotiation_cycle_hours": Decimal(str(avg_neg_hours)).quantize(Decimal("0.01")) if avg_neg_hours is not None else None,
         }
 
     async def get_overview_currency_totals(
@@ -130,12 +130,13 @@ class AnalyticsRepository:
         # Order revenue by currency
         so_stmt = select(
             SalesOrder.currency,
-            func.sum(SalesOrder.total_amount)
+            func.sum(SalesOrder.net_total)
         ).where(and_(SalesOrder.created_at >= start_date, SalesOrder.created_at <= end_date)).group_by(SalesOrder.currency)
+
         if sales_rep_id:
             so_stmt = so_stmt.join(Quotation, SalesOrder.quotation_id == Quotation.id).where(Quotation.sales_rep_id == sales_rep_id)
         so_rows = (await self.session.execute(so_stmt)).all()
-        confirmed_order_value = {r[0]: Decimal(str(r[1])).round(2) for r in so_rows if r[0] and r[1] is not None}
+        confirmed_order_value = {r[0]: Decimal(str(r[1])).quantize(Decimal("0.01")) for r in so_rows if r[0] and r[1] is not None}
 
         # Invoiced value
         inv_stmt = select(
@@ -143,7 +144,7 @@ class AnalyticsRepository:
             func.sum(Invoice.total_amount)
         ).where(and_(Invoice.created_at >= start_date, Invoice.created_at <= end_date)).group_by(Invoice.currency)
         inv_rows = (await self.session.execute(inv_stmt)).all()
-        invoiced_value = {r[0]: Decimal(str(r[1])).round(2) for r in inv_rows if r[0] and r[1] is not None}
+        invoiced_value = {r[0]: Decimal(str(r[1])).quantize(Decimal("0.01")) for r in inv_rows if r[0] and r[1] is not None}
 
         # Payments received
         pay_stmt = select(
@@ -151,7 +152,7 @@ class AnalyticsRepository:
             func.sum(Payment.amount)
         ).where(and_(Payment.received_at >= start_date, Payment.received_at <= end_date)).group_by(Payment.currency)
         pay_rows = (await self.session.execute(pay_stmt)).all()
-        payments_received = {r[0]: Decimal(str(r[1])).round(2) for r in pay_rows if r[0] and r[1] is not None}
+        payments_received = {r[0]: Decimal(str(r[1])).quantize(Decimal("0.01")) for r in pay_rows if r[0] and r[1] is not None}
 
         # Outstanding receivables
         rec_stmt = select(
@@ -159,15 +160,15 @@ class AnalyticsRepository:
             func.sum(Invoice.balance_due)
         ).where(Invoice.balance_due > 0).group_by(Invoice.currency)
         rec_rows = (await self.session.execute(rec_stmt)).all()
-        outstanding_receivables = {r[0]: Decimal(str(r[1])).round(2) for r in rec_rows if r[0] and r[1] is not None}
+        outstanding_receivables = {r[0]: Decimal(str(r[1])).quantize(Decimal("0.01")) for r in rec_rows if r[0] and r[1] is not None}
 
         # MRR
-        mrr_stmt = select(
-            Subscription.currency,
-            func.sum(Subscription.monthly_recurring_revenue)
-        ).where(Subscription.status == "ACTIVE").group_by(Subscription.currency)
-        mrr_rows = (await self.session.execute(mrr_stmt)).all()
-        monthly_recurring_revenue = {r[0]: Decimal(str(r[1])).round(2) for r in mrr_rows if r[0] and r[1] is not None}
+        mrr_stmt = select(Subscription).where(Subscription.status == "ACTIVE")
+        mrr_subs = (await self.session.execute(mrr_stmt)).scalars().all()
+        monthly_recurring_revenue: Dict[str, Decimal] = {}
+        for sub in mrr_subs:
+            c = sub.currency or "USD"
+            monthly_recurring_revenue[c] = monthly_recurring_revenue.get(c, Decimal("0.00")) + sub.monthly_recurring_revenue
 
         return {
             "confirmed_order_value": confirmed_order_value,
@@ -255,13 +256,13 @@ class AnalyticsRepository:
             for curr, tot in conf_value_by_curr.items():
                 c_cnt = sum(1 for q in q_confirmed if q.currency == curr)
                 if c_cnt > 0:
-                    avg_value_by_curr[curr] = (tot / Decimal(str(c_cnt))).round(2)
+                    avg_value_by_curr[curr] = (tot / Decimal(str(c_cnt))).quantize(Decimal("0.01"))
 
             discounts = [Decimal(str(q.effective_discount_pct)) for q in quotes if q.effective_discount_pct is not None]
-            avg_disc = (sum(discounts) / Decimal(str(len(discounts)))).round(2) if discounts else None
+            avg_disc = (sum(discounts) / Decimal(str(len(discounts)))).quantize(Decimal("0.01")) if discounts else None
 
             margins = [Decimal(str(q.margin_pct)) for q in quotes if q.margin_pct is not None]
-            avg_margin = (sum(margins) / Decimal(str(len(margins)))).round(2) if margins else None
+            avg_margin = (sum(margins) / Decimal(str(len(margins)))).quantize(Decimal("0.01")) if margins else None
 
             # Latest health per quote
             q_ids = [q.id for q in quotes]
@@ -315,7 +316,7 @@ class AnalyticsRepository:
         quotes = (await self.session.execute(stmt)).scalars().all()
 
         all_discounts = [Decimal(str(q.effective_discount_pct)) for q in quotes if q.effective_discount_pct is not None]
-        overall_avg = (sum(all_discounts) / Decimal(str(len(all_discounts)))).round(2) if all_discounts else None
+        overall_avg = (sum(all_discounts) / Decimal(str(len(all_discounts)))).quantize(Decimal("0.01")) if all_discounts else None
 
         # By sales rep
         by_rep_dict: Dict[int, List[Quotation]] = {}
@@ -326,7 +327,7 @@ class AnalyticsRepository:
         for rep_id, q_list in by_rep_dict.items():
             rep = await self.session.get(User, rep_id)
             discs = [Decimal(str(q.effective_discount_pct)) for q in q_list if q.effective_discount_pct is not None]
-            avg_d = (sum(discs) / Decimal(str(len(discs)))).round(2) if discs else None
+            avg_d = (sum(discs) / Decimal(str(len(discs)))).quantize(Decimal("0.01")) if discs else None
             min_d = min(discs) if discs else None
             max_d = max(discs) if discs else None
             high_d = sum(1 for d in discs if d > Decimal("15.00"))
@@ -357,7 +358,7 @@ class AnalyticsRepository:
                 "group_key": tier_name,
                 "group_name": tier_name,
                 "quote_count": len(q_list),
-                "average_discount_pct": (sum(discs) / Decimal(str(len(discs)))).round(2) if discs else None,
+                "average_discount_pct": (sum(discs) / Decimal(str(len(discs)))).quantize(Decimal("0.01")) if discs else None,
                 "min_discount_pct": min(discs) if discs else None,
                 "max_discount_pct": max(discs) if discs else None,
                 "high_discount_quote_count": sum(1 for d in discs if d > Decimal("15.00")),
@@ -380,7 +381,7 @@ class AnalyticsRepository:
         quotes = (await self.session.execute(stmt)).scalars().all()
 
         all_margins = [Decimal(str(q.margin_pct)) for q in quotes if q.margin_pct is not None]
-        overall_simple_avg = (sum(all_margins) / Decimal(str(len(all_margins)))).round(2) if all_margins else None
+        overall_simple_avg = (sum(all_margins) / Decimal(str(len(all_margins)))).quantize(Decimal("0.01")) if all_margins else None
 
         tot_net = sum(Decimal(str(q.net_total)) for q in quotes if q.net_total is not None)
         tot_margin = sum(
@@ -397,7 +398,7 @@ class AnalyticsRepository:
         for rep_id, q_list in by_rep_dict.items():
             rep = await self.session.get(User, rep_id)
             m_list = [Decimal(str(q.margin_pct)) for q in q_list if q.margin_pct is not None]
-            simple_a = (sum(m_list) / Decimal(str(len(m_list)))).round(2) if m_list else None
+            simple_a = (sum(m_list) / Decimal(str(len(m_list)))).quantize(Decimal("0.01")) if m_list else None
             t_net = sum(Decimal(str(q.net_total)) for q in q_list if q.net_total is not None)
             t_m = sum(
                 Decimal(str(q.net_total)) * (Decimal(str(q.margin_pct)) / Decimal("100.00"))
@@ -433,7 +434,8 @@ class AnalyticsRepository:
         profile = {
             "customer_id": cust.id,
             "customer_code": cust.customer_code,
-            "name": cust.company_name,
+            "name": cust.name,
+
             "customer_tier": cust.tier.name if cust.tier else None,
             "assigned_sales_rep": rep.full_name if rep else None,
             "is_active": cust.is_active,
@@ -448,7 +450,7 @@ class AnalyticsRepository:
         open_q = sum(1 for q in quotes if q.status not in ["CUSTOMER_CONFIRMED", "CANCELLED", "REJECTED"])
         conf_q = [q for q in quotes if q.status == "CUSTOMER_CONFIRMED"]
 
-        discs = [Decimal(str(q.effective_discount_pct)) for q in quotes if q.effective_discount_pct is not None]
+        discs = [Decimal(str(q.weighted_effective_discount_pct if q.weighted_effective_discount_pct is not None else q.order_discount_pct)) for q in quotes if (q.weighted_effective_discount_pct is not None or q.order_discount_pct is not None)]
         margs = [Decimal(str(q.margin_pct)) for q in quotes if q.margin_pct is not None]
 
         conf_val: Dict[str, Decimal] = {}
@@ -460,9 +462,9 @@ class AnalyticsRepository:
             "open_quotations": open_q,
             "confirmed_quotations": len(conf_q),
             "confirmation_rate": safe_rate(len(conf_q), tot_q),
-            "latest_quote_number": quotes[0].quotation_number if quotes else None,
-            "average_discount_pct": (sum(discs) / Decimal(str(len(discs)))).round(2) if discs else None,
-            "average_margin_pct": (sum(margs) / Decimal(str(len(margs)))).round(2) if margs else None,
+            "latest_quote_number": quotes[0].quote_number if quotes else None,
+            "average_discount_pct": (sum(discs) / Decimal(str(len(discs)))).quantize(Decimal("0.01")) if discs else None,
+            "average_margin_pct": (sum(margs) / Decimal(str(len(margs)))).quantize(Decimal("0.01")) if margs else None,
             "confirmed_value_by_currency": conf_val,
         }
 
@@ -486,7 +488,7 @@ class AnalyticsRepository:
             ).order_by(desc(DealHealthSnapshot.calculated_at))
             latest_snap = (await self.session.execute(h_stmt)).scalars().first()
             if latest_snap:
-                health_score = Decimal(str(latest_snap.health_score)).round(2)
+                health_score = Decimal(str(latest_snap.health_score)).quantize(Decimal("0.01"))
                 health_level = latest_snap.health_level
 
             a_stmt = select(func.count(DealAlert.id)).where(
@@ -575,7 +577,7 @@ class AnalyticsRepository:
         for q in quotes[:5]:
             activity.append({
                 "event_type": "QUOTE_CREATED",
-                "title": f"Quotation {q.quotation_number} created",
+                "title": f"Quotation {q.quote_number} created",
                 "description": f"Status: {q.status}, Amount: {q.currency} {q.net_total}",
                 "timestamp": q.created_at,
                 "reference_id": str(q.id),
@@ -584,7 +586,8 @@ class AnalyticsRepository:
             activity.append({
                 "event_type": "ORDER_CREATED",
                 "title": f"Sales Order {o.order_number} created",
-                "description": f"Status: {o.status}, Total: {o.currency} {o.total_amount}",
+                "description": f"Status: {o.status}, Total: {o.currency} {o.net_total}",
+
                 "timestamp": o.created_at,
                 "reference_id": str(o.id),
             })
@@ -642,7 +645,7 @@ class AnalyticsRepository:
                     if l.discount_pct is not None:
                         discounts.append(Decimal(str(l.discount_pct)))
 
-            avg_d = (sum(discounts) / Decimal(str(len(discounts)))).round(2) if discounts else None
+            avg_d = (sum(discounts) / Decimal(str(len(discounts)))).quantize(Decimal("0.01")) if discounts else None
 
             results.append({
                 "product_id": p.id,
@@ -699,7 +702,7 @@ class AnalyticsRepository:
                 "confirmed_quote_count": sum(1 for q_id in q_ids if (await self.session.get(Quotation, q_id)).status == "CUSTOMER_CONFIRMED"),
                 "confirmed_quantity": conf_qty,
                 "revenue_by_currency": rev_val,
-                "average_discount_pct": (sum(discounts) / Decimal(str(len(discounts)))).round(2) if discounts else None,
+                "average_discount_pct": (sum(discounts) / Decimal(str(len(discounts)))).quantize(Decimal("0.01")) if discounts else None,
                 "average_margin_pct": None,
             })
         return results
@@ -741,9 +744,9 @@ class AnalyticsRepository:
             "approved_count": app_cnt,
             "rejected_count": rej_cnt,
             "returned_count": ret_cnt,
-            "average_manager_turnaround_hours": Decimal(str(sum(mgr_hrs) / len(mgr_hrs))).round(2) if mgr_hrs else None,
-            "average_finance_turnaround_hours": Decimal(str(sum(fin_hrs) / len(fin_hrs))).round(2) if fin_hrs else None,
-            "average_total_approval_cycle_hours": Decimal(str(sum(all_hrs) / len(all_hrs))).round(2) if all_hrs else None,
+            "average_manager_turnaround_hours": Decimal(str(sum(mgr_hrs) / len(mgr_hrs))).quantize(Decimal("0.01")) if mgr_hrs else None,
+            "average_finance_turnaround_hours": Decimal(str(sum(fin_hrs) / len(fin_hrs))).quantize(Decimal("0.01")) if fin_hrs else None,
+            "average_total_approval_cycle_hours": Decimal(str(sum(all_hrs) / len(all_hrs))).quantize(Decimal("0.01")) if all_hrs else None,
             "approval_delay_alert_count": 0,
             "reapproval_round_count": sum(1 for s in steps if s.approval_round > 1),
         }
@@ -773,7 +776,7 @@ class AnalyticsRepository:
             "counteroffers_accepted": accepted,
             "counteroffers_rejected": rejected,
             "acceptance_rate": safe_rate(accepted, entered) if entered > 0 else None,
-            "average_negotiation_duration_hours": Decimal(str(sum(durations) / len(durations))).round(2) if durations else None,
+            "average_negotiation_duration_hours": Decimal(str(sum(durations) / len(durations))).quantize(Decimal("0.01")) if durations else None,
             "reapproval_trigger_rate": None,
             "average_versions_per_confirmed_quote": None,
         }

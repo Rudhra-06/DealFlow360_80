@@ -1,7 +1,7 @@
 """Analytics Service for Phase 6 Part 2."""
 
 from datetime import datetime, timezone, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 

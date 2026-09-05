@@ -231,18 +231,20 @@ class DealHealthService:
         step_stmt = (
             select(QuoteApprovalStep)
             .where(QuoteApprovalStep.quotation_id == quotation_id, QuoteApprovalStep.status == "PENDING")
-            .order_by(QuoteApprovalStep.step_number.asc())
+            .order_by(QuoteApprovalStep.sequence.asc())
         )
         step_res = await self.db.execute(step_stmt)
         pending_step_obj = step_res.scalars().first()
         pending_step_dict = None
         if pending_step_obj:
             pending_step_dict = {
-                "step_type": pending_step_obj.step_type,
-                "required_role": pending_step_obj.required_role,
+                "sequence": pending_step_obj.sequence,
+                "approval_role": pending_step_obj.approval_role,
+                "approval_context": pending_step_obj.approval_context,
                 "created_at": pending_step_obj.created_at,
                 "updated_at": pending_step_obj.updated_at,
             }
+
 
         # 3. Query historical discounts for rep
         hist_discounts = await self._get_sales_rep_historical_discounts(quote.sales_rep_id, quote.id, now)
@@ -312,7 +314,7 @@ class DealHealthService:
             weighted_effective_discount_pct=quote.weighted_effective_discount_pct or Decimal("0.00"),
             last_meaningful_activity_at=last_activity,
             pending_approval_step=pending_step_dict,
-            last_negotiation_activity_at=latest_msg or quote.updated_at,
+            last_negotiation_activity_at=latest_msg,
             sales_rep_historical_discounts=hist_discounts,
             sales_order=sales_order_dict,
             backorders=backorders_dict,

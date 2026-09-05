@@ -18,11 +18,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import AsyncSessionLocal
-from app.core.security import get_password_hash
+from app.core.security import hash_password as get_password_hash
 from app.models.role import Role, RoleName
 from app.models.user import User
 from app.models.customer_tier import CustomerTier
 from app.models.customer import Customer
+from app.models.customer_portal_access import CustomerPortalAccess
 from app.models.product_category import ProductCategory
 from app.models.product import Product
 from app.models.warehouse import Warehouse
@@ -38,11 +39,12 @@ DEMO_PASSWORD = os.getenv("DEMO_USER_PASSWORD", "DealFlow360Demo123!")
 
 
 async def get_or_create_role(session: AsyncSession, name: RoleName) -> Role:
-    stmt = select(Role).where(Role.name == name)
+    role_str = name.value if isinstance(name, RoleName) else str(name)
+    stmt = select(Role).where(Role.name == role_str)
     res = await session.execute(stmt)
     role = res.scalar_one_or_none()
     if not role:
-        role = Role(name=name, description=f"{name.value} role")
+        role = Role(name=role_str, description=f"{role_str} role")
         session.add(role)
         await session.flush()
     return role
@@ -52,14 +54,22 @@ async def get_or_create_user(session: AsyncSession, email: str, full_name: str, 
     stmt = select(User).where(User.email == email)
     res = await session.execute(stmt)
     user = res.scalar_one_or_none()
+    pwd_hash = get_password_hash(DEMO_PASSWORD)
     if not user:
-        pwd_hash = get_password_hash(DEMO_PASSWORD)
-        user = User(email=email, password_hash=pwd_hash, full_name=full_name, is_active=True)
-        user.roles.append(role)
+        user = User(
+            email=email,
+            hashed_password=pwd_hash,
+            full_name=full_name,
+            role_id=role.id,
+            is_active=True,
+        )
         session.add(user)
         await session.flush()
-    elif role not in user.roles:
-        user.roles.append(role)
+    else:
+        user.hashed_password = pwd_hash
+        user.full_name = full_name
+        user.role_id = role.id
+        user.is_active = True
         await session.flush()
     return user
 
@@ -86,7 +96,7 @@ async def bootstrap_demo():
             t_stmt = select(CustomerTier).where(CustomerTier.name == "Gold Enterprise")
             tier = (await session.execute(t_stmt)).scalar_one_or_none()
             if not tier:
-                tier = CustomerTier(name="Gold Enterprise", min_annual_spend=Decimal("100000.00"), discount_limit_pct=Decimal("15.00"))
+                tier = CustomerTier(name="Gold Enterprise", description="Gold Enterprise Tier", is_active=True)
                 session.add(tier)
                 await session.flush()
 
@@ -95,82 +105,178 @@ async def bootstrap_demo():
             if not customer:
                 customer = Customer(
                     customer_code="DEMO-CUST-OMEGA",
-                    company_name="Omega Corporation",
+                    name="Omega Corporation",
+                    email="customer.demo@example.com",
                     tier_id=tier.id,
-                    assigned_sales_rep_id=u_rep.id,
-                    is_active=True
+                    is_active=True,
                 )
                 session.add(customer)
+                await session.flush()
+            else:
+                customer.name = "Omega Corporation"
+                customer.email = "customer.demo@example.com"
+                customer.tier_id = tier.id
+                customer.is_active = True
+                await session.flush()
+
+            # Customer Portal Access association
+            cpa_stmt = select(CustomerPortalAccess).where(CustomerPortalAccess.user_id == u_cust.id)
+            cpa = (await session.execute(cpa_stmt)).scalar_one_or_none()
+            if not cpa:
+                cpa = CustomerPortalAccess(
+                    user_id=u_cust.id,
+                    customer_id=customer.id,
+                    is_active=True,
+                )
+                session.add(cpa)
+                await session.flush()
+            else:
+                cpa.customer_id = customer.id
+                cpa.is_active = True
                 await session.flush()
 
             # 4. Categories & Products
             cat_hw = (await session.execute(select(ProductCategory).where(ProductCategory.name == "Hardware"))).scalar_one_or_none()
             if not cat_hw:
-                cat_hw = ProductCategory(name="Hardware", description="Enterprise Hardware")
+                cat_hw = ProductCategory(name="Hardware", description="Enterprise Hardware", is_active=True)
                 session.add(cat_hw)
                 await session.flush()
 
             cat_srv = (await session.execute(select(ProductCategory).where(ProductCategory.name == "Services"))).scalar_one_or_none()
             if not cat_srv:
-                cat_srv = ProductCategory(name="Services", description="Professional Services & Support")
+                cat_srv = ProductCategory(name="Services", description="Professional Services & Support", is_active=True)
                 session.add(cat_srv)
                 await session.flush()
 
             p_laptop = (await session.execute(select(Product).where(Product.sku == "DEMO-LAPTOP"))).scalar_one_or_none()
             if not p_laptop:
-                p_laptop = Product(sku="DEMO-LAPTOP", name="Enterprise Laptop Pro", category_id=cat_hw.id, list_price=Decimal("1500.00"), cost_price=Decimal("900.00"), is_active=True)
+                p_laptop = Product(
+                    sku="DEMO-LAPTOP",
+                    name="Enterprise Laptop Pro",
+                    category_id=cat_hw.id,
+                    list_price=Decimal("1500.00"),
+                    cost_price=Decimal("900.00"),
+                    is_active=True,
+                )
                 session.add(p_laptop)
                 await session.flush()
 
             p_dock = (await session.execute(select(Product).where(Product.sku == "DEMO-DOCK"))).scalar_one_or_none()
             if not p_dock:
-                p_dock = Product(sku="DEMO-DOCK", name="USB-C Docking Station", category_id=cat_hw.id, list_price=Decimal("250.00"), cost_price=Decimal("120.00"), is_active=True)
+                p_dock = Product(
+                    sku="DEMO-DOCK",
+                    name="USB-C Docking Station",
+                    category_id=cat_hw.id,
+                    list_price=Decimal("250.00"),
+                    cost_price=Decimal("120.00"),
+                    is_active=True,
+                )
                 session.add(p_dock)
                 await session.flush()
 
             p_support = (await session.execute(select(Product).where(Product.sku == "DEMO-SUPPORT"))).scalar_one_or_none()
             if not p_support:
-                p_support = Product(sku="DEMO-SUPPORT", name="24/7 Enterprise Support Plan", category_id=cat_srv.id, list_price=Decimal("500.00"), cost_price=Decimal("100.00"), is_active=True)
+                p_support = Product(
+                    sku="DEMO-SUPPORT",
+                    name="24/7 Enterprise Support Plan",
+                    category_id=cat_srv.id,
+                    list_price=Decimal("500.00"),
+                    cost_price=Decimal("100.00"),
+                    is_active=True,
+                )
                 session.add(p_support)
                 await session.flush()
 
             # 5. Warehouses & Inventory
             wh_main = (await session.execute(select(Warehouse).where(Warehouse.code == "WH-DEMO-MAIN"))).scalar_one_or_none()
             if not wh_main:
-                wh_main = Warehouse(code="WH-DEMO-MAIN", name="Main Warehouse", priority=1, base_shipping_cost=Decimal("15.00"), is_active=True)
+                wh_main = Warehouse(
+                    code="WH-DEMO-MAIN",
+                    name="Main Warehouse",
+                    fulfillment_priority=1,
+                    base_shipping_cost=Decimal("15.00"),
+                    is_active=True,
+                )
                 session.add(wh_main)
                 await session.flush()
 
             wh_east = (await session.execute(select(Warehouse).where(Warehouse.code == "WH-DEMO-EAST"))).scalar_one_or_none()
             if not wh_east:
-                wh_east = Warehouse(code="WH-DEMO-EAST", name="East Depot", priority=2, base_shipping_cost=Decimal("25.00"), is_active=True)
+                wh_east = Warehouse(
+                    code="WH-DEMO-EAST",
+                    name="East Depot",
+                    fulfillment_priority=2,
+                    base_shipping_cost=Decimal("25.00"),
+                    is_active=True,
+                )
                 session.add(wh_east)
                 await session.flush()
 
             inv_laptop_main = (await session.execute(select(Inventory).where(Inventory.warehouse_id == wh_main.id, Inventory.product_id == p_laptop.id))).scalar_one_or_none()
             if not inv_laptop_main:
-                session.add(Inventory(warehouse_id=wh_main.id, product_id=p_laptop.id, quantity_on_hand=3, quantity_reserved=0))
+                session.add(Inventory(warehouse_id=wh_main.id, product_id=p_laptop.id, on_hand_qty=Decimal("3.000"), reserved_qty=Decimal("0.000")))
+            else:
+                inv_laptop_main.on_hand_qty = Decimal("3.000")
+                inv_laptop_main.reserved_qty = Decimal("0.000")
 
             inv_laptop_east = (await session.execute(select(Inventory).where(Inventory.warehouse_id == wh_east.id, Inventory.product_id == p_laptop.id))).scalar_one_or_none()
             if not inv_laptop_east:
-                session.add(Inventory(warehouse_id=wh_east.id, product_id=p_laptop.id, quantity_on_hand=5, quantity_reserved=0))
+                session.add(Inventory(warehouse_id=wh_east.id, product_id=p_laptop.id, on_hand_qty=Decimal("5.000"), reserved_qty=Decimal("0.000")))
+            else:
+                inv_laptop_east.on_hand_qty = Decimal("5.000")
+                inv_laptop_east.reserved_qty = Decimal("0.000")
 
             inv_dock_main = (await session.execute(select(Inventory).where(Inventory.warehouse_id == wh_main.id, Inventory.product_id == p_dock.id))).scalar_one_or_none()
             if not inv_dock_main:
-                session.add(Inventory(warehouse_id=wh_main.id, product_id=p_dock.id, quantity_on_hand=10, quantity_reserved=0))
+                session.add(Inventory(warehouse_id=wh_main.id, product_id=p_dock.id, on_hand_qty=Decimal("10.000"), reserved_qty=Decimal("0.000")))
+            else:
+                inv_dock_main.on_hand_qty = Decimal("10.000")
+                inv_dock_main.reserved_qty = Decimal("0.000")
 
             # 6. Commercial Policies & Configs
             dp = (await session.execute(select(DiscountPolicy).where(DiscountPolicy.name == "DEMO-DISC-01"))).scalar_one_or_none()
             if not dp:
-                session.add(DiscountPolicy(name="DEMO-DISC-01", max_discount_pct=Decimal("10.00"), is_active=True))
+                session.add(DiscountPolicy(
+                    name="DEMO-DISC-01",
+                    standard_discount_pct=Decimal("5.00"),
+                    max_discount_pct=Decimal("10.00"),
+                    priority=100,
+                    is_active=True,
+                ))
 
             ap = (await session.execute(select(ApprovalPolicy).where(ApprovalPolicy.name == "DEMO-APP-01"))).scalar_one_or_none()
             if not ap:
-                session.add(ApprovalPolicy(name="DEMO-APP-01", min_discount_pct=Decimal("10.01"), required_role="SALES_MANAGER", is_active=True))
+                session.add(ApprovalPolicy(
+                    name="DEMO-APP-01",
+                    discount_above_pct=Decimal("10.00"),
+                    approval_role="SALES_MANAGER",
+                    priority=100,
+                    is_active=True,
+                ))
 
-            bp = (await session.execute(select(BillingPlan).where(BillingPlan.name == "DEMO-BILL-01"))).scalar_one_or_none()
-            if not bp:
-                session.add(BillingPlan(name="DEMO-BILL-01", billing_frequency="MONTHLY", advance_notice_days=5, is_active=True))
+            bp_monthly = (await session.execute(select(BillingPlan).where(BillingPlan.code == "BP-DEMO-MONTHLY"))).scalar_one_or_none()
+            if not bp_monthly:
+                session.add(BillingPlan(
+                    code="BP-DEMO-MONTHLY",
+                    name="Demo Monthly Recurring Plan",
+                    billing_type="RECURRING",
+                    billing_interval_months=1,
+                    proration_method="DAILY",
+                    cancellation_method="END_OF_PERIOD",
+                    is_active=True,
+                ))
+
+            bp_onetime = (await session.execute(select(BillingPlan).where(BillingPlan.code == "BP-DEMO-ONETIME"))).scalar_one_or_none()
+            if not bp_onetime:
+                session.add(BillingPlan(
+                    code="BP-DEMO-ONETIME",
+                    name="Demo One-Time Hardware Plan",
+                    billing_type="ONE_TIME",
+                    billing_interval_months=None,
+                    proration_method="DAILY",
+                    cancellation_method="END_OF_PERIOD",
+                    is_active=True,
+                ))
 
             dhc = (await session.execute(select(DealHealthConfig).where(DealHealthConfig.name == "DEMO-HEALTH-01"))).scalar_one_or_none()
             if not dhc:
@@ -192,16 +298,17 @@ async def bootstrap_demo():
             # 7. Seed 3 Historical Quotes for Rep Baseline (5%, 7%, 8% discounts)
             for idx, disc in enumerate([Decimal("5.00"), Decimal("7.00"), Decimal("8.00")], start=1):
                 h_num = f"QT-HIST-00{idx}"
-                q_h = (await session.execute(select(Quotation).where(Quotation.quotation_number == h_num))).scalar_one_or_none()
+                q_h = (await session.execute(select(Quotation).where(Quotation.quote_number == h_num))).scalar_one_or_none()
                 if not q_h:
                     session.add(Quotation(
-                        quotation_number=h_num,
+                        quote_number=h_num,
                         customer_id=customer.id,
                         sales_rep_id=u_rep.id,
                         status="CUSTOMER_CONFIRMED",
                         currency="USD",
                         net_total=Decimal("5000.00"),
-                        effective_discount_pct=disc,
+                        order_discount_pct=disc,
+                        weighted_effective_discount_pct=disc,
                         margin_pct=Decimal("35.00"),
                     ))
 
@@ -217,6 +324,7 @@ async def bootstrap_demo():
     print(f"  - Sales Rep: salesrep.demo@example.com")
     print(f"  - Customer Contact: customer.demo@example.com")
     print(f"Customer: Omega Corporation (DEMO-CUST-OMEGA)")
+    print(f"Customer Portal Access: customer.demo@example.com -> DEMO-CUST-OMEGA")
     print(f"Products: Enterprise Laptop Pro, Docking Station, Support Plan")
     print(f"Warehouses: Main Warehouse (3 laptops), East Depot (5 laptops)")
     print(f"Historical Baseline: 3 confirmed quotes seeded (5%, 7%, 8% discounts)")

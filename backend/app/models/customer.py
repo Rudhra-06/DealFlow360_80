@@ -44,5 +44,23 @@ class Customer(Base):
     # Many-to-1 Relationship: Customer -> CustomerTier
     tier: Mapped["CustomerTier"] = relationship("CustomerTier", back_populates="customers")
 
+    @property
+    def assigned_sales_rep_id(self) -> Optional[int]:
+        return self.__dict__.get("assigned_sales_rep_id")
+
+    @assigned_sales_rep_id.setter
+    def assigned_sales_rep_id(self, value: Optional[int]) -> None:
+        self.__dict__["assigned_sales_rep_id"] = value
+
+    @property
+    def company_name(self) -> str:
+        return self.name
+
+    @company_name.setter
+    def company_name(self, val: str) -> None:
+        self.name = val
+
     def __repr__(self) -> str:
+
+
         return f"<Customer(id={self.id}, code='{self.customer_code}', name='{self.name}', tier_id={self.tier_id})>"

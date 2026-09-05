@@ -36,18 +36,18 @@ class SalesOrder(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     order_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
 
-    quotation_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("quotations.id", ondelete="RESTRICT"), unique=True, nullable=False, index=True
+    quotation_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("quotations.id", ondelete="RESTRICT"), unique=True, nullable=True, index=True
     )
-    confirmed_quote_version_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("quote_versions.id", ondelete="RESTRICT"), nullable=False, index=True
+    confirmed_quote_version_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("quote_versions.id", ondelete="RESTRICT"), nullable=True, index=True
     )
 
     customer_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("customers.id", ondelete="RESTRICT"), nullable=False, index=True
     )
-    sales_rep_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True
+    sales_rep_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=True, index=True
     )
 
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="FULFILLMENT", index=True)
@@ -81,6 +81,16 @@ class SalesOrder(Base):
     @property
     def confirmed_version_id(self) -> int:
         return self.confirmed_quote_version_id
+
+    @property
+    def total_amount(self) -> Decimal:
+        return self.net_total
+
+    @total_amount.setter
+    def total_amount(self, value: Decimal) -> None:
+        self.net_total = value
+
+
 
     def __repr__(self) -> str:
         return f"<SalesOrder(id={self.id}, order_number='{self.order_number}', status='{self.status}')>"

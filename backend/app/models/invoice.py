@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 from sqlalchemy import (
     CheckConstraint,
     DateTime,
@@ -22,6 +22,12 @@ if TYPE_CHECKING:
 
 class Invoice(Base):
     """SQLAlchemy model for customer invoices (one-time & recurring)."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        if "due_date" not in kwargs or kwargs["due_date"] is None:
+            from datetime import datetime, timezone, timedelta
+            kwargs["due_date"] = datetime.now(timezone.utc) + timedelta(days=30)
+        super().__init__(**kwargs)
 
     __tablename__ = "invoices"
     __table_args__ = (
@@ -72,6 +78,14 @@ class Invoice(Base):
     lines: Mapped[List["InvoiceLine"]] = relationship(
         "InvoiceLine", back_populates="invoice", cascade="all, delete-orphan", lazy="selectin"
     )
+
+    @property
+    def tax_total(self) -> Decimal:
+        return self.tax_amount
+
+    @tax_total.setter
+    def tax_total(self, value: Decimal) -> None:
+        self.tax_amount = value
 
     def __repr__(self) -> str:
         return f"<Invoice(id={self.id}, number='{self.invoice_number}', total={self.total_amount}, status='{self.status}')>"

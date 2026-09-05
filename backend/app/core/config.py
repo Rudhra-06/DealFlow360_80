@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     # Optional full DATABASE_URL override
     DATABASE_URL: str | None = None
 
+    POSTGRES_TEST_DB: str = "dealflow360_test"
+    TEST_DATABASE_URL: str | None = None
+
+
     @property
     def async_database_url(self) -> str:
         """Assembles and returns the asyncpg-compatible PostgreSQL database URL safely."""
@@ -43,6 +47,22 @@ class Settings(BaseSettings):
             host=self.POSTGRES_SERVER,
             port=self.POSTGRES_PORT,
             database=self.POSTGRES_DB,
+        ).render_as_string(hide_password=False)
+
+    @property
+    def async_test_database_url(self) -> str:
+        """Assembles and returns the asyncpg-compatible PostgreSQL test database URL safely."""
+        if self.TEST_DATABASE_URL:
+            if self.TEST_DATABASE_URL.startswith("postgresql://"):
+                return self.TEST_DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+            return self.TEST_DATABASE_URL
+        return URL.create(
+            drivername="postgresql+asyncpg",
+            username=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.POSTGRES_SERVER,
+            port=self.POSTGRES_PORT,
+            database=self.POSTGRES_TEST_DB,
         ).render_as_string(hide_password=False)
 
 

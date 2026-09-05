@@ -49,7 +49,24 @@ class Inventory(Base):
     warehouse: Mapped["Warehouse"] = relationship("Warehouse", back_populates="inventory_records")
     product: Mapped["Product"] = relationship("Product", back_populates="inventory_records")
 
+    @property
+    def quantity_on_hand(self) -> Decimal:
+        return self.on_hand_qty
+
+    @quantity_on_hand.setter
+    def quantity_on_hand(self, val: Decimal) -> None:
+        self.on_hand_qty = val
+
+    @property
+    def quantity_reserved(self) -> Decimal:
+        return self.reserved_qty
+
+    @quantity_reserved.setter
+    def quantity_reserved(self, val: Decimal) -> None:
+        self.reserved_qty = val
+
     def __repr__(self) -> str:
+
         return (
             f"<Inventory(id={self.id}, warehouse_id={self.warehouse_id}, product_id={self.product_id}, "
             f"on_hand={self.on_hand_qty}, reserved={self.reserved_qty})>"

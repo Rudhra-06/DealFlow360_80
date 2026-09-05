@@ -1,6 +1,7 @@
 """Transaction & Rollback Safety Tests for Phase 6 Part 3."""
 
 import pytest
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,20 +17,28 @@ from app.services.portal_quotation import PortalQuotationService
 from tests.conftest import get_or_create_role
 
 
+from app.models.customer_tier import CustomerTier
+
+
 @pytest.mark.asyncio
 async def test_confirm_unapproved_quote_transaction_safety(db_session: AsyncSession):
     role_cust = await get_or_create_role(db_session, RoleName.CUSTOMER)
-    cust_user = User(email="trans_cust@test.com", password_hash="hash", full_name="Trans Cust", is_active=True)
-    cust_user.roles.append(role_cust)
-    db_session.add(cust_user)
+    role_rep = await get_or_create_role(db_session, RoleName.SALES_REP)
+    rep = User(email="trans_rep@test.com", hashed_password="hash", full_name="Trans Rep", role_id=role_rep.id, is_active=True)
+    cust_user = User(email="trans_cust@test.com", hashed_password="hash", full_name="Trans Cust", role_id=role_cust.id, is_active=True)
+    db_session.add_all([rep, cust_user])
     await db_session.flush()
 
-    cust = Customer(customer_code="CUST-TRANS-01", company_name="Trans Corp")
+    tier = CustomerTier(name="Tier Trans 1")
+    db_session.add(tier)
+    await db_session.flush()
+
+    cust = Customer(customer_code="CUST-TRANS-01", name="Trans Corp", tier_id=tier.id)
     db_session.add(cust)
     await db_session.flush()
 
     # Draft quotation (not SENT_TO_CUSTOMER or APPROVED)
-    quote = Quotation(quotation_number="QT-TRANS-001", customer_id=cust.id, status="DRAFT", currency="USD", net_total=Decimal("1000.00"))
+    quote = Quotation(quote_number="QT-TRANS-001", customer_id=cust.id, sales_rep_id=rep.id, status="DRAFT", currency="USD", net_total=Decimal("1000.00"))
     db_session.add(quote)
     await db_session.commit()
 
@@ -45,7 +54,11 @@ async def test_confirm_unapproved_quote_transaction_safety(db_session: AsyncSess
 
 @pytest.mark.asyncio
 async def test_payment_currency_mismatch_rejection(db_session: AsyncSession):
-    cust = Customer(customer_code="CUST-TRANS-02", company_name="Trans Currency Corp")
+    tier2 = CustomerTier(name="Tier Trans 2")
+    db_session.add(tier2)
+    await db_session.flush()
+
+    cust = Customer(customer_code="CUST-TRANS-02", name="Trans Currency Corp", tier_id=tier2.id)
     db_session.add(cust)
     await db_session.flush()
 
@@ -53,7 +66,7 @@ async def test_payment_currency_mismatch_rejection(db_session: AsyncSession):
     db_session.add(so)
     await db_session.flush()
 
-    inv = Invoice(invoice_number="INV-TRANS-001", customer_id=cust.id, sales_order_id=so.id, status="UNPAID", currency="USD", subtotal=Decimal("500.00"), tax_total=Decimal("0.00"), total_amount=Decimal("500.00"), balance_due=Decimal("500.00"))
+    inv = Invoice(invoice_number="INV-TRANS-001", customer_id=cust.id, sales_order_id=so.id, status="UNPAID", currency="USD", subtotal=Decimal("500.00"), tax_total=Decimal("0.00"), total_amount=Decimal("500.00"), balance_due=Decimal("500.00"), due_date=datetime.now(timezone.utc) + timedelta(days=30))
     db_session.add(inv)
     await db_session.commit()
 
@@ -65,3 +78,4 @@ async def test_payment_currency_mismatch_rejection(db_session: AsyncSession):
     with pytest.raises(ValueError) if not hasattr(inv, "validate_payment") else pytest.raises(HTTPException):
         if pay.currency != inv.currency:
             raise ValueError(f"Currency mismatch: Payment ({pay.currency}) vs Invoice ({inv.currency})")
+

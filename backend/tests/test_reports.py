@@ -53,8 +53,7 @@ def test_xlsx_renderer_and_formula_injection_protection():
 @pytest.mark.asyncio
 async def test_report_export_service_and_audit(db_session: AsyncSession):
     role_admin = await get_or_create_role(db_session, RoleName.ADMIN)
-    user = User(email="report_admin@test.com", password_hash="hash", full_name="Report Admin", is_active=True)
-    user.roles.append(role_admin)
+    user = User(email="report_admin@test.com", hashed_password="hash", full_name="Report Admin", role_id=role_admin.id, is_active=True)
     db_session.add(user)
     await db_session.commit()
 
@@ -74,10 +73,10 @@ async def test_report_export_service_and_audit(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_customer_role_export_403(db_session: AsyncSession):
     role_cust = await get_or_create_role(db_session, RoleName.CUSTOMER)
-    cust_user = User(email="cust_user@test.com", password_hash="hash", full_name="Cust User", is_active=True)
-    cust_user.roles.append(role_cust)
+    cust_user = User(email="cust_user@test.com", hashed_password="hash", full_name="Cust User", role_id=role_cust.id, is_active=True)
     db_session.add(cust_user)
     await db_session.commit()
+
 
     req = ReportExportRequest(
         report_type=ReportTypeEnum.EXECUTIVE_SUMMARY,

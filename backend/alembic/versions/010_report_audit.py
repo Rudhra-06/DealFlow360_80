@@ -19,8 +19,8 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    export_status_enum = sa.Enum('SUCCESS', 'FAILED', name='exportstatus')
-    export_status_enum.create(op.get_bind(), checkfirst=True)
+    export_status_enum = postgresql.ENUM('SUCCESS', 'FAILED', name='exportstatus', create_type=False)
+    postgresql.ENUM('SUCCESS', 'FAILED', name='exportstatus').create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         'report_export_audits',
@@ -53,5 +53,5 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_report_export_audits_user_id'), table_name='report_export_audits')
     op.drop_index(op.f('ix_report_export_audits_id'), table_name='report_export_audits')
     op.drop_table('report_export_audits')
-    export_status_enum = sa.Enum('SUCCESS', 'FAILED', name='exportstatus')
-    export_status_enum.drop(op.get_bind(), checkfirst=True)
+
+    postgresql.ENUM(name='exportstatus').drop(op.get_bind(), checkfirst=True)

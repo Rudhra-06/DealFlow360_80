@@ -41,6 +41,39 @@ class NotificationService:
         )
         return await self.notif_repo.create_notification(self.db, notif)
 
+    async def create_and_dispatch_notification(
+        self,
+        user_id: int = 0,
+        notification_type: str = "NOTIFICATION",
+        title: str = "Notification",
+        message: str = "",
+        quotation_id: Optional[int] = None,
+        payload: Optional[Dict[str, Any]] = None,
+        recipient_user_ids: Optional[List[int]] = None,
+        **kwargs: Any,
+    ) -> Optional[Notification]:
+        recipients = recipient_user_ids or ([user_id] if user_id else [])
+        notif = None
+        for uid in recipients:
+            notif = await self.create_notification_record(
+                user_id=uid,
+                notification_type=notification_type,
+                title=title,
+                message=message,
+                quotation_id=quotation_id,
+                payload=payload,
+            )
+        await self.dispatch_post_commit_events(
+            target_user_ids=recipients,
+            event_name=notification_type,
+            quotation_id=quotation_id,
+            payload=payload or {},
+            title=title,
+            message_text=message,
+        )
+        return notif
+
+
     async def dispatch_post_commit_events(
         self,
         target_user_ids: Optional[List[int]] = None,

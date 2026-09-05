@@ -17,19 +17,28 @@ from app.services.deal_health import DealHealthService
 from tests.conftest import get_or_create_role
 
 
+from app.models.customer_tier import CustomerTier
+from datetime import datetime, timezone, timedelta
+
+
 @pytest.mark.asyncio
 async def test_duplicate_customer_confirmation_idempotency(db_session: AsyncSession):
     role_cust = await get_or_create_role(db_session, RoleName.CUSTOMER)
-    cust_user = User(email="idem_cust@test.com", password_hash="hash", full_name="Idem Cust", is_active=True)
-    cust_user.roles.append(role_cust)
-    db_session.add(cust_user)
+    role_rep = await get_or_create_role(db_session, RoleName.SALES_REP)
+    rep = User(email="idem_rep@test.com", hashed_password="hash", full_name="Idem Rep", role_id=role_rep.id, is_active=True)
+    cust_user = User(email="idem_cust@test.com", hashed_password="hash", full_name="Idem Cust", role_id=role_cust.id, is_active=True)
+    db_session.add_all([rep, cust_user])
     await db_session.flush()
 
-    cust = Customer(customer_code="CUST-IDEM-01", company_name="Idem Corp")
+    tier = CustomerTier(name="Tier Idem 1")
+    db_session.add(tier)
+    await db_session.flush()
+
+    cust = Customer(customer_code="CUST-IDEM-01", name="Idem Corp", tier_id=tier.id)
     db_session.add(cust)
     await db_session.flush()
 
-    quote = Quotation(quotation_number="QT-IDEM-001", customer_id=cust.id, status="SENT_TO_CUSTOMER", currency="USD", net_total=Decimal("1200.00"))
+    quote = Quotation(quote_number="QT-IDEM-001", customer_id=cust.id, sales_rep_id=rep.id, status="SENT_TO_CUSTOMER", currency="USD", net_total=Decimal("1200.00"))
     db_session.add(quote)
     await db_session.commit()
 
@@ -51,18 +60,26 @@ async def test_duplicate_customer_confirmation_idempotency(db_session: AsyncSess
 
 @pytest.mark.asyncio
 async def test_repeated_health_evaluation_alert_deduplication(db_session: AsyncSession):
-    cust = Customer(customer_code="CUST-IDEM-02", company_name="Health Idem Corp")
+    role_rep = await get_or_create_role(db_session, RoleName.SALES_REP)
+    rep2 = User(email="idem_rep2@test.com", hashed_password="hash", full_name="Idem Rep 2", role_id=role_rep.id, is_active=True)
+    db_session.add(rep2)
+    await db_session.flush()
+
+    tier2 = CustomerTier(name="Tier Idem 2")
+    db_session.add(tier2)
+    await db_session.flush()
+
+    cust = Customer(customer_code="CUST-IDEM-02", name="Health Idem Corp", tier_id=tier2.id)
     db_session.add(cust)
     await db_session.flush()
 
     # Stalled quote (updated_at set to 10 days ago)
     stale_date = datetime.now(timezone.utc) - timedelta(days=10)
-    quote = Quotation(quotation_number="QT-IDEM-HEALTH", customer_id=cust.id, status="UNDER_NEGOTIATION", currency="USD", net_total=Decimal("3000.00"), updated_at=stale_date)
+    quote = Quotation(quote_number="QT-IDEM-HEALTH", customer_id=cust.id, sales_rep_id=rep2.id, status="UNDER_NEGOTIATION", currency="USD", net_total=Decimal("3000.00"), updated_at=stale_date)
     dhc = DealHealthConfig(name="Idem Health Config", is_active=True, stalled_quote_days=5)
     db_session.add_all([quote, dhc])
     await db_session.commit()
 
-    from datetime import datetime, timezone, timedelta
     service = DealHealthService(db_session)
 
     # First evaluation
@@ -78,3 +95,4 @@ async def test_repeated_health_evaluation_alert_deduplication(db_session: AsyncS
     alerts = (await db_session.execute(alerts_stmt)).scalars().all()
     assert len(alerts) == 1
     assert alerts[0].occurrence_count >= 2
+
