@@ -79,6 +79,42 @@
       section: 'sales'
     },
 
+    // Operations Workspace (Phase 5)
+    orders: {
+      id: 'orders',
+      label: 'Sales Orders',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
+      active: true,
+      status: 'active',
+      section: 'operations'
+    },
+
+    // Billing & Revenue Workspace (Phase 5)
+    invoices: {
+      id: 'invoices',
+      label: 'Invoices',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
+      active: true,
+      status: 'active',
+      section: 'billing_section'
+    },
+    subscriptions: {
+      id: 'subscriptions',
+      label: 'Subscriptions',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>`,
+      active: true,
+      status: 'active',
+      section: 'billing_section'
+    },
+    payments: {
+      id: 'payments',
+      label: 'Payments',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+      active: true,
+      status: 'active',
+      section: 'billing_section'
+    },
+
     // Master Data Workspace
     customers: {
       id: 'customers',
@@ -124,23 +160,23 @@
       section: 'master'
     },
 
-    // Future Modules (Phase 4+)
+    // Future Modules (Phase 6+)
     dealHealth: {
       id: 'dealHealth',
       label: 'Deal Health',
       icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`,
       active: false,
       status: 'Coming Soon',
-      description: 'Commercial margin protection and deal health velocity scoring are scheduled for upcoming release.',
+      description: 'Commercial margin protection and deal health velocity scoring are scheduled for Phase 6 release.',
       section: 'future'
     },
     reports: {
       id: 'reports',
-      label: 'Reports',
+      label: 'Reports & Analytics',
       icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
       active: false,
       status: 'Coming Soon',
-      description: 'Executive reporting, ledger export, and revenue analytics will be available in future releases.',
+      description: 'Executive reporting, ledger export, and revenue analytics will be available in Phase 6.',
       section: 'future'
     },
 
@@ -175,7 +211,7 @@
       icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>`,
       active: false,
       status: 'Coming Soon',
-      description: 'Order fulfillment status and dispatch tracking will be available in upcoming customer features.',
+      description: 'Customer self-service shipment tracking will be available in upcoming portal enhancements.',
       section: 'customer'
     },
     customerAccount: {
@@ -199,6 +235,10 @@
       'pipeline',
       'negotiations',
       'approvals',
+      'orders',
+      'invoices',
+      'subscriptions',
+      'payments',
       'customers',
       'products',
       'inventory',
@@ -207,11 +247,28 @@
       'dealHealth',
       'reports'
     ],
+    FINANCE_OPERATIONS: [
+      'dashboard',
+      'orders',
+      'invoices',
+      'subscriptions',
+      'payments',
+      'quotations',
+      'approvals',
+      'products',
+      'inventory',
+      'billing',
+      'settings',
+      'dealHealth',
+      'reports'
+    ],
     SALES_REP: [
       'dashboard',
       'quotations',
       'pipeline',
       'negotiations',
+      'orders',
+      'invoices',
       'customers',
       'products',
       'inventory',
@@ -224,20 +281,12 @@
       'pipeline',
       'negotiations',
       'approvals',
+      'orders',
+      'invoices',
+      'subscriptions',
       'customers',
       'products',
       'inventory',
-      'settings',
-      'dealHealth',
-      'reports'
-    ],
-    FINANCE_OPERATIONS: [
-      'dashboard',
-      'quotations',
-      'approvals',
-      'products',
-      'inventory',
-      'billing',
       'settings',
       'dealHealth',
       'reports'
@@ -277,13 +326,25 @@
         });
         containerEl.innerHTML = html;
       } else {
-        // Group internal items into Sales Workspace and Master Data
+        // Group internal items into Workspace sections
         const salesItems = items.filter(i => i.section === 'sales' || i.id === 'dashboard');
+        const opsItems = items.filter(i => i.section === 'operations');
+        const billingItems = items.filter(i => i.section === 'billing_section');
         const masterItems = items.filter(i => i.section === 'master');
         const otherItems = items.filter(i => i.section === 'future');
 
         let html = `<div class="nav-section-title">Sales Workspace</div>`;
         salesItems.forEach(item => { html += this._renderNavItemHtml(item); });
+
+        if (opsItems.length > 0) {
+          html += `<div class="nav-section-title" style="margin-top: 14px;">Operations Hub</div>`;
+          opsItems.forEach(item => { html += this._renderNavItemHtml(item); });
+        }
+
+        if (billingItems.length > 0) {
+          html += `<div class="nav-section-title" style="margin-top: 14px;">Billing & Revenue</div>`;
+          billingItems.forEach(item => { html += this._renderNavItemHtml(item); });
+        }
 
         if (masterItems.length > 0) {
           html += `<div class="nav-section-title" style="margin-top: 14px;">Master Data & Config</div>`;

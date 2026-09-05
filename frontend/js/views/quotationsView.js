@@ -15,6 +15,8 @@
       'PENDING_MANAGER_APPROVAL': { label: 'Pending Manager Approval', cls: 'badge-coral' },
       'PENDING_FINANCE_APPROVAL': { label: 'Pending Finance Approval', cls: 'badge-coral' },
       'APPROVED': { label: 'Approved', cls: 'badge-teal' },
+      'SENT_TO_CUSTOMER': { label: 'Sent to Customer', cls: 'badge-teal' },
+      'CUSTOMER_CONFIRMED': { label: 'Customer Confirmed', cls: 'badge-teal' },
       'RETURNED_FOR_REVISION': { label: 'Returned for Revision', cls: 'badge-coral' },
       'REJECTED': { label: 'Rejected', cls: 'badge-coral' },
       'CANCELLED': { label: 'Cancelled', cls: 'badge-navy' }
@@ -76,6 +78,8 @@
                 <option value="PENDING_MANAGER_APPROVAL">Pending Manager Approval</option>
                 <option value="PENDING_FINANCE_APPROVAL">Pending Finance Approval</option>
                 <option value="APPROVED">Approved</option>
+                <option value="SENT_TO_CUSTOMER">Sent to Customer</option>
+                <option value="CUSTOMER_CONFIRMED">Customer Confirmed (Order Active)</option>
                 <option value="RETURNED_FOR_REVISION">Returned for Revision</option>
                 <option value="REJECTED">Rejected</option>
                 <option value="CANCELLED">Cancelled</option>
@@ -284,6 +288,8 @@
       { key: 'PENDING_MANAGER_APPROVAL', title: 'Pending Manager' },
       { key: 'PENDING_FINANCE_APPROVAL', title: 'Pending Finance' },
       { key: 'APPROVED', title: 'Approved' },
+      { key: 'SENT_TO_CUSTOMER', title: 'Sent to Customer' },
+      { key: 'CUSTOMER_CONFIRMED', title: 'Confirmed (Order Active)' },
       { key: 'RETURNED_FOR_REVISION', title: 'Returned for Revision' },
       { key: 'REJECTED_CANCELLED', title: 'Rejected / Cancelled', statuses: ['REJECTED', 'CANCELLED'] }
     ];

@@ -1,0 +1,206 @@
+/* DealFlow360 — Phase 5 Billing, Subscriptions, Invoices, and Payments Styles */
+
+/* ==========================================================================
+   Hybrid Billing Layout
+   ========================================================================== */
+.hybrid-billing-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.billing-card-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.billing-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-xs);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.billing-section-title {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-navy);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+/* ==========================================================================
+   Invoice Receipt & Detail
+   ========================================================================== */
+.invoice-receipt-wrapper {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-sm);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.invoice-receipt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-xl);
+  padding-bottom: var(--space-lg);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.invoice-num-large {
+  font-family: monospace;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.invoice-summary-box {
+  background: #F8FAFC;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.invoice-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: var(--font-size-sm);
+}
+
+.invoice-summary-row.total-row {
+  border-top: 2px solid var(--color-border);
+  margin-top: 6px;
+  padding-top: 10px;
+  font-weight: 700;
+  font-size: var(--font-size-md);
+  color: var(--color-navy);
+}
+
+.invoice-summary-row.balance-row {
+  background: #EFF6FF;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  margin-top: 8px;
+  font-weight: 700;
+  color: #1E40AF;
+}
+
+/* Progress bar for partial payments */
+.payment-progress-bar-wrapper {
+  background: var(--color-border-light, #E2E8F0);
+  border-radius: var(--radius-full);
+  height: 8px;
+  overflow: hidden;
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+
+.payment-progress-fill {
+  background: var(--color-teal);
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+/* ==========================================================================
+   Subscription & Billing Schedule Timeline
+   ========================================================================== */
+.subscription-schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-xs);
+  margin-top: var(--space-md);
+}
+
+.subscription-schedule-table th {
+  background: #F8FAFC;
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 2px solid var(--color-border);
+  color: var(--color-navy);
+  font-weight: 600;
+}
+
+.subscription-schedule-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Proration Result Card */
+.proration-result-card {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.proration-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-xs);
+  padding: 4px 0;
+}
+
+/* ==========================================================================
+   Payment Recording & Multi-Invoice Allocations Table
+   ========================================================================== */
+.payment-allocation-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space-sm);
+  font-size: var(--font-size-xs);
+}
+
+.payment-allocation-table th {
+  background: #F8FAFC;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border);
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.payment-allocation-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.allocation-input {
+  width: 100px;
+  padding: 4px 8px;
+  font-family: monospace;
+  font-size: var(--font-size-xs);
+  text-align: right;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.allocation-totals-banner {
+  background: #F8FAFC;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-top: var(--space-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}

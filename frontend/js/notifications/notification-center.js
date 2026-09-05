@@ -62,6 +62,57 @@
         global.DealFlowUI?.toast(`Commercial approval required for quotation.`, 'coral');
         this.fetchNotifications();
       });
+
+      // Phase 5 Operational & Revenue Events
+      global.DealFlowWS.on('order.created', (data) => {
+        global.DealFlowUI?.toast(`Sales Order ${data.order_number || ''} created from confirmed quotation.`, 'teal');
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('fulfillment.reserved', (data) => {
+        global.DealFlowUI?.toast(`Inventory reserved across warehouses for Order ${data.order_number || ''}.`, 'teal');
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('fulfillment.backordered', (data) => {
+        global.DealFlowUI?.toast(`Backorder recorded for Order ${data.order_number || ''}.`, 'coral');
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('backorder.stock_available', (data) => {
+        global.DealFlowUI?.toast(`Backordered stock is now available for consolidation!`, 'teal');
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('shipment.shipped', (data) => {
+        global.DealFlowUI?.toast(`Shipment ${data.shipment_number || ''} has been dispatched!`, 'teal');
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('shipment.delivered', (data) => {
+        global.DealFlowUI?.toast(`Shipment ${data.shipment_number || ''} delivered to customer.`, 'teal');
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('invoice.issued', (data) => {
+        global.DealFlowUI?.toast(`Invoice ${data.invoice_number || ''} has been issued.`, 'teal');
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('payment.received', (data) => {
+        global.DealFlowUI?.toast(`Payment received and allocated!`, 'teal');
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('subscription.changed', (data) => {
+        global.DealFlowUI?.toast(`Subscription quantity updated with mid-cycle proration.`, 'teal');
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('subscription.cancelled', (data) => {
+        global.DealFlowUI?.toast(`Subscription cancellation processed.`, 'navy');
+        this.fetchNotifications();
+      });
     }
 
     async fetchNotifications() {

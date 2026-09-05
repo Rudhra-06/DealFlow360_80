@@ -23,7 +23,12 @@
     'approval-policies': { title: 'Approval Policies', breadcrumb: 'DealFlow360 / Commercial Configuration / Approval Policies' },
     'billing-plans': { title: 'Billing Plans', breadcrumb: 'DealFlow360 / Commercial Configuration / Billing Plans' },
     'portal': { title: 'Customer Portal', breadcrumb: 'DealFlow360 / Customer Workspace / My Quotations' },
-    'portal-quotation': { title: 'Commercial Proposal', breadcrumb: 'DealFlow360 / Customer Workspace / Quotation Review' }
+    'portal-quotation': { title: 'Commercial Proposal', breadcrumb: 'DealFlow360 / Customer Workspace / Quotation Review' },
+    'orders': { title: 'Sales Orders', breadcrumb: 'DealFlow360 / Operations / Sales Orders' },
+    'order-detail': { title: 'Order Execution & Fulfillment Hub', breadcrumb: 'DealFlow360 / Operations / Order Detail' },
+    'invoices': { title: 'Customer Invoices', breadcrumb: 'DealFlow360 / Billing & Revenue / Invoices' },
+    'subscriptions': { title: 'Subscriptions & MRR', breadcrumb: 'DealFlow360 / Billing & Revenue / Subscriptions' },
+    'payments': { title: 'Payments Ledger', breadcrumb: 'DealFlow360 / Billing & Revenue / Payments' }
   };
 
   /**
@@ -50,6 +55,8 @@
         navId = viewName === 'approval-policies' ? 'approvals' : (viewName === 'billing-plans' ? 'billing' : 'settings');
       } else if (viewName === 'quotation-builder') {
         navId = 'quotations';
+      } else if (viewName === 'order-detail') {
+        navId = 'orders';
       } else if (viewName === 'portal' || viewName === 'portal-quotation') {
         navId = 'customerQuotes';
       }
@@ -89,6 +96,36 @@
       case 'negotiations':
         if (global.NegotiationsView) {
           await global.NegotiationsView.render(container);
+        }
+        break;
+
+      case 'orders':
+        if (global.OrdersView) {
+          await global.OrdersView.render(container);
+        }
+        break;
+
+      case 'order-detail':
+        if (global.OrderDetailView) {
+          await global.OrderDetailView.render(container, extraParams);
+        }
+        break;
+
+      case 'invoices':
+        if (global.InvoicesView) {
+          await global.InvoicesView.render(container);
+        }
+        break;
+
+      case 'subscriptions':
+        if (global.SubscriptionsView) {
+          await global.SubscriptionsView.render(container);
+        }
+        break;
+
+      case 'payments':
+        if (global.PaymentsView) {
+          await global.PaymentsView.render(container);
         }
         break;
 
@@ -225,6 +262,10 @@
         else if (navId === 'pipeline') switchView('pipeline');
         else if (navId === 'quotations') switchView('quotations');
         else if (navId === 'negotiations') switchView('negotiations');
+        else if (navId === 'orders') switchView('orders');
+        else if (navId === 'invoices') switchView('invoices');
+        else if (navId === 'subscriptions') switchView('subscriptions');
+        else if (navId === 'payments') switchView('payments');
         else if (navId === 'customerQuotes' || navId === 'customerOverview' || navId === 'customerNegotiations') switchView('portal');
         else switchView(navId, targetTab);
       });

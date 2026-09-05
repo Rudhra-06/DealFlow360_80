@@ -147,6 +147,14 @@
             </button>
           ` : ''}
 
+          <!-- View Sales Order (Only if CUSTOMER_CONFIRMED) -->
+          ${q.status === 'CUSTOMER_CONFIRMED' ? `
+            <button id="btn-view-sales-order" class="btn btn-primary btn-sm" style="font-weight: 700; background: var(--color-navy); box-shadow: 0 2px 6px rgba(15,23,42,0.25);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              <span>View Sales Order</span>
+            </button>
+          ` : ''}
+
           <!-- Submit for Approval -->
           ${editable ? `
             <button id="btn-submit-quote" class="btn btn-primary btn-sm">
@@ -642,6 +650,20 @@
         } catch (e) {
           global.DealFlowUI.toast('Network error sending quotation to customer.', 'coral');
         }
+      }
+    });
+
+    // View Sales Order Action (CUSTOMER_CONFIRMED)
+    document.getElementById('btn-view-sales-order')?.addEventListener('click', async () => {
+      try {
+        const res = await global.OrdersAPI.getByQuotation(quoteId);
+        if (res.ok && res.data && res.data.id) {
+          global.DealFlowApp.switchView('order-detail', { orderId: res.data.id });
+        } else {
+          global.DealFlowUI.toast('Sales order not found for this confirmed quotation.', 'navy');
+        }
+      } catch (err) {
+        global.DealFlowUI.toast('Error locating sales order.', 'coral');
       }
     });
 

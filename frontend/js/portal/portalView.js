@@ -719,6 +719,7 @@
   }
 
   global.PortalView = {
-    render: render
+    render: render,
+    renderQuotationDetail: renderQuotationDetail
   };
 })(typeof window !== 'undefined' ? window : this);
