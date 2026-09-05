@@ -343,6 +343,25 @@
             ` : ''}
           </div>
 
+          <!-- Deal Health Intelligence Card (Phase 6 Part 1) -->
+          <div class="card" style="padding: var(--space-md); margin-bottom: var(--space-md); border-top: 3px solid var(--color-teal);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xs);">
+              <span style="font-size: var(--font-size-xs); font-weight: 700; color: var(--color-navy); text-transform: uppercase; letter-spacing: 0.05em;">Deal Health</span>
+              <span id="builder-health-badge"><span class="spinner spinner-teal" style="width: 12px; height: 12px;"></span></span>
+            </div>
+            <div id="builder-health-summary" style="font-size: var(--font-size-xs); color: var(--color-text-secondary); margin-bottom: var(--space-sm); line-height: 1.4;">
+              Assessing risk signals...
+            </div>
+            <div style="display: flex; gap: var(--space-xs);">
+              <button id="btn-builder-view-health" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.7rem; padding: 4px 6px;">
+                <span>View Full Health</span>
+              </button>
+              <button id="btn-builder-eval-health" class="btn btn-secondary btn-sm" style="font-size: 0.7rem; padding: 4px 6px;" title="Recalculate Deal Health">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              </button>
+            </div>
+          </div>
+
           <!-- Upsell & Cross-Sell Recommendations Panel -->
           <div class="recommendations-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xs);">
@@ -367,6 +386,7 @@
     renderQuoteLines();
     setupBuilderEvents();
     loadRecommendations();
+    loadDealHealthWidget();
   }
 
   function renderCatalog() {
@@ -872,6 +892,54 @@
       });
     } catch (err) {
       console.warn('Failed to load recommendations:', err);
+    }
+  }
+
+  async function loadDealHealthWidget() {
+    const badgeEl = document.getElementById('builder-health-badge');
+    const summaryEl = document.getElementById('builder-health-summary');
+    const viewBtn = document.getElementById('btn-builder-view-health');
+    const evalBtn = document.getElementById('btn-builder-eval-health');
+
+    if (!badgeEl || !summaryEl) return;
+
+    viewBtn?.addEventListener('click', () => {
+      global.DealFlowApp.switchView('deal-health', { quoteId: quoteId });
+    });
+
+    evalBtn?.addEventListener('click', async () => {
+      evalBtn.disabled = true;
+      badgeEl.innerHTML = `<span class="spinner spinner-teal" style="width: 12px; height: 12px;"></span>`;
+      try {
+        const evRes = await global.DealHealthAPI.evaluateQuotationHealth(quoteId);
+        if (evRes.ok) {
+          global.DealFlowUI.toast('Deal Health recalculated.', 'teal');
+          await loadDealHealthWidget();
+        } else {
+          global.DealFlowUI.toast(evRes.data?.detail || 'Failed to recalculate health.', 'coral');
+        }
+      } catch (e) {
+        global.DealFlowUI.toast('Error calculating health.', 'coral');
+      } finally {
+        evalBtn.disabled = false;
+      }
+    });
+
+    try {
+      if (!global.DealHealthAPI) return;
+      const res = await global.DealHealthAPI.getQuotationHealth(quoteId);
+      if (res.ok && res.data) {
+        const h = res.data;
+        const levelCls = h.health_level === 'HEALTHY' ? 'badge-teal' : (h.health_level === 'WATCH' ? 'badge-navy' : 'badge-coral');
+        badgeEl.innerHTML = `<span class="badge ${levelCls}" style="font-weight: 700; font-size: 0.65rem;">${h.health_level} (${Number(h.health_score).toFixed(0)})</span>`;
+        summaryEl.innerHTML = h.summary ? `<span>${h.summary}</span>` : `<span>Active Risk Signals: <strong>${h.signal_count || 0}</strong></span>`;
+      } else {
+        badgeEl.innerHTML = `<span class="badge badge-navy" style="font-size: 0.65rem;">Not Evaluated</span>`;
+        summaryEl.innerHTML = `<span>Click recalculate to evaluate commercial deal health.</span>`;
+      }
+    } catch (e) {
+      badgeEl.innerHTML = `<span class="badge badge-navy" style="font-size: 0.65rem;">—</span>`;
+      summaryEl.innerHTML = `<span>Deal health data not available.</span>`;
     }
   }
 

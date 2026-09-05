@@ -1,0 +1,305 @@
+/**
+ * DealFlow360 — Deal Health & Deal Alerts Stylesheet
+ * Phase 6 Part 1 Enterprise Commercial Intelligence UI
+ */
+
+/* ==========================================================================
+   Health Score & Level Badges
+   ========================================================================== */
+.health-score-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  text-align: center;
+  min-width: 110px;
+}
+
+.health-score-value {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-family: monospace;
+}
+
+.health-score-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: var(--space-xs);
+}
+
+/* Health Level Semantic Colors */
+.health-level-healthy {
+  color: var(--color-teal);
+}
+.health-level-watch {
+  color: #D97706; /* Amber / Yellow */
+}
+.health-level-at-risk {
+  color: var(--color-coral);
+}
+.health-level-critical {
+  color: #DC2626; /* Deep Red / Critical */
+}
+
+.badge-health-healthy {
+  background: rgba(25, 181, 165, 0.12);
+  color: var(--color-teal);
+  border: 1px solid rgba(25, 181, 165, 0.3);
+  font-weight: 700;
+}
+.badge-health-watch {
+  background: rgba(217, 119, 6, 0.12);
+  color: #D97706;
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  font-weight: 700;
+}
+.badge-health-at-risk {
+  background: rgba(242, 140, 107, 0.15);
+  color: var(--color-coral);
+  border: 1px solid rgba(242, 140, 107, 0.35);
+  font-weight: 700;
+}
+.badge-health-critical {
+  background: rgba(220, 38, 38, 0.15);
+  color: #DC2626;
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  font-weight: 800;
+}
+
+/* Severity Badges */
+.badge-severity-info {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+.badge-severity-warning {
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+}
+.badge-severity-high {
+  background: #FFF1F0;
+  color: var(--color-coral);
+  border: 1px solid #FFCCC7;
+}
+.badge-severity-critical {
+  background: #FEF2F2;
+  color: #991B1B;
+  border: 1px solid #FECACA;
+}
+
+/* ==========================================================================
+   Deal Health Detail Layout (2-Column Desktop Grid)
+   ========================================================================== */
+.deal-health-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--space-lg);
+}
+
+@media (max-width: 1024px) {
+  .deal-health-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Explainable Signal Cards */
+.signal-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  transition: box-shadow var(--transition-normal);
+  border-left: 4px solid var(--color-border);
+}
+
+.signal-card:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.signal-card.severity-CRITICAL {
+  border-left-color: #DC2626;
+  background: #FEF8F8;
+}
+.signal-card.severity-HIGH {
+  border-left-color: var(--color-coral);
+  background: #FFFAF8;
+}
+.signal-card.severity-WARNING {
+  border-left-color: #D97706;
+  background: #FFFDF9;
+}
+.signal-card.severity-INFO {
+  border-left-color: #3B82F6;
+  background: #F8FAFC;
+}
+
+.signal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+}
+
+.signal-title {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.signal-metrics-table {
+  width: 100%;
+  margin: var(--space-sm) 0;
+  font-size: var(--font-size-xs);
+  border-collapse: collapse;
+}
+
+.signal-metrics-table td {
+  padding: 4px 6px;
+  border-bottom: 1px dashed var(--color-border);
+}
+
+.signal-metrics-table td.metric-label {
+  color: var(--color-text-secondary);
+}
+
+.signal-metrics-table td.metric-value {
+  font-weight: 700;
+  text-align: right;
+  color: var(--color-navy);
+}
+
+.signal-explanation {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin-top: var(--space-xs);
+}
+
+/* ==========================================================================
+   Alerts Feed & Action Cards
+   ========================================================================== */
+.alert-item-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  transition: all var(--transition-normal);
+}
+
+.alert-item-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: #CBD5E1;
+}
+
+.alert-item-card.status-RESOLVED {
+  opacity: 0.75;
+  background: #F8FAFC;
+}
+
+.alert-item-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xs);
+}
+
+.alert-item-title {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.alert-item-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.alert-item-message {
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+  line-height: 1.45;
+  background: #F8FAFC;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #E2E8F0;
+  margin-bottom: var(--space-sm);
+}
+
+.alert-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+/* History Timeline */
+.health-history-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.history-timeline-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+}
+
+/* Configuration Form Layout */
+.config-section-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.config-section-title {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-navy);
+  margin-bottom: 4px;
+}
+
+.config-section-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-md);
+}
+
+.config-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-md);
+}
+
+.config-help-text {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+  line-height: 1.3;
+}

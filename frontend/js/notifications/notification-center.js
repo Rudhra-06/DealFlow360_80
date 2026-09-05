@@ -113,6 +113,49 @@
         global.DealFlowUI?.toast(`Subscription cancellation processed.`, 'navy');
         this.fetchNotifications();
       });
+
+      // Phase 6 Part 1 Deal Health & Alerts Events
+      global.DealFlowWS.on('deal_health.updated', (data) => {
+        const d = data.data || data;
+        global.DealFlowUI?.toast(`Deal Health updated: ${d.quote_number || '#' + (d.quotation_id || '')} is now ${d.health_level || ''}`, d.health_level === 'CRITICAL' || d.health_level === 'AT_RISK' ? 'coral' : 'teal');
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('deal_alert.created', (data) => {
+        const a = data.data || data;
+        global.DealFlowUI?.toast(`🚨 New Deal Alert: ${a.title || 'Risk Alert'}`, 'coral');
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('deal_alert.updated', (data) => {
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('deal_alert.acknowledged', (data) => {
+        global.DealFlowUI?.toast(`Deal Alert acknowledged.`, 'navy');
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('deal_alert.resolved', (data) => {
+        global.DealFlowUI?.toast(`Deal Alert resolved.`, 'teal');
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('deal_alert.escalated', (data) => {
+        const a = data.data || data;
+        global.DealFlowUI?.toast(`⚠️ Alert Escalated to Management: ${a.title || ''}`, 'coral');
+        this.fetchNotifications();
+      });
+
+      global.DealFlowWS.on('deal_action.created', (data) => {
+        const act = data.data || data;
+        if (act.action_type === 'NUDGE_SALES_REP') {
+          global.DealFlowUI?.toast(`🔔 Action Required: You received a sales deal nudge!`, 'coral');
+        } else {
+          global.DealFlowUI?.toast(`New deal action logged: ${act.action_type || ''}`, 'navy');
+        }
+        this.fetchNotifications();
+      });
     }
 
     async fetchNotifications() {

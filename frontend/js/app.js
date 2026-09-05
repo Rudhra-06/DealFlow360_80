@@ -28,7 +28,16 @@
     'order-detail': { title: 'Order Execution & Fulfillment Hub', breadcrumb: 'DealFlow360 / Operations / Order Detail' },
     'invoices': { title: 'Customer Invoices', breadcrumb: 'DealFlow360 / Billing & Revenue / Invoices' },
     'subscriptions': { title: 'Subscriptions & MRR', breadcrumb: 'DealFlow360 / Billing & Revenue / Subscriptions' },
-    'payments': { title: 'Payments Ledger', breadcrumb: 'DealFlow360 / Billing & Revenue / Payments' }
+    'payments': { title: 'Payments Ledger', breadcrumb: 'DealFlow360 / Billing & Revenue / Payments' },
+    'deal-health': { title: 'Deal Health Intelligence', breadcrumb: 'DealFlow360 / Intelligence / Deal Health' },
+    'deal-alerts': { title: 'Deal Alerts & Actions', breadcrumb: 'DealFlow360 / Intelligence / Deal Alerts' },
+    'deal-health-config': { title: 'Deal Health Configuration', breadcrumb: 'DealFlow360 / Configuration / Deal Health Policy' },
+    'customer-360': { title: 'Customer 360 Full Dossier', breadcrumb: 'DealFlow360 / Intelligence / Customer 360' },
+    'customer360': { title: 'Customer 360 Full Dossier', breadcrumb: 'DealFlow360 / Intelligence / Customer 360' },
+    'analytics': { title: 'Executive & Operations Analytics', breadcrumb: 'DealFlow360 / Intelligence / Analytics' },
+    'reports': { title: 'Reports & Export Center', breadcrumb: 'DealFlow360 / Intelligence / Reports Center' },
+    'demo-readiness': { title: 'System Demo Readiness', breadcrumb: 'DealFlow360 / System & Demo / Demo Readiness' },
+    'demoReadiness': { title: 'System Demo Readiness', breadcrumb: 'DealFlow360 / System & Demo / Demo Readiness' }
   };
 
   /**
@@ -37,6 +46,14 @@
    * @param {object|string|null} params
    */
   async function switchView(viewName, params = null) {
+    const currentUser = global.DealFlowAuth?.getCurrentUser();
+    const isCustomer = (currentUser?.role?.name || '').toUpperCase() === 'CUSTOMER';
+
+    // Strict Customer Role Guard: Customers are strictly confined to Customer Portal
+    if (isCustomer && viewName !== 'portal' && viewName !== 'portal-quotation') {
+      viewName = 'portal';
+    }
+
     currentViewName = viewName;
     const container = document.getElementById('main-view-container');
     if (!container) return;
@@ -53,6 +70,20 @@
       let navId = viewName;
       if (['discount-policies', 'approval-policies', 'billing-plans', 'recommendation-rules'].includes(viewName)) {
         navId = viewName === 'approval-policies' ? 'approvals' : (viewName === 'billing-plans' ? 'billing' : 'settings');
+      } else if (viewName === 'deal-health') {
+        navId = 'dealHealth';
+      } else if (viewName === 'deal-alerts') {
+        navId = 'dealAlerts';
+      } else if (viewName === 'deal-health-config') {
+        navId = 'dealHealthConfig';
+      } else if (viewName === 'customer-360' || viewName === 'customer360') {
+        navId = 'customer360';
+      } else if (viewName === 'analytics') {
+        navId = 'analytics';
+      } else if (viewName === 'reports') {
+        navId = 'reports';
+      } else if (viewName === 'demo-readiness' || viewName === 'demoReadiness') {
+        navId = 'demoReadiness';
       } else if (viewName === 'quotation-builder') {
         navId = 'quotations';
       } else if (viewName === 'order-detail') {
@@ -196,6 +227,50 @@
         }
         break;
 
+      case 'deal-health':
+        if (global.DealHealthView) {
+          await global.DealHealthView.render(container, extraParams);
+        }
+        break;
+
+      case 'deal-alerts':
+        if (global.DealAlertsView) {
+          await global.DealAlertsView.render(container, extraParams);
+        }
+        break;
+
+      case 'deal-health-config':
+        if (global.DealHealthConfigView) {
+          await global.DealHealthConfigView.render(container);
+        }
+        break;
+
+      case 'customer-360':
+      case 'customer360':
+        if (global.DealFlowCustomer360View) {
+          await global.DealFlowCustomer360View.render(container, extraParams);
+        }
+        break;
+
+      case 'analytics':
+        if (global.DealFlowAnalyticsView) {
+          await global.DealFlowAnalyticsView.render(container, extraParams);
+        }
+        break;
+
+      case 'reports':
+        if (global.DealFlowReportsView) {
+          await global.DealFlowReportsView.render(container, extraParams);
+        }
+        break;
+
+      case 'demo-readiness':
+      case 'demoReadiness':
+        if (global.DealFlowDemoReadinessView) {
+          await global.DealFlowDemoReadinessView.render(container, extraParams);
+        }
+        break;
+
       default:
         if (global.DashboardView) {
           await global.DashboardView.render(container, (targetView, subTab) => switchView(targetView, subTab));
@@ -266,12 +341,41 @@
         else if (navId === 'invoices') switchView('invoices');
         else if (navId === 'subscriptions') switchView('subscriptions');
         else if (navId === 'payments') switchView('payments');
+        else if (navId === 'dealHealth') switchView('deal-health');
+        else if (navId === 'dealAlerts') switchView('deal-alerts');
+        else if (navId === 'dealHealthConfig') switchView('deal-health-config');
+        else if (navId === 'customer360') switchView('customer-360');
+        else if (navId === 'analytics') switchView('analytics');
+        else if (navId === 'reports') switchView('reports');
+        else if (navId === 'demoReadiness') switchView('demo-readiness');
         else if (navId === 'customerQuotes' || navId === 'customerOverview' || navId === 'customerNegotiations') switchView('portal');
         else switchView(navId, targetTab);
       });
     }
 
-    // 5. Initialize Real-Time WebSockets & Notification Center
+    // 5. Hash Route Dispatcher
+    function handleHashRoute() {
+      const hash = window.location.hash.replace(/^#\/?/, '');
+      if (!hash) return false;
+
+      const [routePath, queryString] = hash.split('?');
+      const params = {};
+      if (queryString) {
+        new URLSearchParams(queryString).forEach((val, key) => {
+          params[key] = val;
+        });
+      }
+
+      if (routePath) {
+        switchView(routePath, params);
+        return true;
+      }
+      return false;
+    }
+
+    window.addEventListener('hashchange', handleHashRoute);
+
+    // 6. Initialize Real-Time WebSockets & Notification Center
     if (global.DealFlowWS) {
       global.DealFlowWS.connect();
     }
@@ -279,7 +383,7 @@
       global.DealFlowNotificationCenter.init();
     }
 
-    // 6. Setup User Dropdown & Drawer Events
+    // 7. Setup User Dropdown & Drawer Events
     const userTrigger = document.getElementById('user-menu-trigger');
     const userDropdown = document.getElementById('user-dropdown-menu');
     ui.initUserDropdown(userTrigger, userDropdown);
@@ -300,11 +404,14 @@
       auth.logout();
     });
 
-    // 7. Mount Initial View (Customer Portal for CUSTOMER role, Dashboard for internal roles)
+    // 8. Mount Initial View (Customer Portal for CUSTOMER role, or Hash Route, or Dashboard for internal roles)
     if (roleName.toUpperCase() === 'CUSTOMER') {
       await switchView('portal');
     } else {
-      await switchView('dashboard');
+      const routed = handleHashRoute();
+      if (!routed) {
+        await switchView('dashboard');
+      }
     }
 
     // 8. Load Live Backend & Database Health Status

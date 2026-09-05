@@ -114,6 +114,7 @@
           <span>Created from confirmed commercial agreement:</span>
           <span>Source Quotation: <strong class="traceability-link" id="link-view-source-quote">#${o.quotation_id}</strong></span>
           <span>Confirmed Revision: <strong>v${o.confirmed_quote_version_id || 1}</strong></span>
+          <span style="margin-left: auto;">Deal Health: <strong class="traceability-link" id="link-view-order-health" style="color: var(--color-teal); text-decoration: underline; cursor: pointer;">View Health Assessment &rarr;</strong></span>
         </div>
       </div>
 
@@ -159,6 +160,11 @@
     const linkQuote = document.getElementById('link-view-source-quote');
     linkQuote?.addEventListener('click', () => {
       window.DealFlowApp.switchView('quotation-builder', { quoteId: currentOrder.quotation_id });
+    });
+
+    const linkHealth = document.getElementById('link-view-order-health');
+    linkHealth?.addEventListener('click', () => {
+      window.DealFlowApp.switchView('deal-health', { quoteId: currentOrder.quotation_id });
     });
 
     document.querySelectorAll('.order-tab-btn').forEach(btn => {

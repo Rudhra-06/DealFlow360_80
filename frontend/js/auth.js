@@ -150,8 +150,12 @@
      * @param {string|null} message Optional reason to pass in query string
      */
     logout(message = null) {
+      if (global.DealFlowWS && typeof global.DealFlowWS.disconnect === 'function') {
+        global.DealFlowWS.disconnect();
+      }
       this.clearAccessToken();
       this.clearCurrentUser();
+      sessionStorage.clear();
       
       let redirectUrl = 'login.html';
       if (message) {
@@ -164,8 +168,12 @@
      * Handle expired or invalidated session.
      */
     handleSessionExpired() {
+      if (global.DealFlowWS && typeof global.DealFlowWS.disconnect === 'function') {
+        global.DealFlowWS.disconnect();
+      }
       this.clearAccessToken();
       this.clearCurrentUser();
+      sessionStorage.clear();
       window.location.href = 'login.html?reason=session_expired';
     },
 
@@ -173,8 +181,12 @@
      * Handle inactive user account.
      */
     handleInactiveAccount() {
+      if (global.DealFlowWS && typeof global.DealFlowWS.disconnect === 'function') {
+        global.DealFlowWS.disconnect();
+      }
       this.clearAccessToken();
       this.clearCurrentUser();
+      sessionStorage.clear();
       window.location.href = 'login.html?reason=account_inactive';
     },
 

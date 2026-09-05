@@ -1,6 +1,7 @@
 /**
- * DealFlow360 — Dashboard View Controller
- * Highlights active Phase 3 Sales Workspace, Master Data, and Commercial Governance.
+ * DealFlow360 — Role-Aware Home Dashboard View Controller
+ * Delivers tailored operational intelligence, action triggers, live system status,
+ * and seamless cross-module workflows across Admin, Sales Manager, Sales Rep, and Finance.
  */
 (function (global) {
   'use strict';
@@ -61,11 +62,11 @@
                 Active
               </span>
             </div>
-            <div class="status-card-value">Phase 3 Live</div>
-            <div class="status-card-sub">CPQ & Approvals Ready</div>
+            <div class="status-card-value">Telemetric Scoring</div>
+            <div class="status-card-sub">Explainable Risk & Health</div>
           </div>
 
-          <!-- Account / RBAC Status -->
+          <!-- RBAC Status -->
           <div class="status-card">
             <div class="status-card-header">
               <span class="status-card-label">RBAC Tier</span>
@@ -75,111 +76,158 @@
               </span>
             </div>
             <div class="status-card-value">Authoritative</div>
-            <div class="status-card-sub">Strict Backend Security</div>
+            <div class="status-card-sub">Strict Backend Scope</div>
           </div>
         </div>
 
-        <!-- ROW 2: Role-Aware Quick Actions -->
+        <!-- ROW 2: Role-Aware Quick Actions & Operational Priority -->
         ${!isCustomer ? `
           <div style="margin-bottom: var(--space-lg);" class="animate-fade-in">
             <div class="card">
               <div class="card-header">
                 <div>
-                  <h3 class="card-title" style="font-size:var(--font-size-sm);">Commercial Quick Actions</h3>
-                  <div class="card-subtitle">Fast access workflows tailored for ${formattedRole}</div>
+                  <h3 class="card-title" style="font-size:var(--font-size-sm);">Commercial & Operational Quick Actions</h3>
+                  <div class="card-subtitle">Immediate operational workflows tailored for ${formattedRole}</div>
                 </div>
                 <span class="badge badge-navy">${formattedRole} Tier</span>
               </div>
               <div class="card-body" style="display:flex;gap:var(--space-md);flex-wrap:wrap;" id="quick-actions-container">
-                <!-- Populated per role -->
+                <!-- Populated per role dynamically below -->
+              </div>
+            </div>
+          </div>
+
+          <!-- ROW 3: Role-Specific Operational Telemetry Matrix -->
+          <div style="margin-bottom: var(--space-lg);" class="animate-fade-in">
+            <div class="card" style="border-top: 3px solid var(--color-teal);">
+              <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <h3 class="card-title" style="font-size:var(--font-size-sm);display:flex;align-items:center;gap:6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Live Operations & Deal Health Telemetry
+                  </h3>
+                  <div class="card-subtitle">Real-time indicators across pipeline, governance, risk, and fulfillment</div>
+                </div>
+                <div style="display:flex;gap:var(--space-xs);">
+                  <button class="btn btn-secondary btn-sm" id="dash-btn-alerts">
+                    <span>Alerts Inbox</span>
+                  </button>
+                  <button class="btn btn-teal btn-sm" id="dash-btn-deal-health">
+                    <span>Deal Health &rarr;</span>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body" style="padding:var(--space-md);">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:var(--space-md);" id="dash-health-metrics-grid">
+                  <div class="health-score-card" style="padding:10px;cursor:pointer;" onclick="window.location.hash='#/deal-health?health_level=HEALTHY'">
+                    <div style="font-size:1.5rem;font-weight:800;color:var(--color-teal);" id="dash-count-healthy">—</div>
+                    <div style="font-size:0.7rem;font-weight:700;color:var(--color-text-secondary);text-transform:uppercase;">Healthy Deals</div>
+                  </div>
+                  <div class="health-score-card" style="padding:10px;cursor:pointer;" onclick="window.location.hash='#/deal-health?health_level=WATCH'">
+                    <div style="font-size:1.5rem;font-weight:800;color:#D97706;" id="dash-count-watch">—</div>
+                    <div style="font-size:0.7rem;font-weight:700;color:var(--color-text-secondary);text-transform:uppercase;">Watch Deals</div>
+                  </div>
+                  <div class="health-score-card" style="padding:10px;cursor:pointer;" onclick="window.location.hash='#/deal-health?health_level=AT_RISK'">
+                    <div style="font-size:1.5rem;font-weight:800;color:var(--color-coral);" id="dash-count-atrisk">—</div>
+                    <div style="font-size:0.7rem;font-weight:700;color:var(--color-text-secondary);text-transform:uppercase;">At Risk Deals</div>
+                  </div>
+                  <div class="health-score-card" style="padding:10px;cursor:pointer;" onclick="window.location.hash='#/deal-health?health_level=CRITICAL'">
+                    <div style="font-size:1.5rem;font-weight:800;color:#DC2626;" id="dash-count-critical">—</div>
+                    <div style="font-size:0.7rem;font-weight:700;color:var(--color-text-secondary);text-transform:uppercase;">Critical Deals</div>
+                  </div>
+                  <div class="health-score-card" style="padding:10px;cursor:pointer;" onclick="window.location.hash='#/deal-alerts'">
+                    <div style="font-size:1.5rem;font-weight:800;color:var(--color-navy);" id="dash-count-open-alerts">—</div>
+                    <div style="font-size:0.7rem;font-weight:700;color:var(--color-text-secondary);text-transform:uppercase;">Open Alerts</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         ` : ''}
 
-        <!-- ROW 3: Phase 3 Sales Workspace & Master Data Overview -->
+        <!-- ROW 4: Enterprise Navigation & Workspace Hubs -->
         <div class="info-cards-grid animate-fade-in">
-          <!-- Sales Workspace Shortcuts -->
+          <!-- Sales & Commercial Intelligence -->
           <div class="card">
             <div class="card-header">
               <div>
-                <h3 class="card-title">Sales Workspace & Deal CPQ</h3>
-                <div class="card-subtitle">Live quotations, pipeline board, and governance queue</div>
+                <h3 class="card-title">Commercial & Intelligence Hub</h3>
+                <div class="card-subtitle">Quotations, pipeline Kanban, approvals, and Customer 360</div>
               </div>
-              <span class="badge badge-teal">Phase 3 Active</span>
+              <span class="badge badge-teal">Integrated</span>
             </div>
             <div class="card-body">
               <div class="key-value-list">
                 <div class="key-value-item" style="cursor:pointer;" id="dash-link-quotations">
                   <span class="key-label" style="display:flex;align-items:center;gap:6px;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                    Quotations Master List
+                    Quotations Workspace
                   </span>
-                  <span class="key-value" style="color:var(--color-teal);">View Quotes &rarr;</span>
+                  <span class="key-value" style="color:var(--color-teal);">Open Quotes &rarr;</span>
                 </div>
                 <div class="key-value-item" style="cursor:pointer;" id="dash-link-pipeline">
                   <span class="key-label" style="display:flex;align-items:center;gap:6px;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                    Sales Pipeline Board (Kanban)
+                    Sales Pipeline Board
                   </span>
-                  <span class="key-value" style="color:var(--color-teal);">Open Pipeline &rarr;</span>
+                  <span class="key-value" style="color:var(--color-teal);">Open Board &rarr;</span>
                 </div>
                 <div class="key-value-item" style="cursor:pointer;" id="dash-link-approvals-queue">
                   <span class="key-label" style="display:flex;align-items:center;gap:6px;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                    Approval Queue & Triggers
+                    Approval Queue & Governance
                   </span>
                   <span class="key-value" style="color:var(--color-teal);">Review Queue &rarr;</span>
                 </div>
-                <div class="key-value-item" style="cursor:pointer;" id="dash-link-customers">
+                <div class="key-value-item" style="cursor:pointer;" id="dash-link-customer-360">
                   <span class="key-label" style="display:flex;align-items:center;gap:6px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                    Customers & Accounts
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Customer 360 Full Dossier
                   </span>
-                  <span class="key-value" style="color:var(--color-teal);">View Customers &rarr;</span>
+                  <span class="key-value" style="color:var(--color-navy);font-weight:600;">View 360 &rarr;</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Commercial Policies & Rules Shortcuts -->
+          <!-- Operations, Billing & System Hub -->
           <div class="card">
             <div class="card-header">
               <div>
-                <h3 class="card-title">Commercial Configuration</h3>
-                <div class="card-subtitle">Discount bounds, approval rules, upsell rules, and billing schedules</div>
+                <h3 class="card-title">Operations, Billing & Telemetry Hub</h3>
+                <div class="card-subtitle">Orders, fulfillment, hybrid billing, analytics, and demo readiness</div>
               </div>
-              <span class="badge badge-navy">Rules Engine</span>
+              <span class="badge badge-navy">End-to-End</span>
             </div>
             <div class="card-body">
               <div class="key-value-list">
-                <div class="key-value-item" style="cursor:pointer;" id="dash-link-discounts">
+                <div class="key-value-item" style="cursor:pointer;" id="dash-link-orders">
                   <span class="key-label" style="display:flex;align-items:center;gap:6px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="9" y1="15" x2="15" y2="9"/></svg>
-                    Discount Policies (6-Tier Precedence)
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    Sales Orders & Fulfillment
                   </span>
-                  <span class="key-value" style="color:var(--color-teal);">Manage Rules &rarr;</span>
+                  <span class="key-value" style="color:var(--color-teal);">Open Orders &rarr;</span>
                 </div>
-                <div class="key-value-item" style="cursor:pointer;" id="dash-link-approvals-config">
+                <div class="key-value-item" style="cursor:pointer;" id="dash-link-invoices">
                   <span class="key-label" style="display:flex;align-items:center;gap:6px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/></svg>
-                    Approval Policies & Thresholds
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                    Invoices & Subscriptions
                   </span>
-                  <span class="key-value" style="color:var(--color-teal);">Configure Rules &rarr;</span>
+                  <span class="key-value" style="color:var(--color-teal);">Open Billing &rarr;</span>
                 </div>
-                <div class="key-value-item" style="cursor:pointer;" id="dash-link-rec-rules">
+                <div class="key-value-item" style="cursor:pointer;" id="dash-link-analytics">
                   <span class="key-label" style="display:flex;align-items:center;gap:6px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    Recommendation & Upsell Rules
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    Executive & Operations Analytics
                   </span>
-                  <span class="key-value" style="color:var(--color-teal);">Configure Upsell &rarr;</span>
+                  <span class="key-value" style="color:var(--color-teal);">View Analytics &rarr;</span>
                 </div>
-                <div class="key-value-item" style="cursor:pointer;" id="dash-link-settings">
+                <div class="key-value-item" style="cursor:pointer;" id="dash-link-demo-readiness">
                   <span class="key-label" style="display:flex;align-items:center;gap:6px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                    Configuration Overview Hub
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    System Demo Readiness
                   </span>
-                  <span class="key-value" style="color:var(--color-navy);font-weight:600;">Open Hub &rarr;</span>
+                  <span class="key-value" style="color:var(--color-navy);font-weight:600;">Check Readiness &rarr;</span>
                 </div>
               </div>
             </div>
@@ -187,81 +235,109 @@
         </div>
       `;
 
-      // Render role-aware quick action buttons
+      // Render tailored Quick Actions per role
       const qaContainer = document.getElementById('quick-actions-container');
       if (qaContainer) {
         let buttonsHtml = '';
         if (roleName === 'ADMIN') {
           buttonsHtml = `
             <button class="btn btn-primary btn-sm" id="qa-new-quote">+ New Quotation</button>
-            <button class="btn btn-secondary btn-sm" id="qa-view-pipeline">View Pipeline</button>
+            <button class="btn btn-secondary btn-sm" id="qa-view-pipeline">Pipeline Board</button>
             <button class="btn btn-secondary btn-sm" id="qa-view-approvals">Approval Queue</button>
-            <button class="btn btn-secondary btn-sm" id="qa-add-cust">+ Add Customer</button>
-            <button class="btn btn-secondary btn-sm" id="qa-add-prod">+ Add Product</button>
+            <button class="btn btn-secondary btn-sm" id="qa-customer-360">Customer 360</button>
+            <button class="btn btn-secondary btn-sm" id="qa-analytics">Executive Analytics</button>
+            <button class="btn btn-secondary btn-sm" id="qa-reports">Reports Center</button>
+            <button class="btn btn-teal btn-sm" id="qa-demo-readiness">System Readiness</button>
           `;
         } else if (roleName === 'SALES_REP') {
           buttonsHtml = `
             <button class="btn btn-primary btn-sm" id="qa-new-quote">+ New Quotation</button>
-            <button class="btn btn-secondary btn-sm" id="qa-view-pipeline">View Pipeline</button>
-            <button class="btn btn-secondary btn-sm" id="qa-add-cust">+ Add Customer</button>
-            <button class="btn btn-secondary btn-sm" id="qa-view-prods">Browse Products</button>
+            <button class="btn btn-secondary btn-sm" id="qa-view-pipeline">My Pipeline</button>
+            <button class="btn btn-secondary btn-sm" id="qa-negotiations">Negotiation Inbox</button>
+            <button class="btn btn-secondary btn-sm" id="qa-deal-health">My At-Risk Deals</button>
+            <button class="btn btn-secondary btn-sm" id="qa-customer-360">Customer 360</button>
           `;
         } else if (roleName === 'SALES_MANAGER') {
           buttonsHtml = `
-            <button class="btn btn-primary btn-sm" id="qa-view-approvals">Approval Queue</button>
-            <button class="btn btn-secondary btn-sm" id="qa-new-quote">+ New Quotation</button>
-            <button class="btn btn-secondary btn-sm" id="qa-view-pipeline">View Pipeline</button>
-            <button class="btn btn-secondary btn-sm" id="qa-add-disc">+ Discount Policy</button>
+            <button class="btn btn-primary btn-sm" id="qa-view-approvals">Pending Approvals</button>
+            <button class="btn btn-secondary btn-sm" id="qa-deal-health">At-Risk Deals</button>
+            <button class="btn btn-secondary btn-sm" id="qa-analytics">Sales Performance</button>
+            <button class="btn btn-secondary btn-sm" id="qa-customer-360">Customer 360</button>
+            <button class="btn btn-secondary btn-sm" id="qa-reports">Export Reports</button>
           `;
         } else if (roleName === 'FINANCE_OPERATIONS') {
           buttonsHtml = `
-            <button class="btn btn-primary btn-sm" id="qa-view-approvals">Approval Queue</button>
-            <button class="btn btn-secondary btn-sm" id="qa-view-quotes">View Quotations</button>
-            <button class="btn btn-secondary btn-sm" id="qa-add-prod">+ Add Product</button>
-            <button class="btn btn-secondary btn-sm" id="qa-add-bill">+ Billing Plan</button>
+            <button class="btn btn-primary btn-sm" id="qa-orders">Fulfillment Orders</button>
+            <button class="btn btn-secondary btn-sm" id="qa-invoices">Invoices & Billing</button>
+            <button class="btn btn-secondary btn-sm" id="qa-analytics">Operations Analytics</button>
+            <button class="btn btn-secondary btn-sm" id="qa-reports">Financial Reports</button>
           `;
         }
-
         qaContainer.innerHTML = buttonsHtml;
-
-        document.getElementById('qa-new-quote')?.addEventListener('click', () => {
-          if (typeof onNavigate === 'function') onNavigate('quotations');
-        });
-        document.getElementById('qa-view-pipeline')?.addEventListener('click', () => {
-          if (typeof onNavigate === 'function') onNavigate('pipeline');
-        });
-        document.getElementById('qa-view-approvals')?.addEventListener('click', () => {
-          if (typeof onNavigate === 'function') onNavigate('approvals');
-        });
-        document.getElementById('qa-view-quotes')?.addEventListener('click', () => {
-          if (typeof onNavigate === 'function') onNavigate('quotations');
-        });
-        document.getElementById('qa-add-cust')?.addEventListener('click', () => {
-          if (typeof onNavigate === 'function') onNavigate('customers');
-        });
-        document.getElementById('qa-add-prod')?.addEventListener('click', () => {
-          if (typeof onNavigate === 'function') onNavigate('products');
-        });
-        document.getElementById('qa-add-disc')?.addEventListener('click', () => {
-          if (typeof onNavigate === 'function') onNavigate('discount-policies');
-        });
-        document.getElementById('qa-add-bill')?.addEventListener('click', () => {
-          if (typeof onNavigate === 'function') onNavigate('billing-plans');
-        });
-        document.getElementById('qa-view-prods')?.addEventListener('click', () => {
-          if (typeof onNavigate === 'function') onNavigate('products');
-        });
       }
 
-      // Link clicks
-      document.getElementById('dash-link-quotations')?.addEventListener('click', () => onNavigate('quotations'));
-      document.getElementById('dash-link-pipeline')?.addEventListener('click', () => onNavigate('pipeline'));
-      document.getElementById('dash-link-approvals-queue')?.addEventListener('click', () => onNavigate('approvals'));
-      document.getElementById('dash-link-customers')?.addEventListener('click', () => onNavigate('customers', 'customers'));
-      document.getElementById('dash-link-discounts')?.addEventListener('click', () => onNavigate('discount-policies'));
-      document.getElementById('dash-link-approvals-config')?.addEventListener('click', () => onNavigate('approval-policies'));
-      document.getElementById('dash-link-rec-rules')?.addEventListener('click', () => onNavigate('recommendation-rules'));
-      document.getElementById('dash-link-settings')?.addEventListener('click', () => onNavigate('settings'));
+      // Bind dynamic actions
+      this._bindEvents(onNavigate);
+
+      // Fetch live Deal Health summary
+      if (!isCustomer) {
+        this._loadDealHealthTelemetry();
+      }
+    },
+
+    _bindEvents(onNavigate) {
+      const navigate = (route) => {
+        if (typeof onNavigate === 'function') {
+          onNavigate(route);
+        } else {
+          window.location.hash = `#/${route}`;
+        }
+      };
+
+      document.getElementById('dash-btn-alerts')?.addEventListener('click', () => navigate('deal-alerts'));
+      document.getElementById('dash-btn-deal-health')?.addEventListener('click', () => navigate('deal-health'));
+      document.getElementById('dash-link-quotations')?.addEventListener('click', () => navigate('quotations'));
+      document.getElementById('dash-link-pipeline')?.addEventListener('click', () => navigate('pipeline'));
+      document.getElementById('dash-link-approvals-queue')?.addEventListener('click', () => navigate('approvals'));
+      document.getElementById('dash-link-customer-360')?.addEventListener('click', () => navigate('customer-360'));
+      document.getElementById('dash-link-orders')?.addEventListener('click', () => navigate('orders'));
+      document.getElementById('dash-link-invoices')?.addEventListener('click', () => navigate('invoices'));
+      document.getElementById('dash-link-analytics')?.addEventListener('click', () => navigate('analytics'));
+      document.getElementById('dash-link-demo-readiness')?.addEventListener('click', () => navigate('demo-readiness'));
+
+      // Quick action buttons
+      document.getElementById('qa-new-quote')?.addEventListener('click', () => navigate('quotation-builder'));
+      document.getElementById('qa-view-pipeline')?.addEventListener('click', () => navigate('pipeline'));
+      document.getElementById('qa-view-approvals')?.addEventListener('click', () => navigate('approvals'));
+      document.getElementById('qa-negotiations')?.addEventListener('click', () => navigate('negotiations'));
+      document.getElementById('qa-deal-health')?.addEventListener('click', () => navigate('deal-health'));
+      document.getElementById('qa-customer-360')?.addEventListener('click', () => navigate('customer-360'));
+      document.getElementById('qa-analytics')?.addEventListener('click', () => navigate('analytics'));
+      document.getElementById('qa-reports')?.addEventListener('click', () => navigate('reports'));
+      document.getElementById('qa-orders')?.addEventListener('click', () => navigate('orders'));
+      document.getElementById('qa-invoices')?.addEventListener('click', () => navigate('invoices'));
+      document.getElementById('qa-demo-readiness')?.addEventListener('click', () => navigate('demo-readiness'));
+    },
+
+    async _loadDealHealthTelemetry() {
+      try {
+        if (global.DealHealthAPI) {
+          const res = await global.DealHealthAPI.getSummary();
+          const healthyEl = document.getElementById('dash-count-healthy');
+          const watchEl = document.getElementById('dash-count-watch');
+          const atriskEl = document.getElementById('dash-count-atrisk');
+          const criticalEl = document.getElementById('dash-count-critical');
+          const alertsEl = document.getElementById('dash-count-open-alerts');
+
+          if (healthyEl) healthyEl.textContent = res.HEALTHY ?? res.healthy ?? 0;
+          if (watchEl) watchEl.textContent = res.WATCH ?? res.watch ?? 0;
+          if (atriskEl) atriskEl.textContent = res.AT_RISK ?? res.at_risk ?? 0;
+          if (criticalEl) criticalEl.textContent = res.CRITICAL ?? res.critical ?? 0;
+          if (alertsEl) alertsEl.textContent = res.open_alerts_count ?? res.open_alerts ?? 0;
+        }
+      } catch (_) {
+        // Silently preserve dashboard layout if telemetry unavailable
+      }
     }
   };
 

@@ -159,25 +159,65 @@
       targetTab: 'billing-plans',
       section: 'master'
     },
+    dealHealthConfig: {
+      id: 'dealHealthConfig',
+      label: 'Deal Health Policy',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`,
+      active: true,
+      status: 'active',
+      section: 'master'
+    },
 
-    // Future Modules (Phase 6+)
+    // Intelligence Workspace (Phase 6 Part 1 & Part 2)
     dealHealth: {
       id: 'dealHealth',
       label: 'Deal Health',
       icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`,
-      active: false,
-      status: 'Coming Soon',
-      description: 'Commercial margin protection and deal health velocity scoring are scheduled for Phase 6 release.',
-      section: 'future'
+      active: true,
+      status: 'active',
+      section: 'intelligence'
+    },
+    dealAlerts: {
+      id: 'dealAlerts',
+      label: 'Deal Alerts',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`,
+      active: true,
+      status: 'active',
+      section: 'intelligence'
+    },
+    customer360: {
+      id: 'customer360',
+      label: 'Customer 360',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+      active: true,
+      status: 'active',
+      section: 'intelligence'
+    },
+    analytics: {
+      id: 'analytics',
+      label: 'Analytics',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
+      active: true,
+      status: 'active',
+      section: 'intelligence'
     },
     reports: {
       id: 'reports',
-      label: 'Reports & Analytics',
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
-      active: false,
-      status: 'Coming Soon',
-      description: 'Executive reporting, ledger export, and revenue analytics will be available in Phase 6.',
-      section: 'future'
+      label: 'Reports Center',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+      active: true,
+      status: 'active',
+      section: 'intelligence'
+    },
+
+    // System & Demo Readiness (Phase 6 Part 3)
+    demoReadiness: {
+      id: 'demoReadiness',
+      label: 'Demo Readiness',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+      active: true,
+      status: 'Ready',
+      section: 'system'
     },
 
     // Customer Specific Portal Items
@@ -239,13 +279,18 @@
       'invoices',
       'subscriptions',
       'payments',
+      'dealHealth',
+      'dealAlerts',
+      'customer360',
+      'analytics',
+      'reports',
       'customers',
       'products',
       'inventory',
       'settings',
       'billing',
-      'dealHealth',
-      'reports'
+      'dealHealthConfig',
+      'demoReadiness'
     ],
     FINANCE_OPERATIONS: [
       'dashboard',
@@ -255,12 +300,15 @@
       'payments',
       'quotations',
       'approvals',
+      'dealHealth',
+      'dealAlerts',
+      'analytics',
+      'reports',
       'products',
       'inventory',
       'billing',
       'settings',
-      'dealHealth',
-      'reports'
+      'demoReadiness'
     ],
     SALES_REP: [
       'dashboard',
@@ -269,11 +317,16 @@
       'negotiations',
       'orders',
       'invoices',
+      'dealHealth',
+      'dealAlerts',
+      'customer360',
+      'analytics',
+      'reports',
       'customers',
       'products',
       'inventory',
       'settings',
-      'dealHealth'
+      'demoReadiness'
     ],
     SALES_MANAGER: [
       'dashboard',
@@ -284,12 +337,17 @@
       'orders',
       'invoices',
       'subscriptions',
+      'dealHealth',
+      'dealAlerts',
+      'customer360',
+      'analytics',
+      'reports',
       'customers',
       'products',
       'inventory',
       'settings',
-      'dealHealth',
-      'reports'
+      'dealHealthConfig',
+      'demoReadiness'
     ],
     CUSTOMER: [
       'customerOverview',
@@ -326,15 +384,22 @@
         });
         containerEl.innerHTML = html;
       } else {
-        // Group internal items into Workspace sections
-        const salesItems = items.filter(i => i.section === 'sales' || i.id === 'dashboard');
+        // Group internal items into clean canonical Workspace sections
+        const homeItems = items.filter(i => i.id === 'dashboard');
+        const salesItems = items.filter(i => i.section === 'sales');
         const opsItems = items.filter(i => i.section === 'operations');
         const billingItems = items.filter(i => i.section === 'billing_section');
-        const masterItems = items.filter(i => i.section === 'master');
-        const otherItems = items.filter(i => i.section === 'future');
+        const intelItems = items.filter(i => i.section === 'intelligence');
+        const configItems = items.filter(i => i.section === 'master');
+        const sysItems = items.filter(i => i.section === 'system');
 
-        let html = `<div class="nav-section-title">Sales Workspace</div>`;
-        salesItems.forEach(item => { html += this._renderNavItemHtml(item); });
+        let html = `<div class="nav-section-title">Home</div>`;
+        homeItems.forEach(item => { html += this._renderNavItemHtml(item); });
+
+        if (salesItems.length > 0) {
+          html += `<div class="nav-section-title" style="margin-top: 14px;">Sales Workspace</div>`;
+          salesItems.forEach(item => { html += this._renderNavItemHtml(item); });
+        }
 
         if (opsItems.length > 0) {
           html += `<div class="nav-section-title" style="margin-top: 14px;">Operations Hub</div>`;
@@ -346,14 +411,19 @@
           billingItems.forEach(item => { html += this._renderNavItemHtml(item); });
         }
 
-        if (masterItems.length > 0) {
-          html += `<div class="nav-section-title" style="margin-top: 14px;">Master Data & Config</div>`;
-          masterItems.forEach(item => { html += this._renderNavItemHtml(item); });
+        if (intelItems.length > 0) {
+          html += `<div class="nav-section-title" style="margin-top: 14px;">Intelligence</div>`;
+          intelItems.forEach(item => { html += this._renderNavItemHtml(item); });
         }
 
-        if (otherItems.length > 0) {
-          html += `<div class="nav-section-title" style="margin-top: 14px;">Upcoming Modules</div>`;
-          otherItems.forEach(item => { html += this._renderNavItemHtml(item); });
+        if (configItems.length > 0) {
+          html += `<div class="nav-section-title" style="margin-top: 14px;">Master Data & Config</div>`;
+          configItems.forEach(item => { html += this._renderNavItemHtml(item); });
+        }
+
+        if (sysItems.length > 0) {
+          html += `<div class="nav-section-title" style="margin-top: 14px;">System & Demo</div>`;
+          sysItems.forEach(item => { html += this._renderNavItemHtml(item); });
         }
 
         containerEl.innerHTML = html;
