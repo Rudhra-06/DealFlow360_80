@@ -21,6 +21,15 @@ from app.models.role import Role
 from app.models.user import User
 from app.models.warehouse import Warehouse
 
+from app.models.customer_portal_access import CustomerPortalAccess
+from app.models.notification import Notification
+from app.models.quote_negotiation_line_change import QuoteNegotiationLineChange
+from app.models.quote_negotiation_message import QuoteNegotiationMessage
+from app.models.quote_negotiation_request import QuoteNegotiationRequest
+from app.models.quote_version import QuoteVersion
+from app.models.quote_version_line import QuoteVersionLine
+from app.models.user_device import UserDevice
+
 __all__ = [
     "Base",
     "Role",
@@ -42,6 +51,14 @@ __all__ = [
     "QuoteApprovalTrigger",
     "ProductRecommendationRule",
     "QuoteRecommendationDismissal",
+    "CustomerPortalAccess",
+    "QuoteVersion",
+    "QuoteVersionLine",
+    "QuoteNegotiationMessage",
+    "QuoteNegotiationRequest",
+    "QuoteNegotiationLineChange",
+    "Notification",
+    "UserDevice",
 ]
 
 

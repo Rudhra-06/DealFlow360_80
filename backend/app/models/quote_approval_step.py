@@ -34,6 +34,7 @@ class QuoteApprovalStep(Base):
     approval_round: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     sequence: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     approval_role: Mapped[str] = mapped_column(String(50), nullable=False)
+    approval_context: Mapped[str] = mapped_column(String(50), nullable=False, default="INITIAL", server_default="INITIAL")
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="PENDING", index=True)
 
     decided_by_user_id: Mapped[Optional[int]] = mapped_column(

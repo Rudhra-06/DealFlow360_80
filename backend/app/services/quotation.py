@@ -4,6 +4,7 @@ from decimal import Decimal
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.enums import AuditEventType, QuotationStatus, RoleName
 from app.engines.recommendation import RecommendationCandidate, RecommendationEngine
 from app.engines.what_if import WhatIfSimulationResult, WhatIfSimulatorEngine
 from app.models.product_recommendation_rule import ProductRecommendationRule
@@ -131,6 +132,9 @@ class QuotationService:
             order_discount_pct=obj_in.order_discount_pct if obj_in.order_discount_pct is not None else Decimal("0.00"),
         )
         quotation.customer = customer
+        quotation.lines = []
+        quotation.risk_reasons = []
+        quotation.audit_events = []
 
         await self.quote_repo.create_quotation(self.db, quotation)
 
@@ -244,12 +248,12 @@ class QuotationService:
 
         # 3. Default line discount if omitted
         customer_tier_id = quote.customer.tier_id if quote.customer else None
-        as_of = quote.created_at or datetime.now(timezone.utc)
+        as_of = datetime.now(timezone.utc)
 
         if obj_in.line_discount_pct is not None:
             line_disc = obj_in.line_discount_pct
         else:
-            policy = await self.policy_service.get_applicable_policy(
+            policy, _ = await self.policy_service.get_applicable_policy(
                 customer_tier_id=customer_tier_id,
                 product_id=product.id,
                 as_of=as_of,
@@ -463,7 +467,7 @@ class QuotationService:
                     "currency": r.suggested_product.currency,
                     "name": r.suggested_product.name,
                 }
-                pol = await self.policy_service.get_applicable_policy(
+                pol, _ = await self.policy_service.get_applicable_policy(
                     customer_tier_id=customer_tier_id,
                     product_id=r.suggested_product_id,
                     as_of=as_of,
@@ -517,7 +521,7 @@ class QuotationService:
 
         customer_tier_id = quote.customer.tier_id if quote.customer else None
         as_of = quote.created_at or datetime.now(timezone.utc)
-        policy = await self.policy_service.get_applicable_policy(
+        policy, _ = await self.policy_service.get_applicable_policy(
             customer_tier_id=customer_tier_id,
             product_id=suggested_product.id,
             as_of=as_of,
@@ -638,4 +642,69 @@ class QuotationService:
         )
 
         return sim_res
+
+    async def send_to_customer(self, quotation_id: int, current_user: User) -> Quotation:
+        quote = await self.quote_repo.get_by_id(self.db, quotation_id)
+        if not quote:
+            raise QuoteNotFoundError(f"Quotation with ID {quotation_id} not found.")
+
+        self._verify_ownership(quote, current_user)
+
+        if quote.status != QuotationStatus.APPROVED.value:
+            raise CommercialPolicyValidationError(
+                f"Quotation {quote.quote_number} is in '{quote.status}' status and cannot be sent to customer. Must be APPROVED."
+            )
+
+        from app.core.enums import NotificationType, VersionSourceType
+        from app.repositories.customer_portal_access import CustomerPortalAccessRepository
+        from app.services.notification import NotificationService
+        from app.services.quote_version import QuoteVersionService
+
+        quote.status = QuotationStatus.SENT_TO_CUSTOMER.value
+
+        # Create initial snapshot if current_version_id is not set
+        if not quote.current_version_id:
+            v_service = QuoteVersionService(self.db)
+            version = await v_service.create_version_snapshot(
+                quotation_id=quote.id,
+                source_type=VersionSourceType.INITIAL_RELEASE.value,
+                created_by_user_id=current_user.id,
+                approval_status="APPROVED",
+            )
+            quote.current_version_id = version.id
+            quote.latest_approved_version_id = version.id
+
+        await self._create_audit_event(
+            quotation_id=quote.id,
+            actor_user_id=current_user.id,
+            event_type=AuditEventType.QUOTE_SENT_TO_CUSTOMER.value,
+            from_status=QuotationStatus.APPROVED.value,
+            to_status=QuotationStatus.SENT_TO_CUSTOMER.value,
+        )
+
+        try:
+            await self.db.commit()
+            updated_quote = await self.quote_repo.get_by_id(self.db, quote.id)
+        except Exception:
+            await self.db.rollback()
+            raise
+
+        portal_repo = CustomerPortalAccessRepository()
+        portal_accesses = await portal_repo.list_access(self.db, customer_id=updated_quote.customer_id, is_active=True)
+        cust_user_ids = [pa.user_id for pa in portal_accesses]
+
+        if cust_user_ids:
+            notif_service = NotificationService(self.db)
+            await notif_service.dispatch_post_commit_events(
+                db=self.db,
+                recipient_user_ids=cust_user_ids,
+                notification_type=NotificationType.QUOTE_SENT.value,
+                title=f"Quotation {updated_quote.quote_number} Received",
+                content=f"Your quotation {updated_quote.quote_number} is ready for review.",
+                quotation_id=updated_quote.id,
+                payload={"quotation_id": updated_quote.id, "quote_number": updated_quote.quote_number},
+            )
+
+        return updated_quote
+
 

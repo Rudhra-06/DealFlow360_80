@@ -91,9 +91,19 @@ class Quotation(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
     )
 
+    # Phase 4 Versioning & Confirmation Guarantees
+    current_version_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    latest_approved_version_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    confirmed_quote_version_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    customer_confirmed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    customer_confirmed_by_user_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+
     # Relationships
     customer: Mapped["Customer"] = relationship("Customer", lazy="selectin")
-    sales_rep: Mapped["User"] = relationship("User", lazy="selectin")
+    sales_rep: Mapped["User"] = relationship("User", foreign_keys=[sales_rep_id], lazy="selectin")
+    customer_confirmed_by_user: Mapped[Optional["User"]] = relationship("User", foreign_keys=[customer_confirmed_by_user_id], lazy="selectin")
     lines: Mapped[List["QuoteLine"]] = relationship(
         "QuoteLine", back_populates="quotation", cascade="all, delete-orphan", lazy="selectin"
     )
@@ -102,4 +112,7 @@ class Quotation(Base):
     )
     audit_events: Mapped[List["QuoteAuditEvent"]] = relationship(
         "QuoteAuditEvent", back_populates="quotation", cascade="all, delete-orphan", lazy="selectin"
+    )
+    versions: Mapped[List["QuoteVersion"]] = relationship(
+        "QuoteVersion", back_populates="quotation", cascade="all, delete-orphan", lazy="selectin"
     )

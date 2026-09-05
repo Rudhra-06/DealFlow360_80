@@ -5,7 +5,10 @@ The database `roles` table remains the single source of truth for user assignmen
 """
 
 
-class RoleName:
+from enum import Enum
+
+
+class RoleName(str, Enum):
     ADMIN = "ADMIN"
     SALES_REP = "SALES_REP"
     SALES_MANAGER = "SALES_MANAGER"

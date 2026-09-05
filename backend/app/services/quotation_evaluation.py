@@ -9,6 +9,7 @@ from app.engines.risk import RiskEngine
 from app.models.quote_risk_reason import QuoteRiskReason
 from app.models.quotation import Quotation
 from app.models.quotation_line import QuoteLine
+from app.repositories.quotation import QuotationRepository
 from app.repositories.quote_risk_reason import QuoteRiskReasonRepository
 from app.services.discount_policy import DiscountPolicyService
 
@@ -20,17 +21,18 @@ class QuotationEvaluationService:
         self.db: AsyncSession = db
         self.discount_policy_service = DiscountPolicyService(db)
         self.risk_reason_repo = QuoteRiskReasonRepository()
+        self.quote_repo = QuotationRepository()
 
     async def evaluate_and_update(self, quotation: Quotation) -> Quotation:
         customer_tier_id = quotation.customer.tier_id if quotation.customer else None
-        as_of = quotation.created_at or datetime.now(timezone.utc)
+        as_of = datetime.now(timezone.utc)
 
         pricing_line_inputs = []
         margin_line_inputs = []
 
         # 1. Resolve policies & snapshots for each quote line
         for line in quotation.lines:
-            policy = await self.discount_policy_service.get_applicable_policy(
+            policy, _ = await self.discount_policy_service.get_applicable_policy(
                 customer_tier_id=customer_tier_id,
                 product_id=line.product_id,
                 as_of=as_of,

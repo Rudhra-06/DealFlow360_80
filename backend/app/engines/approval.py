@@ -40,12 +40,12 @@ class ApprovalEngine:
 
         # 1. Line-level ceiling violation check (requires Sales Manager at minimum)
         if has_line_over_max_discount:
-            roles_needed.add(RoleName.SALES_MANAGER.value)
+            roles_needed.add(RoleName.SALES_MANAGER)
             triggers.append(
                 ApprovalTriggerDetail(
                     approval_policy_id=None,
                     trigger_code="LINE_DISCOUNT_ABOVE_MAX",
-                    approval_role=RoleName.SALES_MANAGER.value,
+                    approval_role=RoleName.SALES_MANAGER,
                     actual_value=None,
                     threshold_value=None,
                     message="At least one product line exceeds the maximum policy discount ceiling.",
@@ -146,12 +146,12 @@ class ApprovalEngine:
                 triggers=[],
             )
 
-        if RoleName.FINANCE_OPERATIONS.value in roles_needed:
+        if RoleName.FINANCE_OPERATIONS in roles_needed:
             # Finance requires 2-level chain: Sales Manager -> Finance
-            chain = [RoleName.SALES_MANAGER.value, RoleName.FINANCE_OPERATIONS.value]
+            chain = [RoleName.SALES_MANAGER, RoleName.FINANCE_OPERATIONS]
             proj_status = QuotationStatus.PENDING_MANAGER_APPROVAL
         else:
-            chain = [RoleName.SALES_MANAGER.value]
+            chain = [RoleName.SALES_MANAGER]
             proj_status = QuotationStatus.PENDING_MANAGER_APPROVAL
 
         return ApprovalEvaluationResult(

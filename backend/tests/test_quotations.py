@@ -163,7 +163,7 @@ async def test_quotation_end_to_end_acceptance_flow(db_session: AsyncSession, ap
     quote_data = resp.json()
     assert len(quote_data["lines"]) == 2
     line_b = [l for l in quote_data["lines"] if l["product_id"] == product_b.id][0]
-    assert line_b["line_discount_pct"] == "25.00"
+    assert Decimal(str(line_b["line_discount_pct"])) == Decimal("25.00")
     assert line_b["gross_line_total"] == "1000.00"
     assert line_b["net_line_total"] == "750.00"
     assert line_b["line_cost"] == "600.00"
@@ -177,7 +177,7 @@ async def test_quotation_end_to_end_acceptance_flow(db_session: AsyncSession, ap
     )
     assert resp.status_code == 200
     quote_data = resp.json()
-    assert quote_data["order_discount_pct"] == "5.00"
+    assert Decimal(str(quote_data["order_discount_pct"])) == Decimal("5.00")
 
     # 6. Verify Pricing Snapshots remain intact after Product Master list price change
     product_a.list_price = Decimal("150.00")
