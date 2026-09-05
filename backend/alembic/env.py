@@ -15,6 +15,7 @@ if str(backend_dir) not in sys.path:
 
 from app.core.config import settings
 from app.db.base import Base
+import app.models  # Ensures all ORM models (Role, User) are registered with Base.metadata
 
 # Alembic Config object provides access to alembic.ini values
 config = context.config
@@ -26,6 +27,7 @@ if config.config_file_name:
 # Set target_metadata to SQLAlchemy 2.x Declarative Base metadata
 # This allows Alembic to detect models inheriting from Base for --autogenerate
 target_metadata = Base.metadata
+
 
 
 def run_migrations_offline() -> None:
