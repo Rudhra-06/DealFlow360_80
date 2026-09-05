@@ -1,8 +1,9 @@
-from typing import Any
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.engine import URL
 
 
 class Settings(BaseSettings):
+
     """Application configuration settings loaded from environment variables or .env file."""
 
     APP_NAME: str = "DealFlow360 API"
@@ -22,15 +23,20 @@ class Settings(BaseSettings):
 
     @property
     def async_database_url(self) -> str:
-        """Assembles and returns the asyncpg-compatible PostgreSQL database URL."""
+        """Assembles and returns the asyncpg-compatible PostgreSQL database URL safely."""
         if self.DATABASE_URL:
             if self.DATABASE_URL.startswith("postgresql://"):
                 return self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
             return self.DATABASE_URL
-        return (
-            f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
-            f"@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-        )
+        return URL.create(
+            drivername="postgresql+asyncpg",
+            username=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.POSTGRES_SERVER,
+            port=self.POSTGRES_PORT,
+            database=self.POSTGRES_DB,
+        ).render_as_string(hide_password=False)
+
 
     model_config = SettingsConfigDict(
         env_file=".env",
