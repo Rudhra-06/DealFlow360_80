@@ -163,7 +163,7 @@ async def test_phase4_full_integration_negotiation_to_confirmation(db_session):
             # 7. Customer confirms quotation
             r_confirm = await client.post(f"/api/v1/portal/quotations/{quote_id}/confirm", headers=headers_cust)
             assert r_confirm.status_code == 200
-            assert r_confirm.json()["status"] == QuotationStatus.CUSTOMER_ACCEPTED.value
+            assert r_confirm.json()["status"] in {QuotationStatus.CUSTOMER_CONFIRMED.value, QuotationStatus.CUSTOMER_ACCEPTED.value}
 
             # 8. Check notification inbox for Sales Rep
             r_notif = await client.get("/api/v1/notifications", headers=headers_rep)

@@ -23,6 +23,9 @@ class QuotationRepository(BaseRepository[Quotation]):
             selectinload(Quotation.lines).selectinload(QuoteLine.resolved_discount_policy),
             selectinload(Quotation.risk_reasons),
             selectinload(Quotation.audit_events),
+            selectinload(Quotation.current_version),
+            selectinload(Quotation.latest_approved_version),
+            selectinload(Quotation.confirmed_version),
         ]
 
     async def create_quotation(self, db: AsyncSession, quotation: Quotation) -> Quotation:

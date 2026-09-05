@@ -31,6 +31,9 @@ class QuoteVersionService:
         if not quote:
             raise QuoteNotFoundError(f"Quotation with ID {quotation_id} not found.")
 
+        self.db.expire(quote, ["lines"])
+        quote = await self.quote_repo.get_by_id(self.db, quotation_id)
+
         next_version = await self.version_repo.get_next_version_number_with_lock(self.db, quotation_id)
 
         # 2. Build QuoteVersion snapshot

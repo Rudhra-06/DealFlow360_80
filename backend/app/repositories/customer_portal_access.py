@@ -38,7 +38,7 @@ class CustomerPortalAccessRepository(BaseRepository[CustomerPortalAccess]):
         stmt = (
             select(CustomerPortalAccess)
             .options(*self._default_options())
-            .where(CustomerPortalAccess.user_id == user_id, CustomerPortalAccess.is_active == True)
+            .where(CustomerPortalAccess.user_id == user_id, CustomerPortalAccess.is_active != False)
         )
         res = await db.execute(stmt)
         return res.scalar_one_or_none()

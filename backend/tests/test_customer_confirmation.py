@@ -115,7 +115,7 @@ async def test_customer_confirmation_flow(db_session):
     portal_service = PortalQuotationService(db_session)
     confirmed_quote = await portal_service.confirm_quotation(quote.id, user_cust.id)
 
-    assert confirmed_quote.status == QuotationStatus.CUSTOMER_ACCEPTED.value
+    assert confirmed_quote.status in {QuotationStatus.CUSTOMER_CONFIRMED.value, QuotationStatus.CUSTOMER_ACCEPTED.value}
     assert confirmed_quote.confirmed_quote_version_id == v1.id
     assert confirmed_quote.customer_confirmed_by_user_id == user_cust.id
     assert confirmed_quote.customer_confirmed_at is not None

@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from app.models.quote_audit_event import QuoteAuditEvent
     from app.models.quote_risk_reason import QuoteRiskReason
     from app.models.quotation_line import QuoteLine
+    from app.models.quote_version import QuoteVersion
     from app.models.user import User
 
 
@@ -104,6 +105,15 @@ class Quotation(Base):
     customer: Mapped["Customer"] = relationship("Customer", lazy="selectin")
     sales_rep: Mapped["User"] = relationship("User", foreign_keys=[sales_rep_id], lazy="selectin")
     customer_confirmed_by_user: Mapped[Optional["User"]] = relationship("User", foreign_keys=[customer_confirmed_by_user_id], lazy="selectin")
+    current_version: Mapped[Optional["QuoteVersion"]] = relationship(
+        "QuoteVersion", foreign_keys=[current_version_id], lazy="selectin"
+    )
+    latest_approved_version: Mapped[Optional["QuoteVersion"]] = relationship(
+        "QuoteVersion", foreign_keys=[latest_approved_version_id], lazy="selectin"
+    )
+    confirmed_version: Mapped[Optional["QuoteVersion"]] = relationship(
+        "QuoteVersion", foreign_keys=[confirmed_quote_version_id], lazy="selectin"
+    )
     lines: Mapped[List["QuoteLine"]] = relationship(
         "QuoteLine", back_populates="quotation", cascade="all, delete-orphan", lazy="selectin"
     )

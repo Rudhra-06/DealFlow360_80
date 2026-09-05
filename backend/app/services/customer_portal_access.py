@@ -92,6 +92,6 @@ class CustomerPortalAccessService:
 
     async def get_active_customer_id_for_user(self, user_id: int) -> int:
         access = await self.access_repo.get_active_by_user_id(self.db, user_id)
-        if not access or not access.customer or not access.customer.is_active:
+        if not access or not access.customer or access.customer.is_active is False:
             raise QuoteAccessDeniedError("Customer portal user does not have an active customer account association.")
         return access.customer_id

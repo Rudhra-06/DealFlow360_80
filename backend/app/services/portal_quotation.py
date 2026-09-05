@@ -28,6 +28,8 @@ class PortalQuotationService:
     ALLOWED_PORTAL_STATUSES = {
         QuotationStatus.SENT_TO_CUSTOMER.value,
         QuotationStatus.UNDER_CUSTOMER_REVIEW.value,
+        QuotationStatus.UNDER_NEGOTIATION.value,
+        QuotationStatus.CUSTOMER_CONFIRMED.value,
         QuotationStatus.CUSTOMER_ACCEPTED.value,
         QuotationStatus.REJECTED.value,
         QuotationStatus.EXPIRED.value,
@@ -98,6 +100,7 @@ class PortalQuotationService:
         if quote.status not in (
             QuotationStatus.SENT_TO_CUSTOMER.value,
             QuotationStatus.UNDER_CUSTOMER_REVIEW.value,
+            QuotationStatus.UNDER_NEGOTIATION.value,
         ):
             raise CommercialPolicyValidationError(
                 f"Quotation cannot be confirmed in state '{quote.status}'."
@@ -114,7 +117,7 @@ class PortalQuotationService:
         quote.confirmed_quote_version_id = current_v_id
         quote.customer_confirmed_at = datetime.now(timezone.utc)
         quote.customer_confirmed_by_user_id = user_id
-        quote.status = QuotationStatus.CUSTOMER_ACCEPTED.value
+        quote.status = QuotationStatus.CUSTOMER_CONFIRMED.value
 
         # Audit logging
         audit = QuoteAuditEvent(
@@ -122,7 +125,7 @@ class PortalQuotationService:
             actor_user_id=user_id,
             event_type=AuditEventType.CUSTOMER_CONFIRMED.value,
             from_status=from_status,
-            to_status=QuotationStatus.CUSTOMER_ACCEPTED.value,
+            to_status=QuotationStatus.CUSTOMER_CONFIRMED.value,
             event_metadata={
                 "confirmed_quote_version_id": current_v_id,
                 "confirmed_at": quote.customer_confirmed_at.isoformat(),
