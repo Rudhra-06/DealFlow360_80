@@ -1,16 +1,165 @@
 # DealFlow360
 
-## Intelligent B2B Sales, Quotation and Deal Management Platform
+## Intelligent B2B Sales Operations Platform
 
-DealFlow360 is a B2B sales and deal management platform designed to manage the complete lifecycle of a business deal, starting from quotation creation and continuing through approval, fulfillment, billing, customer negotiation and reporting.
-
-The main idea behind the system is to connect the different stages of a deal instead of treating them as independent modules. A change made during quotation or negotiation can affect pricing, margins, risk, approvals, inventory and billing.
-
-The overall workflow is:
-
-**Quotation → Approval → Fulfillment → Billing → Negotiation → Reporting**
+DealFlow360 is a B2B Sales Operations platform designed to seamlessly manage the complete lifecycle of a business deal—connecting quotation creation, discount governance, risk calculation, approval routing, customer negotiation, warehouse fulfillment, hybrid billing, payments, deal health monitoring, and reporting into a unified workflow.
 
 ---
+
+## Backend Foundation & Quick Start (Phase 1 — Part 1)
+
+### 1. Current Backend Stack
+- **Language**: Python 3.12+
+- **Framework**: FastAPI
+- **ASGI Server**: Uvicorn
+- **HTTP Client / Testing**: HTTPX & Pytest
+
+---
+
+### 2. Project Folder Structure
+```text
+DealFlow360_80/
+│
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   ├── api/
+│   │   │   ├── __init__.py
+│   │   │   └── v1/
+│   │   │       ├── __init__.py
+│   │   │       └── router.py
+│   │   ├── core/
+│   │   ├── db/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   ├── repositories/
+│   │   ├── services/
+│   │   ├── engines/
+│   │   ├── websocket/
+│   │   ├── integrations/
+│   │   └── utils/
+│   ├── tests/
+│   │   ├── __init__.py
+│   │   └── test_health.py
+│   ├── requirements.txt
+│   └── .env.example
+│
+├── docs/
+│   └── handoffs/
+│
+└── README.md
+```
+
+---
+
+### 3. Local Development Setup
+
+#### Step 1: Create a Python Virtual Environment
+Navigate to the `backend` directory:
+```bash
+cd backend
+python -m venv venv
+```
+Activate the virtual environment:
+- **Windows (PowerShell)**: `.\venv\Scripts\Activate.ps1`
+- **Linux / macOS**: `source venv/bin/activate`
+
+#### Step 2: Install Backend Requirements
+```bash
+pip install -r requirements.txt
+```
+
+#### Step 3: Copy Environment Variables File
+```bash
+cp .env.example .env
+```
+
+#### Step 4: Start FastAPI Backend Locally
+From the `backend` directory:
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+---
+
+### 4. Testing & Verification
+
+#### Test Health Endpoint (`GET /health`)
+Using `curl` or browser:
+```bash
+curl http://127.0.0.1:8000/health
+```
+Expected JSON Response:
+```json
+{
+  "status": "healthy",
+  "service": "DealFlow360 API"
+}
+```
+
+#### Run Automated Tests
+From the `backend` directory:
+```bash
+pytest
+```
+
+#### OpenAPI Interactive Swagger Documentation
+Access API docs in your browser at:
+`http://127.0.0.1:8000/docs`
+
+---
+
+### 5. PostgreSQL & Database Architecture (Phase 1 — Part 2)
+
+#### Database Architecture Flow
+PostgreSQL serves as the central source of truth for DealFlow360 data operations:
+```text
+FastAPI Endpoint
+      │
+      ▼
+FastAPI Database Dependency (get_db)
+      │
+      ▼
+SQLAlchemy AsyncSession (AsyncSessionLocal)
+      │
+      ▼
+asyncpg Database Driver
+      │
+      ▼
+PostgreSQL Database
+```
+
+#### Database Health Endpoint (`GET /api/v1/health/db`)
+Verifies live connectivity to PostgreSQL using a lightweight `SELECT 1` query:
+```bash
+curl http://127.0.0.1:8000/api/v1/health/db
+```
+Expected Healthy Response:
+```json
+{
+  "status": "healthy",
+  "database": "connected"
+}
+```
+
+#### Configuring Environment Variables
+Configure database credentials by setting environment variables or updating your `.env` file:
+```ini
+POSTGRES_SERVER=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_secure_password_here
+POSTGRES_DB=dealflow360
+```
+Alternatively, specify the full async connection string directly:
+```ini
+DATABASE_URL=postgresql+asyncpg://postgres:your_secure_password_here@localhost:5432/dealflow360
+```
+
+---
+
+
 
 # 1. Problem Statement
 
