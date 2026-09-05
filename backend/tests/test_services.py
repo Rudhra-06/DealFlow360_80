@@ -1,13 +1,16 @@
 import sys
-import asyncio
+import uuid
+import pytest
 from pathlib import Path
+from sqlalchemy.pool import NullPool
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 # Ensure backend directory is in sys.path
 backend_dir = Path(__file__).resolve().parent.parent
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
-from app.db.session import AsyncSessionLocal
+from app.core.config import settings
 from app.core.security import verify_password
 from app.repositories.role import RoleRepository
 from app.schemas.role import RoleCreateInternal
@@ -16,115 +19,107 @@ from app.services.user import UserService
 from app.services.exceptions import RoleNotFoundError, UserAlreadyExistsError
 
 
-def test_role_service_methods():
+
+
+@pytest.mark.anyio
+async def test_role_service_methods(db_session: AsyncSession):
     """Verify RoleService methods get_role_by_id, get_role_by_name, list_roles."""
-    async def _run():
-        async with AsyncSessionLocal() as session:
-            role_repo = RoleRepository()
-            # Create an isolated temporary test role
-            test_role_name = "TEST_SERVICE_ROLE"
-            existing = await role_repo.get_by_name(session, test_role_name)
-            if not existing:
-                created_role = await role_repo.create_role(
-                    session,
-                    RoleCreateInternal(name=test_role_name, description="Test role description")
-                )
-                await session.commit()
-                role_id = created_role.id
-            else:
-                role_id = existing.id
+    role_repo = RoleRepository()
+    test_role_name = f"TEST_SERVICE_ROLE_{uuid.uuid4().hex[:6]}"
+    
+    created_role = await role_repo.create_role(
+        db_session,
+        RoleCreateInternal(name=test_role_name, description="Test role description")
+    )
+    await db_session.commit()
+    role_id = created_role.id
 
-            role_service = RoleService(session)
-            by_id = await role_service.get_role_by_id(role_id)
-            assert by_id is not None
-            assert by_id.name == test_role_name
+    role_service = RoleService(db_session)
+    by_id = await role_service.get_role_by_id(role_id)
+    assert by_id is not None
+    assert by_id.name == test_role_name
 
-            by_name = await role_service.get_role_by_name(test_role_name)
-            assert by_name is not None
-            assert by_name.id == role_id
+    by_name = await role_service.get_role_by_name(test_role_name)
+    assert by_name is not None
+    assert by_name.id == role_id
 
-            all_roles = await role_service.list_roles()
-            assert len(all_roles) > 0
-
-    asyncio.run(_run())
+    all_roles = await role_service.list_roles()
+    assert len(all_roles) > 0
 
 
-def test_user_service_create_user_success_and_email_normalization():
+@pytest.mark.anyio
+async def test_user_service_create_user_success_and_email_normalization(db_session: AsyncSession):
     """Verify UserService.create_user normalizes email, hashes password, and persists user."""
-    async def _run():
-        async with AsyncSessionLocal() as session:
-            # Create test role
-            role_repo = RoleRepository()
-            role = await role_repo.get_by_name(session, "TEST_SERVICE_ROLE")
-            if not role:
-                role = await role_repo.create_role(
-                    session,
-                    RoleCreateInternal(name="TEST_SERVICE_ROLE", description="Test role")
-                )
-                await session.commit()
+    role_repo = RoleRepository()
+    role_name = f"TEST_SRV_ROLE_{uuid.uuid4().hex[:6]}"
+    role = await role_repo.create_role(
+        db_session,
+        RoleCreateInternal(name=role_name, description="Test role")
+    )
+    await db_session.commit()
 
-            user_service = UserService(session)
-            raw_email = "  SERVICE-USER@EXAMPLE.COM  "
-            plain_pass = "SecurePass123!"
+    user_service = UserService(db_session)
+    uid = uuid.uuid4().hex[:6]
+    raw_email = f"  SRV-USER-{uid}@EXAMPLE.COM  "
+    plain_pass = "SecurePass123!"
 
-            # Create user
-            user = await user_service.create_user(
-                email=raw_email,
-                full_name="Service User Test",
-                plain_password=plain_pass,
-                role_id=role.id,
-            )
+    user = await user_service.create_user(
+        email=raw_email,
+        full_name="Service User Test",
+        plain_password=plain_pass,
+        role_id=role.id,
+    )
 
-            assert user.id is not None
-            assert user.email == "service-user@example.com"
-            assert user.full_name == "Service User Test"
-            assert user.hashed_password != plain_pass
-            assert verify_password(plain_pass, user.hashed_password) is True
-
-    asyncio.run(_run())
+    assert user.id is not None
+    assert user.email == f"srv-user-{uid}@example.com"
+    assert user.full_name == "Service User Test"
+    assert user.hashed_password != plain_pass
+    assert verify_password(plain_pass, user.hashed_password) is True
 
 
-def test_user_service_duplicate_email_raises_error():
+@pytest.mark.anyio
+async def test_user_service_duplicate_email_raises_error(db_session: AsyncSession):
     """Verify UserService.create_user raises UserAlreadyExistsError for duplicate emails."""
-    async def _run():
-        async with AsyncSessionLocal() as session:
-            role_repo = RoleRepository()
-            role = await role_repo.get_by_name(session, "TEST_SERVICE_ROLE")
-            assert role is not None
+    role_repo = RoleRepository()
+    role_name = f"TEST_DUP_ROLE_{uuid.uuid4().hex[:6]}"
+    role = await role_repo.create_role(
+        db_session,
+        RoleCreateInternal(name=role_name, description="Test role")
+    )
+    await db_session.commit()
 
-            user_service = UserService(session)
-            duplicate_email = "service-user@example.com"
+    user_service = UserService(db_session)
+    uid = uuid.uuid4().hex[:6]
+    duplicate_email = f"srv-dup-{uid}@example.com"
 
-            try:
-                await user_service.create_user(
-                    email=duplicate_email,
-                    full_name="Duplicate User Test",
-                    plain_password="AnotherPassword123!",
-                    role_id=role.id,
-                )
-                assert False, "Should have raised UserAlreadyExistsError"
-            except UserAlreadyExistsError as exc:
-                assert "already exists" in str(exc)
+    await user_service.create_user(
+        email=duplicate_email,
+        full_name="Duplicate User Test 1",
+        plain_password="AnotherPassword123!",
+        role_id=role.id,
+    )
 
-    asyncio.run(_run())
+    with pytest.raises(UserAlreadyExistsError) as exc_info:
+        await user_service.create_user(
+            email=f"  SRV-DUP-{uid}@EXAMPLE.COM  ",
+            full_name="Duplicate User Test 2",
+            plain_password="AnotherPassword123!",
+            role_id=role.id,
+        )
+    assert "already exists" in str(exc_info.value)
 
 
-def test_user_service_invalid_role_id_raises_error():
+@pytest.mark.anyio
+async def test_user_service_invalid_role_id_raises_error(db_session: AsyncSession):
     """Verify UserService.create_user raises RoleNotFoundError when referencing missing role_id."""
-    async def _run():
-        async with AsyncSessionLocal() as session:
-            user_service = UserService(session)
-            invalid_role_id = 999999
+    user_service = UserService(db_session)
+    invalid_role_id = 999999
 
-            try:
-                await user_service.create_user(
-                    email="invalid-role-test@example.com",
-                    full_name="Invalid Role Test",
-                    plain_password="Password123!",
-                    role_id=invalid_role_id,
-                )
-                assert False, "Should have raised RoleNotFoundError"
-            except RoleNotFoundError as exc:
-                assert "Role with ID 999999 not found" in str(exc)
-
-    asyncio.run(_run())
+    with pytest.raises(RoleNotFoundError) as exc_info:
+        await user_service.create_user(
+            email=f"invalid-role-{uuid.uuid4().hex[:6]}@example.com",
+            full_name="Invalid Role Test",
+            plain_password="Password123!",
+            role_id=invalid_role_id,
+        )
+    assert "Role with ID 999999 not found" in str(exc_info.value)

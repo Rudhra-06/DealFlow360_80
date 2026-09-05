@@ -17,24 +17,6 @@ from app.schemas.role import RoleCreateInternal
 from app.schemas.user import UserCreateInternal
 
 
-@pytest.fixture
-async def db_session():
-    """Provides an isolated AsyncSession using NullPool that rolls back all operations after each test."""
-    test_engine = create_async_engine(settings.async_database_url, poolclass=NullPool)
-    TestSessionLocal = async_sessionmaker(
-        bind=test_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-        autocommit=False,
-        autoflush=False,
-    )
-    async with TestSessionLocal() as session:
-        try:
-            yield session
-        finally:
-            await session.rollback()
-            await session.close()
-    await test_engine.dispose()
 
 
 @pytest.fixture

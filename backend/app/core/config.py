@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = "postgres"
     POSTGRES_DB: str = "dealflow360"
 
+    # JWT Authentication Configuration
+    JWT_SECRET_KEY: str = "replace-with-a-strong-local-secret"
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
     # Optional full DATABASE_URL override
     DATABASE_URL: str | None = None
 
