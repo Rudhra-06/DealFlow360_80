@@ -1,14 +1,14 @@
-# DealFlow360 — Frontend (Phase 1)
+# DealFlow360 — Frontend (Phase 2: Master Data & Commercial Configuration)
 
 DealFlow360 is an Enterprise B2B Deal Management and Commercial Operations Platform.
 
-This directory contains the **Phase 1 Vanilla JavaScript, HTML5, and CSS3** frontend application, designed to interface seamlessly with the FastAPI backend.
+This directory contains the **Phase 2 Frontend Application** built with Vanilla JavaScript, HTML5, and CSS3, integrating with the FastAPI backend.
 
 ---
 
 ## 🎨 Locked Brand Identity & Design System
 
-The visual design is built with the locked DealFlow360 enterprise color palette:
+The visual design preserves the locked DealFlow360 enterprise color palette:
 
 - **Deep Navy (`#172A46`)**: Sidebar, main headings, typography, dark container surfaces.
 - **Teal (`#19B5A5`)**: Primary CTAs, active indicators, successful system health states, links.
@@ -23,66 +23,72 @@ The visual design is built with the locked DealFlow360 enterprise color palette:
 
 ```
 frontend/
-├── index.html              # Authenticated workspace shell & Phase 1 dashboard
-├── login.html              # Split-screen enterprise login page
-├── README.md               # Frontend documentation & architecture guide
+├── index.html                  # Authenticated workspace shell & dynamic view container
+├── login.html                  # Split-screen enterprise login page
+├── README.md                   # Frontend architecture & guide
 │
 ├── css/
-│   ├── variables.css       # Design tokens & locked brand color palette
-│   ├── base.css            # Base resets, typography, and utility classes
-│   ├── components.css      # Buttons, cards, form inputs, badges, dropdowns, modals
-│   ├── layout.css          # Login split-screen & app shell layout
-│   └── responsive.css      # Tablet and mobile responsive rules
+│   ├── variables.css           # Design tokens & locked brand color palette
+│   ├── base.css                # Base resets, typography, and utility classes
+│   ├── components.css          # Tables, cards, form grids, drawers, modals, toasts, tabs
+│   ├── layout.css              # Login split-screen & app shell layout
+│   └── responsive.css          # Tablet and mobile responsive rules
 │
 └── js/
-    ├── config.js           # Centralized API_BASE_URL & storage configuration
-    ├── api.js              # Centralized Fetch API client & health check callers
-    ├── auth.js             # Token storage, auth guard, login & logout services
-    ├── navigation.js       # Role-aware navigation definitions & role formatter
-    ├── ui.js               # Modal dialogs, dropdowns, password toggles, and drawer controls
-    └── app.js              # Dashboard initialization & live backend status integration
+    ├── config.js               # Centralized API_BASE_URL & storage configuration
+    ├── api.js                  # Centralized Fetch API client & health check callers
+    ├── auth.js                 # Token storage, auth guard, login & logout services
+    ├── navigation.js           # Role-aware navigation definitions & role formatter
+    ├── ui.js                   # Modals, drawers, toasts, password toggles, and drawer controls
+    │
+    ├── api/                    # Modular API Service Clients
+    │   ├── customerTiers.js    # Customer Tiers API (/api/v1/customer-tiers)
+    │   ├── customers.js        # Customers API (/api/v1/customers)
+    │   ├── productCategories.js# Product Categories API (/api/v1/product-categories)
+    │   ├── products.js         # Products API (/api/v1/products)
+    │   ├── warehouses.js       # Warehouses API (/api/v1/warehouses)
+    │   ├── inventory.js        # Inventory API (/api/v1/inventory)
+    │   ├── discountPolicies.js # Discount Policies API (/api/v1/discount-policies)
+    │   ├── approvalPolicies.js # Approval Policies API (/api/v1/approval-policies)
+    │   └── billingPlans.js     # Billing Plans API (/api/v1/billing-plans)
+    │
+    ├── views/                  # Phase 2 View Controllers
+    │   ├── dashboardView.js    # Upgraded Phase 2 dashboard with role actions
+    │   ├── customersView.js    # Customers & Customer Tiers management & detail drawer
+    │   ├── productsView.js     # Products Catalog & Categories with stock availability tab
+    │   ├── inventoryView.js    # Inventory stock overview & Warehouse facilities
+    │   ├── discountPoliciesView.js # Discount policies & live Policy Resolver tool
+    │   ├── approvalPoliciesView.js # Commercial approval triggers and roles
+    │   ├── billingPlansView.js # Commercial billing contract schedules
+    │   └── settingsView.js     # Master & Commercial Configuration Hub
+    │
+    └── app.js                  # Application Router & Lifecycle Controller
 ```
 
 ---
 
-## 🚀 Running the Frontend Locally
+## 🛠️ Integrated Master Data & Commercial Configuration Modules
 
-1. **Ensure the backend is running:**
-   ```bash
-   cd backend
-   uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
-   ```
+### 1. Master Data
+- **Customers**: List, search by name/code, filter by tier and status, Add/Edit modal, and Slide-out Details Drawer with commercial profiles.
+- **Customer Tiers**: Master classification levels (`GOLD`, `SILVER`, `BRONZE`) with active/inactive management.
+- **Products Catalog**: SKU catalog items with List/Cost prices, Currency, Unit of Measure, and Category associations. Detail drawer includes live warehouse stock view.
+- **Product Categories**: Logical item groupings.
+- **Warehouses**: Multi-location storage facilities and addresses.
+- **Inventory**: Stock balances (`on_hand_qty`, `reserved_qty`, `available_qty`, `reorder_level`) with stock health badges. (`reserved_qty` is strictly protected and read-only).
 
-2. **Serve the frontend files:**
-   You can serve the `frontend/` directory with any static server:
-   ```bash
-   # Option A: Python HTTP server
-   cd frontend
-   python -m http.server 3000
-
-   # Option B: Node http-server / serve
-   npx serve frontend
-   ```
-   Or open `frontend/login.html` directly in any modern browser.
-
-3. **Configuring Backend URL:**
-   If running FastAPI on a non-default host or port, configure `API_BASE_URL` in `frontend/js/config.js`:
-   ```javascript
-   const Config = {
-     API_BASE_URL: 'http://127.0.0.1:8000',
-     ...
-   };
-   ```
+### 2. Commercial Configuration
+- **Discount Policies**: Tier, category, or product SKU scoped standard & maximum discount rules with 6-tier precedence support. Includes **"Test Policy Resolution" tool** directly querying `GET /api/v1/discount-policies/resolve`.
+- **Approval Policies**: Multi-trigger threshold rules (`Discount > X%`, `Margin < Y%`, `Payment Terms > Z days`) mapped to `SALES_MANAGER` or `FINANCE_OPERATIONS`.
+- **Billing Plans**: Standard contract payment schedules (`ONE_TIME` vs `RECURRING`) with interval month management.
 
 ---
 
-## 🔐 Phase 1 Authentication Flow
+## 🔐 Role-Based Access Control (RBAC) UX Alignment
 
-1. User visits `login.html`.
-2. Form submits credentials to `POST /api/v1/auth/login`.
-3. Backend returns signed JWT `access_token`.
-4. Frontend stores `access_token` centrally via `DealFlowAuth.setAccessToken()`.
-5. Frontend requests safe user profile via `GET /api/v1/auth/me` with `Authorization: Bearer <token>`.
-6. User is redirected to `index.html` dashboard with role-aware navigation loaded.
-7. Unauthenticated visits to `index.html` are intercepted by `DealFlowAuth.requireAuth()` and redirected to `login.html`.
-8. Logging out clears the stored token and cached user profile.
+- **ADMIN**: Full create/edit/view access across all master data and commercial policies.
+- **SALES_REP**: Can create/edit Customers; view-only access to Products, Inventory, and Policies.
+- **SALES_MANAGER**: Can create/edit Customers, Customer Tiers, Discount Policies, and Approval Policies.
+- **FINANCE_OPERATIONS**: Can create/edit Products, Categories, Warehouses, Inventory, Approval Policies, and Billing Plans.
+- **CUSTOMER**: Restricted to separate Customer Portal shell (zero internal API exposure).
+- *Authoritative security is enforced on the FastAPI backend on every request.*
