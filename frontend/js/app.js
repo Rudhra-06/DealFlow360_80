@@ -9,6 +9,11 @@
 
   const VIEW_TITLES = {
     'dashboard': { title: 'Dashboard', breadcrumb: 'DealFlow360 / Workspace Overview' },
+    'quotations': { title: 'Sales Quotations', breadcrumb: 'DealFlow360 / Sales Workspace / Quotations' },
+    'pipeline': { title: 'Pipeline Board', breadcrumb: 'DealFlow360 / Sales Workspace / Pipeline Board' },
+    'quotation-builder': { title: 'Quotation Builder & Deal Intelligence', breadcrumb: 'DealFlow360 / Sales Workspace / Quotation Builder' },
+    'approvals': { title: 'Approval Queue', breadcrumb: 'DealFlow360 / Commercial Governance / Approval Queue' },
+    'recommendation-rules': { title: 'Recommendation Rules', breadcrumb: 'DealFlow360 / Commercial Configuration / Recommendation Rules' },
     'customers': { title: 'Customers Master', breadcrumb: 'DealFlow360 / Master Data / Customers' },
     'products': { title: 'Products Catalog', breadcrumb: 'DealFlow360 / Master Data / Products' },
     'inventory': { title: 'Inventory Stock', breadcrumb: 'DealFlow360 / Master Data / Inventory' },
@@ -21,9 +26,9 @@
   /**
    * Switch the active view in the main content container.
    * @param {string} viewName
-   * @param {string|null} initialSubTab
+   * @param {object|string|null} params
    */
-  async function switchView(viewName, initialSubTab = null) {
+  async function switchView(viewName, params = null) {
     currentViewName = viewName;
     const container = document.getElementById('main-view-container');
     if (!container) return;
@@ -38,17 +43,53 @@
     // Update Sidebar active state
     if (global.DealFlowNav) {
       let navId = viewName;
-      if (['discount-policies', 'approval-policies', 'billing-plans'].includes(viewName)) {
+      if (['discount-policies', 'approval-policies', 'billing-plans', 'recommendation-rules'].includes(viewName)) {
         navId = viewName === 'approval-policies' ? 'approvals' : (viewName === 'billing-plans' ? 'billing' : 'settings');
+      } else if (viewName === 'quotation-builder') {
+        navId = 'quotations';
       }
       global.DealFlowNav.setActiveNav(navId);
     }
+
+    // Normalize params
+    const initialSubTab = typeof params === 'string' ? params : null;
+    const extraParams = typeof params === 'object' && params !== null ? params : {};
 
     // Mount View
     switch (viewName) {
       case 'dashboard':
         if (global.DashboardView) {
           await global.DashboardView.render(container, (targetView, subTab) => switchView(targetView, subTab));
+        }
+        break;
+
+      case 'quotations':
+        if (global.QuotationsView) {
+          await global.QuotationsView.render(container, 'list');
+        }
+        break;
+
+      case 'pipeline':
+        if (global.QuotationsView) {
+          await global.QuotationsView.render(container, 'pipeline');
+        }
+        break;
+
+      case 'quotation-builder':
+        if (global.QuotationBuilderView) {
+          await global.QuotationBuilderView.render(container, extraParams);
+        }
+        break;
+
+      case 'approvals':
+        if (global.ApprovalsView) {
+          await global.ApprovalsView.render(container);
+        }
+        break;
+
+      case 'recommendation-rules':
+        if (global.RecommendationRulesView) {
+          await global.RecommendationRulesView.render(container);
         }
         break;
 
@@ -155,8 +196,10 @@
     const sidebarNavContainer = document.getElementById('sidebar-nav-container');
     if (sidebarNavContainer) {
       nav.renderSidebar(roleName, sidebarNavContainer, (navId, targetTab) => {
-        if (navId === 'approvals') switchView('approval-policies');
+        if (navId === 'approvals') switchView('approvals');
         else if (navId === 'billing') switchView('billing-plans');
+        else if (navId === 'pipeline') switchView('pipeline');
+        else if (navId === 'quotations') switchView('quotations');
         else switchView(navId, targetTab);
       });
     }

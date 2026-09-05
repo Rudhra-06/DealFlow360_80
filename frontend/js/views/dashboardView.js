@@ -1,5 +1,6 @@
 /**
- * DealFlow360 — Phase 2 Dashboard View Controller
+ * DealFlow360 — Dashboard View Controller
+ * Highlights active Phase 3 Sales Workspace, Master Data, and Commercial Governance.
  */
 (function (global) {
   'use strict';
@@ -20,7 +21,7 @@
             <h1>Welcome back, ${firstName}</h1>
             <span class="badge badge-navy" style="font-size: var(--font-size-xs);">${formattedRole}</span>
           </div>
-          <p>${isCustomer ? 'Your DealFlow360 Customer Portal is ready.' : 'Your DealFlow360 Master Data & Commercial Operations workspace is ready.'}</p>
+          <p>${isCustomer ? 'Your DealFlow360 Customer Portal is ready.' : 'Your DealFlow360 Sales Intelligence & Commercial Operations workspace is ready.'}</p>
         </div>
 
         <!-- ROW 1: Real System Status Grid -->
@@ -51,17 +52,17 @@
             <div class="status-card-sub">PostgreSQL via asyncpg</div>
           </div>
 
-          <!-- Master Data Status -->
+          <!-- Deal Intelligence Engine Status -->
           <div class="status-card">
             <div class="status-card-header">
-              <span class="status-card-label">Master Data</span>
+              <span class="status-card-label">Deal Intelligence</span>
               <span class="badge badge-teal">
                 <span class="status-dot status-dot-teal"></span>
-                Ready
+                Active
               </span>
             </div>
-            <div class="status-card-value">Phase 2 Active</div>
-            <div class="status-card-sub">Commercial Schema Live</div>
+            <div class="status-card-value">Phase 3 Live</div>
+            <div class="status-card-sub">CPQ & Approvals Ready</div>
           </div>
 
           <!-- Account / RBAC Status -->
@@ -96,57 +97,57 @@
           </div>
         ` : ''}
 
-        <!-- ROW 3: Phase 2 Master Data & Configuration Overview -->
+        <!-- ROW 3: Phase 3 Sales Workspace & Master Data Overview -->
         <div class="info-cards-grid animate-fade-in">
-          <!-- Master Data Shortcuts -->
+          <!-- Sales Workspace Shortcuts -->
           <div class="card">
             <div class="card-header">
               <div>
-                <h3 class="card-title">Commercial Master Data</h3>
-                <div class="card-subtitle">Active accounts, products catalog, and warehouse facilities</div>
+                <h3 class="card-title">Sales Workspace & Deal CPQ</h3>
+                <div class="card-subtitle">Live quotations, pipeline board, and governance queue</div>
               </div>
-              <span class="badge badge-teal">Phase 2</span>
+              <span class="badge badge-teal">Phase 3 Active</span>
             </div>
             <div class="card-body">
               <div class="key-value-list">
+                <div class="key-value-item" style="cursor:pointer;" id="dash-link-quotations">
+                  <span class="key-label" style="display:flex;align-items:center;gap:6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Quotations Master List
+                  </span>
+                  <span class="key-value" style="color:var(--color-teal);">View Quotes &rarr;</span>
+                </div>
+                <div class="key-value-item" style="cursor:pointer;" id="dash-link-pipeline">
+                  <span class="key-label" style="display:flex;align-items:center;gap:6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                    Sales Pipeline Board (Kanban)
+                  </span>
+                  <span class="key-value" style="color:var(--color-teal);">Open Pipeline &rarr;</span>
+                </div>
+                <div class="key-value-item" style="cursor:pointer;" id="dash-link-approvals-queue">
+                  <span class="key-label" style="display:flex;align-items:center;gap:6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Approval Queue & Triggers
+                  </span>
+                  <span class="key-value" style="color:var(--color-teal);">Review Queue &rarr;</span>
+                </div>
                 <div class="key-value-item" style="cursor:pointer;" id="dash-link-customers">
                   <span class="key-label" style="display:flex;align-items:center;gap:6px;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                     Customers & Accounts
                   </span>
-                  <span class="key-value" style="color:var(--color-teal);">View Master &rarr;</span>
-                </div>
-                <div class="key-value-item" style="cursor:pointer;" id="dash-link-tiers">
-                  <span class="key-label" style="display:flex;align-items:center;gap:6px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                    Customer Tiers Classification
-                  </span>
-                  <span class="key-value" style="color:var(--color-teal);">Configure Tiers &rarr;</span>
-                </div>
-                <div class="key-value-item" style="cursor:pointer;" id="dash-link-products">
-                  <span class="key-label" style="display:flex;align-items:center;gap:6px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                    Products & Catalog Prices
-                  </span>
-                  <span class="key-value" style="color:var(--color-teal);">Open Catalog &rarr;</span>
-                </div>
-                <div class="key-value-item" style="cursor:pointer;" id="dash-link-inventory">
-                  <span class="key-label" style="display:flex;align-items:center;gap:6px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-                    Warehouse Stock & Inventory
-                  </span>
-                  <span class="key-value" style="color:var(--color-teal);">Check Stock &rarr;</span>
+                  <span class="key-value" style="color:var(--color-teal);">View Customers &rarr;</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Commercial Policies Shortcuts -->
+          <!-- Commercial Policies & Rules Shortcuts -->
           <div class="card">
             <div class="card-header">
               <div>
                 <h3 class="card-title">Commercial Configuration</h3>
-                <div class="card-subtitle">Discount bounds, approval rules, and billing schedules</div>
+                <div class="card-subtitle">Discount bounds, approval rules, upsell rules, and billing schedules</div>
               </div>
               <span class="badge badge-navy">Rules Engine</span>
             </div>
@@ -159,19 +160,19 @@
                   </span>
                   <span class="key-value" style="color:var(--color-teal);">Manage Rules &rarr;</span>
                 </div>
-                <div class="key-value-item" style="cursor:pointer;" id="dash-link-approvals">
+                <div class="key-value-item" style="cursor:pointer;" id="dash-link-approvals-config">
                   <span class="key-label" style="display:flex;align-items:center;gap:6px;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/></svg>
                     Approval Policies & Thresholds
                   </span>
                   <span class="key-value" style="color:var(--color-teal);">Configure Rules &rarr;</span>
                 </div>
-                <div class="key-value-item" style="cursor:pointer;" id="dash-link-billing">
+                <div class="key-value-item" style="cursor:pointer;" id="dash-link-rec-rules">
                   <span class="key-label" style="display:flex;align-items:center;gap:6px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/></svg>
-                    Commercial Billing Plans
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    Recommendation & Upsell Rules
                   </span>
-                  <span class="key-value" style="color:var(--color-teal);">Set Terms &rarr;</span>
+                  <span class="key-value" style="color:var(--color-teal);">Configure Upsell &rarr;</span>
                 </div>
                 <div class="key-value-item" style="cursor:pointer;" id="dash-link-settings">
                   <span class="key-label" style="display:flex;align-items:center;gap:6px;">
@@ -184,52 +185,6 @@
             </div>
           </div>
         </div>
-
-        <!-- ROW 4: Upcoming Phase 3+ Capabilities -->
-        <div style="margin-bottom: var(--space-md); margin-top: var(--space-xl);">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div>
-              <h2>Upcoming Deal Execution Capabilities</h2>
-              <p>Phase 3+ commercial workflow engines.</p>
-            </div>
-            <span class="badge badge-gray">Product Roadmap</span>
-          </div>
-        </div>
-
-        <div class="capabilities-grid animate-fade-in">
-          <div class="capability-card">
-            <div class="capability-header">
-              <div class="capability-icon-wrap">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-              </div>
-              <span class="badge badge-gray">Coming Soon in Phase 3</span>
-            </div>
-            <h4 class="capability-title">Quotation Builder & Deal CPQ</h4>
-            <p class="capability-desc">Interactive line-item quotation builder, automated discount resolution, and multi-version commercial offers.</p>
-          </div>
-
-          <div class="capability-card">
-            <div class="capability-header">
-              <div class="capability-icon-wrap">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-              </div>
-              <span class="badge badge-gray">Coming Soon in Phase 4</span>
-            </div>
-            <h4 class="capability-title">Deal Pipeline & Negotiations</h4>
-            <p class="capability-desc">Commercial deal stage tracking, customer portal quote counter-proposals, and acceptance workflows.</p>
-          </div>
-
-          <div class="capability-card">
-            <div class="capability-header">
-              <div class="capability-icon-wrap">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-              </div>
-              <span class="badge badge-gray">Coming Soon in Phase 5</span>
-            </div>
-            <h4 class="capability-title">Deal Health & Fulfillment</h4>
-            <p class="capability-desc">Commercial risk scoring, gross margin health protection, warehouse stock reservation, and billing integration.</p>
-          </div>
-        </div>
       `;
 
       // Render role-aware quick action buttons
@@ -238,33 +193,49 @@
         let buttonsHtml = '';
         if (roleName === 'ADMIN') {
           buttonsHtml = `
+            <button class="btn btn-primary btn-sm" id="qa-new-quote">+ New Quotation</button>
+            <button class="btn btn-secondary btn-sm" id="qa-view-pipeline">View Pipeline</button>
+            <button class="btn btn-secondary btn-sm" id="qa-view-approvals">Approval Queue</button>
             <button class="btn btn-secondary btn-sm" id="qa-add-cust">+ Add Customer</button>
             <button class="btn btn-secondary btn-sm" id="qa-add-prod">+ Add Product</button>
-            <button class="btn btn-secondary btn-sm" id="qa-add-disc">+ Configure Discount Policy</button>
-            <button class="btn btn-secondary btn-sm" id="qa-add-appr">+ Configure Approval Policy</button>
           `;
         } else if (roleName === 'SALES_REP') {
           buttonsHtml = `
+            <button class="btn btn-primary btn-sm" id="qa-new-quote">+ New Quotation</button>
+            <button class="btn btn-secondary btn-sm" id="qa-view-pipeline">View Pipeline</button>
             <button class="btn btn-secondary btn-sm" id="qa-add-cust">+ Add Customer</button>
-            <button class="btn btn-secondary btn-sm" id="qa-view-prods">Browse Products Catalog</button>
-            <button class="btn btn-secondary btn-sm" id="qa-view-inv">Check Inventory Stock</button>
+            <button class="btn btn-secondary btn-sm" id="qa-view-prods">Browse Products</button>
           `;
         } else if (roleName === 'SALES_MANAGER') {
           buttonsHtml = `
-            <button class="btn btn-secondary btn-sm" id="qa-add-cust">+ Add Customer</button>
-            <button class="btn btn-secondary btn-sm" id="qa-add-disc">+ Configure Discount Policy</button>
-            <button class="btn btn-secondary btn-sm" id="qa-add-appr">+ Configure Approval Policy</button>
+            <button class="btn btn-primary btn-sm" id="qa-view-approvals">Approval Queue</button>
+            <button class="btn btn-secondary btn-sm" id="qa-new-quote">+ New Quotation</button>
+            <button class="btn btn-secondary btn-sm" id="qa-view-pipeline">View Pipeline</button>
+            <button class="btn btn-secondary btn-sm" id="qa-add-disc">+ Discount Policy</button>
           `;
         } else if (roleName === 'FINANCE_OPERATIONS') {
           buttonsHtml = `
+            <button class="btn btn-primary btn-sm" id="qa-view-approvals">Approval Queue</button>
+            <button class="btn btn-secondary btn-sm" id="qa-view-quotes">View Quotations</button>
             <button class="btn btn-secondary btn-sm" id="qa-add-prod">+ Add Product</button>
-            <button class="btn btn-secondary btn-sm" id="qa-view-inv">Update Inventory Stock</button>
-            <button class="btn btn-secondary btn-sm" id="qa-add-bill">+ Configure Billing Plan</button>
+            <button class="btn btn-secondary btn-sm" id="qa-add-bill">+ Billing Plan</button>
           `;
         }
 
         qaContainer.innerHTML = buttonsHtml;
 
+        document.getElementById('qa-new-quote')?.addEventListener('click', () => {
+          if (typeof onNavigate === 'function') onNavigate('quotations');
+        });
+        document.getElementById('qa-view-pipeline')?.addEventListener('click', () => {
+          if (typeof onNavigate === 'function') onNavigate('pipeline');
+        });
+        document.getElementById('qa-view-approvals')?.addEventListener('click', () => {
+          if (typeof onNavigate === 'function') onNavigate('approvals');
+        });
+        document.getElementById('qa-view-quotes')?.addEventListener('click', () => {
+          if (typeof onNavigate === 'function') onNavigate('quotations');
+        });
         document.getElementById('qa-add-cust')?.addEventListener('click', () => {
           if (typeof onNavigate === 'function') onNavigate('customers');
         });
@@ -274,28 +245,22 @@
         document.getElementById('qa-add-disc')?.addEventListener('click', () => {
           if (typeof onNavigate === 'function') onNavigate('discount-policies');
         });
-        document.getElementById('qa-add-appr')?.addEventListener('click', () => {
-          if (typeof onNavigate === 'function') onNavigate('approval-policies');
-        });
         document.getElementById('qa-add-bill')?.addEventListener('click', () => {
           if (typeof onNavigate === 'function') onNavigate('billing-plans');
         });
         document.getElementById('qa-view-prods')?.addEventListener('click', () => {
           if (typeof onNavigate === 'function') onNavigate('products');
         });
-        document.getElementById('qa-view-inv')?.addEventListener('click', () => {
-          if (typeof onNavigate === 'function') onNavigate('inventory');
-        });
       }
 
       // Link clicks
+      document.getElementById('dash-link-quotations')?.addEventListener('click', () => onNavigate('quotations'));
+      document.getElementById('dash-link-pipeline')?.addEventListener('click', () => onNavigate('pipeline'));
+      document.getElementById('dash-link-approvals-queue')?.addEventListener('click', () => onNavigate('approvals'));
       document.getElementById('dash-link-customers')?.addEventListener('click', () => onNavigate('customers', 'customers'));
-      document.getElementById('dash-link-tiers')?.addEventListener('click', () => onNavigate('customers', 'tiers'));
-      document.getElementById('dash-link-products')?.addEventListener('click', () => onNavigate('products', 'products'));
-      document.getElementById('dash-link-inventory')?.addEventListener('click', () => onNavigate('inventory', 'inventory'));
       document.getElementById('dash-link-discounts')?.addEventListener('click', () => onNavigate('discount-policies'));
-      document.getElementById('dash-link-approvals')?.addEventListener('click', () => onNavigate('approval-policies'));
-      document.getElementById('dash-link-billing')?.addEventListener('click', () => onNavigate('billing-plans'));
+      document.getElementById('dash-link-approvals-config')?.addEventListener('click', () => onNavigate('approval-policies'));
+      document.getElementById('dash-link-rec-rules')?.addEventListener('click', () => onNavigate('recommendation-rules'));
       document.getElementById('dash-link-settings')?.addEventListener('click', () => onNavigate('settings'));
     }
   };

@@ -13,7 +13,7 @@
         <div class="view-header animate-fade-in">
           <div style="margin-bottom:var(--space-xl);">
             <h2>Settings & Commercial Configuration Hub</h2>
-            <p>Centralized administration of master data classifications, discount rules, approval thresholds, and billing plans.</p>
+            <p>Centralized administration of master data classifications, discount rules, approval thresholds, recommendation rules, and billing plans.</p>
           </div>
 
           <!-- Section 1: Master Data Configuration -->
@@ -72,7 +72,7 @@
           <!-- Section 2: Commercial Policy Configuration -->
           <div style="margin-bottom:var(--space-lg);">
             <h3 style="margin-bottom:var(--space-xs);">Commercial Rules & Terms</h3>
-            <p style="font-size:var(--font-size-xs);">Configure pricing boundaries, escalation triggers, and contract terms.</p>
+            <p style="font-size:var(--font-size-xs);">Configure pricing boundaries, escalation triggers, upsell pairings, and contract terms.</p>
           </div>
 
           <div class="capabilities-grid">
@@ -103,6 +103,21 @@
               <p class="capability-desc">Configure discount thresholds, margin floors, and payment term triggers mapped to Sales Manager or Finance Operations.</p>
               <div style="margin-top:var(--space-sm);">
                 <button class="btn btn-secondary btn-sm">Configure Approval Policies &rarr;</button>
+              </div>
+            </div>
+
+            <!-- Recommendation Rules Tile -->
+            <div class="capability-card" style="cursor:pointer;" id="tile-rec-rules">
+              <div class="capability-header">
+                <div class="capability-icon-wrap" style="background:var(--color-teal-light);color:var(--color-teal);">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+                <span class="badge badge-teal">Live Rules</span>
+              </div>
+              <h4 class="capability-title">Recommendation Rules</h4>
+              <p class="capability-desc">Configure product affinity rankings, cross-sell pairings, featured promotions, and margin safeguards.</p>
+              <div style="margin-top:var(--space-sm);">
+                <button class="btn btn-secondary btn-sm">Configure Upsell Rules &rarr;</button>
               </div>
             </div>
 
@@ -143,6 +158,10 @@
 
       document.getElementById('tile-approval-policies')?.addEventListener('click', () => {
         if (typeof onSwitchView === 'function') onSwitchView('approval-policies');
+      });
+
+      document.getElementById('tile-rec-rules')?.addEventListener('click', () => {
+        if (typeof onSwitchView === 'function') onSwitchView('recommendation-rules');
       });
 
       document.getElementById('tile-billing-plans')?.addEventListener('click', () => {
