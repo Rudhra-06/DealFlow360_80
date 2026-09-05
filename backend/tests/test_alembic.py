@@ -48,8 +48,9 @@ def test_alembic_target_metadata_binds_to_base():
     target_metadata = alembic_env.target_metadata
 
     assert target_metadata is Base.metadata
-    # In Phase 1 - Part 3, target_metadata should currently have no business tables
-    assert len(target_metadata.tables) == 0
+    # In Phase 1 - Part 5+, target_metadata includes roles and users tables
+    assert "roles" in target_metadata.tables
+    assert "users" in target_metadata.tables
 
 
 def test_alembic_baseline_migration_exists():

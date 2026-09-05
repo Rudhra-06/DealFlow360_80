@@ -10,6 +10,12 @@ class UserBase(BaseModel):
     full_name: str
     is_active: bool = True
 
+class UserCreateInternal(UserBase):
+    """Internal schema for creating a new User record. Note: hashed_password must be pre-hashed."""
+
+    hashed_password: str
+    role_id: int
+
 
 class UserRead(UserBase):
     id: int
