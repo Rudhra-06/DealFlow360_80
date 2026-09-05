@@ -84,6 +84,18 @@
             <span id="login-alert-text"></span>
           </div>
 
+          <!-- Demo Accounts Quick-Select -->
+          <div style="margin-bottom: var(--space-md); padding: 10px 12px; background: var(--color-background); border-radius: var(--radius-md); border: 1px solid var(--color-border-light);">
+            <div style="font-size: 0.7rem; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase; margin-bottom: 6px;">Demo Role Quick-Select</div>
+            <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-secondary btn-sm demo-role-btn" data-email="salesrep.demo@example.com" style="padding: 3px 8px; font-size: 0.75rem;">Sales Rep</button>
+              <button type="button" class="btn btn-secondary btn-sm demo-role-btn" data-email="manager.demo@example.com" style="padding: 3px 8px; font-size: 0.75rem;">Manager</button>
+              <button type="button" class="btn btn-secondary btn-sm demo-role-btn" data-email="finance.demo@example.com" style="padding: 3px 8px; font-size: 0.75rem;">Finance</button>
+              <button type="button" class="btn btn-secondary btn-sm demo-role-btn" data-email="admin.demo@example.com" style="padding: 3px 8px; font-size: 0.75rem;">Admin</button>
+              <button type="button" class="btn btn-secondary btn-sm demo-role-btn" data-email="customer.demo@example.com" style="padding: 3px 8px; font-size: 0.75rem;">Customer</button>
+            </div>
+          </div>
+
           <!-- Login Form -->
           <form id="login-form" novalidate>
             <!-- Email Input -->
@@ -168,6 +180,16 @@
 
       // Initialize Password Show/Hide Toggle
       window.DealFlowUI.initPasswordToggle(passwordToggleBtn, passwordInput);
+
+      // Demo Role Quick-Select Handler
+      document.querySelectorAll('.demo-role-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          emailInput.value = btn.getAttribute('data-email');
+          passwordInput.value = 'DealFlow360Demo123!';
+          hideAlert();
+          clearValidationErrors();
+        });
+      });
 
       // Check URL parameters for session notifications
       const urlParams = new URLSearchParams(window.location.search);

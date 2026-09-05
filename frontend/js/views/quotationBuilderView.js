@@ -20,16 +20,38 @@
   async function render(container, params = {}) {
     quoteId = params.quoteId || (params.id ? parseInt(params.id, 10) : null);
 
+    if (!quoteId && window.location.hash.includes('?')) {
+      const qs = window.location.hash.split('?')[1];
+      const searchParams = new URLSearchParams(qs);
+      const qVal = searchParams.get('id') || searchParams.get('quoteId');
+      if (qVal) quoteId = parseInt(qVal, 10);
+    }
+    if (!quoteId && window.location.search) {
+      const searchParams = new URLSearchParams(window.location.search);
+      const qVal = searchParams.get('id') || searchParams.get('quoteId');
+      if (qVal) quoteId = parseInt(qVal, 10);
+    }
+
     if (!quoteId) {
       container.innerHTML = `
-        <div class="card" style="text-align: center; padding: 40px;">
-          <h3>No Quotation Selected</h3>
-          <p style="color: var(--color-text-secondary); margin-bottom: 20px;">Please select a quotation from the list or pipeline.</p>
-          <button class="btn btn-primary" onclick="window.DealFlowApp.switchView('quotations');">Back to Quotations</button>
+        <div class="card animate-fade-in" style="text-align: center; padding: 60px 20px; max-width: 600px; margin: 40px auto;">
+          <div style="width: 56px; height: 56px; border-radius: var(--radius-full); background: var(--color-navy-muted); color: var(--color-navy); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-md);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <h3 style="font-size: var(--font-size-lg); color: var(--color-navy); margin-bottom: 8px;">No Quotation Selected</h3>
+          <p style="color: var(--color-text-secondary); margin-bottom: var(--space-lg); font-size: var(--font-size-sm);">Select an existing quotation from your workspace list or create a new quotation to launch Deal Intelligence.</p>
+          <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="if(window.QuotationsView && typeof window.QuotationsView.openNewQuotationModal === 'function') { window.QuotationsView.openNewQuotationModal(); } else { window.DealFlowApp.switchView('quotations'); }">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>+ Create New Quotation</span>
+            </button>
+            <button class="btn btn-secondary" onclick="window.DealFlowApp.switchView('quotations');">Browse Quotations List</button>
+          </div>
         </div>
       `;
       return;
     }
+
 
     container.innerHTML = `
       <div id="builder-main-wrapper" class="animate-fade-in">

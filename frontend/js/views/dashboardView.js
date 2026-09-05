@@ -306,7 +306,14 @@
       document.getElementById('dash-link-demo-readiness')?.addEventListener('click', () => navigate('demo-readiness'));
 
       // Quick action buttons
-      document.getElementById('qa-new-quote')?.addEventListener('click', () => navigate('quotation-builder'));
+      document.getElementById('qa-new-quote')?.addEventListener('click', () => {
+        if (global.QuotationsView && typeof global.QuotationsView.openNewQuotationModal === 'function') {
+          global.QuotationsView.openNewQuotationModal();
+        } else {
+          navigate('quotations');
+        }
+      });
+
       document.getElementById('qa-view-pipeline')?.addEventListener('click', () => navigate('pipeline'));
       document.getElementById('qa-view-approvals')?.addEventListener('click', () => navigate('approvals'));
       document.getElementById('qa-negotiations')?.addEventListener('click', () => navigate('negotiations'));

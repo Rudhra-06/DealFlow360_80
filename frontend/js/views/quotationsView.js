@@ -351,22 +351,52 @@
     `;
   }
 
-  function openNewQuotationModal() {
+  function showModalOverlay() {
+    let modalOverlay = document.getElementById('dealflow-modal-overlay');
+    if (!modalOverlay) {
+      modalOverlay = document.createElement('div');
+      modalOverlay.id = 'dealflow-modal-overlay';
+      modalOverlay.className = 'modal-overlay';
+      document.body.appendChild(modalOverlay);
+    }
+    modalOverlay.classList.add('show');
+  }
+
+  function hideModalOverlay() {
+    const modalOverlay = document.getElementById('dealflow-modal-overlay');
+    if (modalOverlay) {
+      modalOverlay.classList.remove('show');
+    }
+  }
+
+  async function openNewQuotationModal() {
+    showModalOverlay();
     const modal = document.getElementById('dealflow-modal-overlay');
     if (!modal) return;
+
+    if (cachedCustomers.length === 0) {
+      try {
+        const custRes = await global.CustomersAPI.list({ limit: 100 });
+        if (custRes.ok && custRes.data) {
+          cachedCustomers = custRes.data;
+        }
+      } catch (e) {
+        console.warn('Failed to load customers for modal:', e);
+      }
+    }
 
     modal.innerHTML = `
       <div class="modal-dialog animate-fade-in" style="max-width: 520px;">
         <div class="modal-header">
           <h3 class="modal-title">Create New Quotation</h3>
-          <button class="modal-close" onclick="window.DealFlowUI.closeModal();">&times;</button>
+          <button class="modal-close" id="btn-close-quote-modal-top">&times;</button>
         </div>
         <div class="modal-body">
           <form id="new-quote-form">
             <div class="form-group">
               <label class="form-label" for="quote-cust-select">Select Customer *</label>
               <select id="quote-cust-select" class="form-input" required>
-                <option value="">-- Select an active customer --</option>
+                <option value="">${cachedCustomers.length > 0 ? '-- Select an active customer --' : '-- No customers found --'}</option>
                 ${cachedCustomers.map(c => `
                   <option value="${c.id}" data-terms="${c.payment_terms_days || 30}" data-tier="${c.tier?.name || 'Standard'}" data-currency="${c.currency || 'USD'}">
                     ${c.name} (${c.customer_code}) — ${c.tier?.name || 'Standard Tier'}
@@ -401,7 +431,7 @@
             <div id="quote-form-error" class="alert alert-coral" style="display: none; margin-top: var(--space-sm);"></div>
 
             <div style="display: flex; justify-content: flex-end; gap: var(--space-sm); margin-top: var(--space-lg);">
-              <button type="button" class="btn btn-secondary" onclick="window.DealFlowUI.closeModal();">Cancel</button>
+              <button type="button" class="btn btn-secondary" id="btn-cancel-quote-modal">Cancel</button>
               <button type="submit" id="btn-submit-create-quote" class="btn btn-primary">
                 <span class="spinner" style="display: none;"></span>
                 <span>Create & Open Builder</span>
@@ -412,7 +442,8 @@
       </div>
     `;
 
-    global.DealFlowUI.openModal();
+    document.getElementById('btn-close-quote-modal-top')?.addEventListener('click', hideModalOverlay);
+    document.getElementById('btn-cancel-quote-modal')?.addEventListener('click', hideModalOverlay);
 
     const form = document.getElementById('new-quote-form');
     const custSelect = document.getElementById('quote-cust-select');
@@ -451,7 +482,7 @@
       }
 
       submitBtn.disabled = true;
-      submitBtn.querySelector('.spinner').style.display = 'inline-block';
+      if (submitBtn.querySelector('.spinner')) submitBtn.querySelector('.spinner').style.display = 'inline-block';
 
       try {
         const payload = {
@@ -463,25 +494,37 @@
         const res = await global.QuotationsAPI.create(payload);
         if (!res.ok) {
           submitBtn.disabled = false;
-          submitBtn.querySelector('.spinner').style.display = 'none';
+          if (submitBtn.querySelector('.spinner')) submitBtn.querySelector('.spinner').style.display = 'none';
           errBox.textContent = res.data?.detail || res.error || 'Failed to create quotation.';
           errBox.style.display = 'block';
           return;
         }
 
-        global.DealFlowUI.closeModal();
-        global.DealFlowUI.toast('Quotation created successfully!', 'teal');
+        hideModalOverlay();
+        if (global.DealFlowUI && typeof global.DealFlowUI.toast === 'function') {
+          global.DealFlowUI.toast('Quotation created successfully!', 'teal');
+        }
+        window.location.hash = `#/quotation-builder?id=${res.data.id}`;
         global.DealFlowApp.switchView('quotation-builder', { quoteId: res.data.id });
       } catch (err) {
         submitBtn.disabled = false;
-        submitBtn.querySelector('.spinner').style.display = 'none';
+        if (submitBtn.querySelector('.spinner')) submitBtn.querySelector('.spinner').style.display = 'none';
         errBox.textContent = 'An error occurred while creating quotation.';
         errBox.style.display = 'block';
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          const spinner = submitBtn.querySelector('.spinner');
+          if (spinner) spinner.style.display = 'none';
+        }
       }
     });
   }
 
   global.QuotationsView = {
-    render: render
+    render: render,
+    openNewQuotationModal: openNewQuotationModal
   };
 })(typeof window !== 'undefined' ? window : this);
+
+

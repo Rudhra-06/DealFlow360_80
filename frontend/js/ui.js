@@ -19,7 +19,39 @@
     },
 
     /**
+     * Open generic modal overlay.
+     */
+    openModal() {
+      let modalOverlay = document.getElementById('dealflow-modal-overlay');
+      if (!modalOverlay) {
+        modalOverlay = document.createElement('div');
+        modalOverlay.id = 'dealflow-modal-overlay';
+        modalOverlay.className = 'modal-overlay';
+        document.body.appendChild(modalOverlay);
+      }
+      modalOverlay.classList.add('show');
+    },
+
+    /**
+     * Close generic modal overlay.
+     */
+    closeModal() {
+      const modalOverlay = document.getElementById('dealflow-modal-overlay');
+      if (modalOverlay) {
+        modalOverlay.classList.remove('show');
+      }
+    },
+
+    /**
+     * Alias for showToast.
+     */
+    toast(message, type = 'teal') {
+      return this.showToast(message, type);
+    },
+
+    /**
      * Bind password show/hide button to target input.
+
      * @param {HTMLButtonElement} toggleBtn
      * @param {HTMLInputElement} passwordInput
      */
