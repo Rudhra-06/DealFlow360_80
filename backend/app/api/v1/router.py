@@ -4,10 +4,22 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.auth import auth_router
+from app.api.v1.customer_tiers import router as customer_tiers_router
+from app.api.v1.customers import router as customers_router
+from app.api.v1.inventory import router as inventory_router
+from app.api.v1.product_categories import router as product_categories_router
+from app.api.v1.products import router as products_router
+from app.api.v1.warehouses import router as warehouses_router
 from app.db.session import get_db
 
 api_router = APIRouter()
 api_router.include_router(auth_router, prefix="/auth", tags=["Authentication"])
+api_router.include_router(customer_tiers_router, prefix="/customer-tiers", tags=["Customer Tiers"])
+api_router.include_router(customers_router, prefix="/customers", tags=["Customers"])
+api_router.include_router(product_categories_router, prefix="/product-categories", tags=["Product Categories"])
+api_router.include_router(products_router, prefix="/products", tags=["Products"])
+api_router.include_router(warehouses_router, prefix="/warehouses", tags=["Warehouses"])
+api_router.include_router(inventory_router, prefix="/inventory", tags=["Inventory"])
 
 
 @api_router.get("/health", tags=["Health"])

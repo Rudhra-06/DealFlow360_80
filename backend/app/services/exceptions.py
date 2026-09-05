@@ -35,6 +35,31 @@ class InactiveUserError(AuthenticationError):
     pass
 
 
+class ResourceNotFoundError(ServiceError):
+    """Raised when a requested master-data resource cannot be found."""
+    pass
+
+
+class DuplicateResourceError(ServiceError):
+    """Raised when creating or updating a resource with a duplicate unique constraint (code, SKU, email, etc.)."""
+    pass
+
+
+class InvalidReferenceError(ServiceError):
+    """Raised when referencing a foreign key resource that does not exist."""
+    pass
+
+
+class InactiveReferenceError(ServiceError):
+    """Raised when attempting to associate a new entity with an inactive parent resource."""
+    pass
+
+
+class InventoryValidationError(ServiceError):
+    """Raised when inventory quantities or operations violate domain constraints."""
+    pass
+
+
 __all__ = [
     "ServiceError",
     "UserAlreadyExistsError",
@@ -45,6 +70,11 @@ __all__ = [
     "TokenError",
     "InvalidTokenError",
     "ExpiredTokenError",
+    "ResourceNotFoundError",
+    "DuplicateResourceError",
+    "InvalidReferenceError",
+    "InactiveReferenceError",
+    "InventoryValidationError",
 ]
 
 
