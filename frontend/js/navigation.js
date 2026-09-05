@@ -70,6 +70,14 @@
       status: 'active',
       section: 'sales'
     },
+    negotiations: {
+      id: 'negotiations',
+      label: 'Negotiation Inbox',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+      active: true,
+      status: 'active',
+      section: 'sales'
+    },
 
     // Master Data Workspace
     customers: {
@@ -139,7 +147,7 @@
     // Customer Specific Portal Items
     customerOverview: {
       id: 'customerOverview',
-      label: 'Overview',
+      label: 'Portal Overview',
       icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>`,
       active: true,
       status: 'active',
@@ -149,18 +157,16 @@
       id: 'customerQuotes',
       label: 'My Quotations',
       icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
-      active: false,
-      status: 'Coming Soon',
-      description: 'Self-service quotation review and acceptance will be available in the Customer Portal module.',
+      active: true,
+      status: 'active',
       section: 'customer'
     },
     customerNegotiations: {
       id: 'customerNegotiations',
-      label: 'Negotiations',
+      label: 'Negotiations & Messages',
       icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-      active: false,
-      status: 'Coming Soon',
-      description: 'Direct quote feedback and counter-proposal negotiations will be available in future releases.',
+      active: true,
+      status: 'active',
       section: 'customer'
     },
     customerOrders: {
@@ -191,6 +197,7 @@
       'dashboard',
       'quotations',
       'pipeline',
+      'negotiations',
       'approvals',
       'customers',
       'products',
@@ -204,6 +211,7 @@
       'dashboard',
       'quotations',
       'pipeline',
+      'negotiations',
       'customers',
       'products',
       'inventory',
@@ -214,6 +222,7 @@
       'dashboard',
       'quotations',
       'pipeline',
+      'negotiations',
       'approvals',
       'customers',
       'products',

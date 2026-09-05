@@ -1,0 +1,247 @@
+/* DealFlow360 — Phase 4 Customer Portal Styles */
+
+/* ==========================================================================
+   Customer Portal Header & Container
+   ========================================================================== */
+.portal-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-md);
+}
+
+.portal-welcome-banner {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-xl);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.portal-welcome-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-navy);
+  margin-bottom: 4px;
+}
+
+.portal-welcome-sub {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Customer Quotation Cards Grid */
+.portal-quotes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-lg);
+}
+
+.portal-quote-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.portal-quote-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-teal);
+}
+
+.portal-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.portal-card-num {
+  font-family: monospace;
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.portal-card-version {
+  font-size: 0.6875rem;
+  padding: 2px 6px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.portal-card-total {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-navy);
+  margin-bottom: var(--space-xs);
+}
+
+.portal-card-terms {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-md);
+}
+
+.portal-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--color-border-light);
+  padding-top: var(--space-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   Customer Quotation Detail Workspace
+   ========================================================================== */
+.portal-quote-detail-header {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+.portal-quote-detail-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.portal-quote-detail-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+}
+
+.portal-detail-metric-col label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.portal-detail-metric-col .metric-val {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.portal-product-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.portal-product-table th {
+  background: var(--color-background);
+  padding: 10px 14px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.portal-product-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-border-light);
+  font-size: var(--font-size-sm);
+}
+
+/* ==========================================================================
+   Version History & Comparison Styles
+   ========================================================================== */
+.versions-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.version-item-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.version-item-card.current {
+  border-color: var(--color-teal);
+  background: var(--color-teal-light);
+}
+
+.version-diff-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space-md);
+}
+
+.version-diff-table th {
+  background: var(--color-background);
+  padding: 10px 12px;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-navy);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.version-diff-table td {
+  padding: 10px 12px;
+  font-size: var(--font-size-sm);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.diff-indicator-up {
+  color: var(--color-coral);
+  font-weight: 700;
+}
+
+.diff-indicator-down {
+  color: var(--color-teal-hover);
+  font-weight: 700;
+}
+
+/* Confirmation Success Modal */
+.confirmation-success-box {
+  text-align: center;
+  padding: var(--space-2xl) var(--space-md);
+}
+
+.confirmation-check-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-teal-light);
+  color: var(--color-teal-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-md);
+}

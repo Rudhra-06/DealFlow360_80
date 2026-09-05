@@ -1,0 +1,125 @@
+/* DealFlow360 — Phase 4 Notifications & Real-Time Alert Styles */
+
+/* ==========================================================================
+   Header Bell Trigger & Badge
+   ========================================================================== */
+.notif-bell-btn {
+  position: relative;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  cursor: pointer;
+  color: var(--color-navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.notif-bell-btn:hover {
+  background: var(--color-hover-bg);
+  border-color: var(--color-border-dark);
+}
+
+.notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--color-coral);
+  color: #FFFFFF;
+  font-size: 0.625rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-surface);
+}
+
+/* ==========================================================================
+   Notification Slide-Out Drawer
+   ========================================================================== */
+.notification-drawer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.notif-drawer-header {
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-background);
+}
+
+.notif-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-md);
+}
+
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.notif-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  position: relative;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.notif-card:hover {
+  border-color: var(--color-teal);
+  box-shadow: var(--shadow-xs);
+}
+
+.notif-card.unread {
+  background: #F0FDF4;
+  border-color: #BBF7D0;
+}
+
+.notif-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.notif-card-title {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.notif-card-time {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+}
+
+.notif-card-msg {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.notif-unread-dot {
+  position: absolute;
+  left: 6px;
+  top: 14px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-teal);
+}

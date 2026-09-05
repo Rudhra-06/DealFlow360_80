@@ -64,6 +64,10 @@
       catalogCategories = catRes.ok ? catRes.data : [];
       billingPlans = planRes.ok ? planRes.data : [];
 
+      if (global.DealFlowWS) {
+        global.DealFlowWS.subscribe(quoteId);
+      }
+
       renderWorkspace();
     } catch (err) {
       console.error('Error initializing quote builder:', err);
@@ -122,6 +126,26 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             <span>Audit Trail</span>
           </button>
+
+          <!-- Version History Action -->
+          <button id="btn-view-versions" class="btn btn-secondary btn-sm" title="View quote version history and compare revisions">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+            <span>v${q.version_number || 1} Revisions</span>
+          </button>
+
+          <!-- Customer Negotiation & Messages Action -->
+          <button id="btn-view-messages" class="btn btn-secondary btn-sm" title="Customer communication and negotiation messages">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span>Messages / Negotiation</span>
+          </button>
+
+          <!-- Send to Customer (Only if APPROVED) -->
+          ${q.status === 'APPROVED' ? `
+            <button id="btn-send-to-customer" class="btn btn-teal btn-sm" style="font-weight: 700; box-shadow: 0 2px 6px rgba(13,148,136,0.25);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              <span>Send to Customer</span>
+            </button>
+          ` : ''}
 
           <!-- Submit for Approval -->
           ${editable ? `
@@ -591,6 +615,34 @@
     // Audit Trail
     document.getElementById('btn-open-audit')?.addEventListener('click', () => {
       openAuditTrailModal();
+    });
+
+    // Version History & Compare
+    document.getElementById('btn-view-versions')?.addEventListener('click', () => {
+      openVersionsModal();
+    });
+
+    // Customer Negotiation & Messages
+    document.getElementById('btn-view-messages')?.addEventListener('click', () => {
+      openMessagesDrawer();
+    });
+
+    // Send to Customer Action
+    document.getElementById('btn-send-to-customer')?.addEventListener('click', async () => {
+      if (confirm(`Send quotation ${currentQuote.quote_number} to customer for review?`)) {
+        try {
+          const res = await global.NegotiationAPI.sendToCustomer(quoteId);
+          if (res.ok) {
+            currentQuote = res.data;
+            renderWorkspace();
+            global.DealFlowUI.toast(`Quotation ${currentQuote.quote_number} sent to customer successfully.`, 'teal');
+          } else {
+            global.DealFlowUI.toast(res.data?.detail || 'Failed to send quotation to customer.', 'coral');
+          }
+        } catch (e) {
+          global.DealFlowUI.toast('Network error sending quotation to customer.', 'coral');
+        }
+      }
     });
 
     // Submit Quote Button
@@ -1173,6 +1225,234 @@
     }
   }
 
+  // Open Internal Version History & Diff Modal
+  async function openVersionsModal() {
+    const overlay = document.getElementById('dealflow-modal-overlay');
+    if (!overlay) return;
+
+    overlay.innerHTML = `
+      <div class="modal-card" style="max-width: 800px; width: 90%;">
+        <div class="modal-header">
+          <h3>Quotation Revisions & Version Comparison</h3>
+          <button class="modal-close-btn" id="btn-close-ver-modal">&times;</button>
+        </div>
+        <div class="modal-body" id="ver-modal-body">
+          <div style="text-align: center; padding: 24px;"><span class="spinner spinner-teal"></span> Loading revision history...</div>
+        </div>
+      </div>
+    `;
+    overlay.classList.add('active');
+    document.getElementById('btn-close-ver-modal').onclick = () => overlay.classList.remove('active');
+
+    try {
+      const res = await global.NegotiationAPI.listVersions(quoteId);
+      const versions = res.ok ? res.data : [];
+      const body = document.getElementById('ver-modal-body');
+      if (!body) return;
+
+      if (!versions || versions.length === 0) {
+        body.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--color-text-muted);">No prior archived versions found. Current active version is v${currentQuote.version_number}.</div>`;
+        return;
+      }
+
+      body.innerHTML = `
+        <div style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; background: var(--color-bg); padding: 12px 16px; border-radius: var(--radius-md);">
+          <div>
+            <strong>Current Active:</strong> Version ${currentQuote.version_number} &bull; ${currentQuote.currency} ${Number(currentQuote.net_total).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <label style="font-size: 0.8rem; font-weight: 600;">Compare with:</label>
+            <select id="select-compare-ver" class="form-input" style="padding: 4px 8px; font-size: 0.8rem; width: 140px;">
+              ${versions.map(v => `<option value="${v.version_number}">v${v.version_number} (${new Date(v.created_at).toLocaleDateString()})</option>`).join('')}
+            </select>
+            <button id="btn-run-compare" class="btn btn-secondary btn-sm">Compare Diff</button>
+          </div>
+        </div>
+
+        <h4 style="font-size: 0.85rem; color: var(--color-navy); margin-bottom: 8px;">Archived Versions</h4>
+        <div style="max-height: 200px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-bottom: 16px;">
+          <table class="data-table" style="font-size: 0.8rem;">
+            <thead>
+              <tr>
+                <th>Version</th>
+                <th>Status</th>
+                <th>Net Total</th>
+                <th>Margin %</th>
+                <th>Archived At</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${versions.map(v => `
+                <tr>
+                  <td><strong>v${v.version_number}</strong></td>
+                  <td>${formatStatusBadge(v.status)}</td>
+                  <td>${v.currency} ${Number(v.net_total).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                  <td>${Number(v.margin_pct).toFixed(1)}%</td>
+                  <td>${new Date(v.created_at).toLocaleString()}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div id="version-diff-result-container"></div>
+      `;
+
+      document.getElementById('btn-run-compare')?.addEventListener('click', async () => {
+        const fromV = parseInt(document.getElementById('select-compare-ver').value, 10);
+        const toV = currentQuote.version_number;
+        const diffCont = document.getElementById('version-diff-result-container');
+        if (!diffCont) return;
+
+        diffCont.innerHTML = `<div style="text-align:center; padding: 12px;"><span class="spinner spinner-teal"></span> Calculating version delta...</div>`;
+        const diffRes = await global.NegotiationAPI.compareVersions(quoteId, fromV, toV);
+        if (!diffRes.ok) {
+          diffCont.innerHTML = `<div class="alert alert-coral">${diffRes.data?.detail || 'Failed to generate version diff.'}</div>`;
+          return;
+        }
+
+        const d = diffRes.data;
+        diffCont.innerHTML = `
+          <div class="version-diff-card animate-fade-in" style="margin-top: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 12px; background: #FAFDFB;">
+            <div style="font-weight: 700; color: var(--color-navy); font-size: 0.85rem; margin-bottom: 8px;">
+              Delta Comparison: v${d.from_version} &rarr; v${d.to_version}
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; font-size: 0.8rem;">
+              <div style="background: white; padding: 8px; border-radius: 4px; border: 1px solid var(--color-border);">
+                <div style="color: var(--color-text-secondary);">Net Total Delta</div>
+                <div style="font-weight: 700; color: ${d.financial_diff?.net_total_diff < 0 ? 'var(--color-coral)' : 'var(--color-teal)'};">
+                  ${d.financial_diff?.net_total_diff >= 0 ? '+' : ''}${d.financial_diff?.net_total_diff?.toFixed(2)}
+                </div>
+              </div>
+              <div style="background: white; padding: 8px; border-radius: 4px; border: 1px solid var(--color-border);">
+                <div style="color: var(--color-text-secondary);">Discount Delta</div>
+                <div style="font-weight: 700; color: var(--color-navy);">
+                  ${d.financial_diff?.order_discount_diff >= 0 ? '+' : ''}${d.financial_diff?.order_discount_diff?.toFixed(2)}%
+                </div>
+              </div>
+              <div style="background: white; padding: 8px; border-radius: 4px; border: 1px solid var(--color-border);">
+                <div style="color: var(--color-text-secondary);">Margin Delta</div>
+                <div style="font-weight: 700; color: ${d.financial_diff?.margin_diff < 0 ? 'var(--color-coral)' : 'var(--color-teal)'};">
+                  ${d.financial_diff?.margin_diff >= 0 ? '+' : ''}${d.financial_diff?.margin_diff?.toFixed(2)}%
+                </div>
+              </div>
+            </div>
+            ${d.line_diffs && d.line_diffs.length > 0 ? `
+              <div style="font-size: 0.75rem; color: var(--color-text-secondary);">
+                <strong>Modified Lines:</strong> ${d.line_diffs.map(l => `${l.product_name} (Qty: ${l.qty_old} &rarr; ${l.qty_new}, Disc: ${l.disc_old}% &rarr; ${l.disc_new}%)`).join('; ')}
+              </div>
+            ` : '<div style="font-size: 0.75rem; color: var(--color-text-muted);">No line-level differences between these versions.</div>'}
+          </div>
+        `;
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  // Open Internal Messages / Negotiation Drawer
+  async function openMessagesDrawer() {
+    const backdrop = document.getElementById('dealflow-drawer-backdrop');
+    const panel = document.getElementById('dealflow-drawer-panel');
+    if (!panel || !backdrop) return;
+
+    panel.innerHTML = `
+      <div class="drawer-header">
+        <div>
+          <h3>Negotiation & Customer Messages</h3>
+          <div style="font-size: 0.75rem; color: var(--color-text-secondary);">${currentQuote.quote_number} &bull; v${currentQuote.version_number}</div>
+        </div>
+        <button class="drawer-close-btn" id="btn-close-msg-drawer">&times;</button>
+      </div>
+      <div class="drawer-body" style="display: flex; flex-direction: column; height: calc(100% - 130px); padding: 16px;">
+        <div id="drawer-messages-list" class="negotiation-chat-thread" style="flex: 1; overflow-y: auto; padding: 12px; background: #F8FAFC; border-radius: var(--radius-md); margin-bottom: 12px;">
+          <div style="text-align: center; padding: 20px;"><span class="spinner spinner-teal"></span> Loading conversation...</div>
+        </div>
+        <div class="negotiation-reply-box" style="background: white; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px;">
+          <textarea id="sales-reply-content" class="form-input" rows="3" placeholder="Type a message or response to customer..."></textarea>
+          <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+            <button id="btn-send-sales-reply" class="btn btn-primary btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              <span>Send Message</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    backdrop.classList.add('active');
+    panel.classList.add('active');
+
+    const closeDrawer = () => {
+      backdrop.classList.remove('active');
+      panel.classList.remove('active');
+    };
+    document.getElementById('btn-close-msg-drawer').onclick = closeDrawer;
+    backdrop.onclick = closeDrawer;
+
+    await loadMessagesIntoThread();
+
+    document.getElementById('btn-send-sales-reply')?.addEventListener('click', async () => {
+      const input = document.getElementById('sales-reply-content');
+      const content = input?.value.trim();
+      if (!content) return;
+
+      input.disabled = true;
+      try {
+        const res = await global.NegotiationAPI.replyMessage(quoteId, {
+          content: content,
+          message_type: 'COMMENT'
+        });
+        input.disabled = false;
+        if (res.ok) {
+          input.value = '';
+          await loadMessagesIntoThread();
+          global.DealFlowUI.toast('Message sent to customer.', 'teal');
+        } else {
+          global.DealFlowUI.toast(res.data?.detail || 'Failed to send message.', 'coral');
+        }
+      } catch (e) {
+        input.disabled = false;
+        global.DealFlowUI.toast('Error sending message.', 'coral');
+      }
+    });
+  }
+
+  async function loadMessagesIntoThread() {
+    const listEl = document.getElementById('drawer-messages-list');
+    if (!listEl) return;
+
+    try {
+      const res = await global.DealFlowAPI.get(`/api/v1/quotations/${quoteId}/messages`);
+      const msgs = res.ok ? res.data : [];
+
+      if (!msgs || msgs.length === 0) {
+        listEl.innerHTML = `<div style="text-align: center; padding: 24px; color: var(--color-text-muted); font-size: 0.8rem;">No messages exchanged yet. Use the box below to message the customer.</div>`;
+        return;
+      }
+
+      listEl.innerHTML = msgs.map(m => {
+        const isCustomer = m.sender_type === 'CUSTOMER' || m.sender?.role?.name === 'CUSTOMER';
+        const senderLabel = isCustomer ? (m.sender ? m.sender.full_name : 'Customer') : (m.sender ? m.sender.full_name : 'Sales Representative');
+        const timeStr = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        return `
+          <div class="chat-bubble-wrapper ${isCustomer ? 'chat-customer' : 'chat-rep'}" style="margin-bottom: 12px; display: flex; flex-direction: column; align-items: ${isCustomer ? 'flex-start' : 'flex-end'};">
+            <div style="font-size: 0.7rem; color: var(--color-text-muted); margin-bottom: 2px;">
+              ${senderLabel} &bull; ${timeStr} ${m.message_type === 'LINE_QUESTION' ? '<span class="badge badge-navy" style="font-size: 0.6rem;">Line Question</span>' : ''}
+            </div>
+            <div class="chat-bubble" style="max-width: 85%; padding: 8px 12px; border-radius: 10px; background: ${isCustomer ? '#EEF2F6' : 'var(--color-navy)'}; color: ${isCustomer ? 'var(--color-navy)' : 'white'}; font-size: 0.825rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+              ${m.content}
+            </div>
+          </div>
+        `;
+      }).join('');
+      listEl.scrollTop = listEl.scrollHeight;
+    } catch (e) {
+      console.warn(e);
+    }
+  }
+
   function formatEventType(type) {
     const map = {
       'QUOTE_CREATED': 'Quotation Created',
@@ -1189,7 +1469,15 @@
       'STEP_RETURNED': 'Returned for Revision',
       'QUOTE_CANCELLED': 'Quotation Cancelled',
       'RECOMMENDATION_ADDED': 'Upsell Recommendation Added',
-      'RECOMMENDATION_DISMISSED': 'Recommendation Dismissed'
+      'RECOMMENDATION_DISMISSED': 'Recommendation Dismissed',
+      'SENT_TO_CUSTOMER': 'Quotation Sent to Customer',
+      'CUSTOMER_ACCEPTED': 'Customer Accepted Quotation',
+      'CUSTOMER_CONFIRMED': 'Customer Confirmed Deal',
+      'CUSTOMER_CHANGES_REQUESTED': 'Customer Requested Changes / Counteroffer',
+      'COUNTER_OFFER_SUBMITTED': 'Counteroffer Submitted',
+      'COUNTER_OFFER_ACCEPTED': 'Counteroffer Accepted',
+      'COUNTER_OFFER_REJECTED': 'Counteroffer Rejected',
+      'MESSAGE_SENT': 'Message Sent'
     };
     return map[type] || type;
   }
@@ -1200,6 +1488,11 @@
       'PENDING_MANAGER_APPROVAL': 'Pending Manager Approval',
       'PENDING_FINANCE_APPROVAL': 'Pending Finance Approval',
       'APPROVED': 'Approved',
+      'SENT_TO_CUSTOMER': 'Sent to Customer',
+      'CUSTOMER_CHANGES_REQUESTED': 'Customer Changes Requested',
+      'REAPPROVAL_REQUIRED': 'Reapproval Required',
+      'CUSTOMER_ACCEPTED': 'Customer Accepted',
+      'CUSTOMER_CONFIRMED': 'Customer Confirmed',
       'RETURNED_FOR_REVISION': 'Returned for Revision',
       'REJECTED': 'Rejected',
       'CANCELLED': 'Cancelled'
@@ -1213,6 +1506,11 @@
       'PENDING_MANAGER_APPROVAL': { label: 'Pending Manager Approval', cls: 'badge-coral' },
       'PENDING_FINANCE_APPROVAL': { label: 'Pending Finance Approval', cls: 'badge-coral' },
       'APPROVED': { label: 'Approved', cls: 'badge-teal' },
+      'SENT_TO_CUSTOMER': { label: 'Sent to Customer', cls: 'badge-teal' },
+      'CUSTOMER_CHANGES_REQUESTED': { label: 'Changes Requested', cls: 'badge-coral' },
+      'REAPPROVAL_REQUIRED': { label: 'Reapproval Required', cls: 'badge-coral' },
+      'CUSTOMER_ACCEPTED': { label: 'Customer Accepted', cls: 'badge-teal' },
+      'CUSTOMER_CONFIRMED': { label: 'Customer Confirmed', cls: 'badge-teal' },
       'RETURNED_FOR_REVISION': { label: 'Returned for Revision', cls: 'badge-coral' },
       'REJECTED': { label: 'Rejected', cls: 'badge-coral' },
       'CANCELLED': { label: 'Cancelled', cls: 'badge-navy' }

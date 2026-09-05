@@ -12,6 +12,7 @@
     'quotations': { title: 'Sales Quotations', breadcrumb: 'DealFlow360 / Sales Workspace / Quotations' },
     'pipeline': { title: 'Pipeline Board', breadcrumb: 'DealFlow360 / Sales Workspace / Pipeline Board' },
     'quotation-builder': { title: 'Quotation Builder & Deal Intelligence', breadcrumb: 'DealFlow360 / Sales Workspace / Quotation Builder' },
+    'negotiations': { title: 'Negotiation Inbox', breadcrumb: 'DealFlow360 / Sales Workspace / Negotiation Inbox' },
     'approvals': { title: 'Approval Queue', breadcrumb: 'DealFlow360 / Commercial Governance / Approval Queue' },
     'recommendation-rules': { title: 'Recommendation Rules', breadcrumb: 'DealFlow360 / Commercial Configuration / Recommendation Rules' },
     'customers': { title: 'Customers Master', breadcrumb: 'DealFlow360 / Master Data / Customers' },
@@ -20,7 +21,9 @@
     'settings': { title: 'Settings & Configuration', breadcrumb: 'DealFlow360 / Commercial Configuration Hub' },
     'discount-policies': { title: 'Discount Policies', breadcrumb: 'DealFlow360 / Commercial Configuration / Discount Policies' },
     'approval-policies': { title: 'Approval Policies', breadcrumb: 'DealFlow360 / Commercial Configuration / Approval Policies' },
-    'billing-plans': { title: 'Billing Plans', breadcrumb: 'DealFlow360 / Commercial Configuration / Billing Plans' }
+    'billing-plans': { title: 'Billing Plans', breadcrumb: 'DealFlow360 / Commercial Configuration / Billing Plans' },
+    'portal': { title: 'Customer Portal', breadcrumb: 'DealFlow360 / Customer Workspace / My Quotations' },
+    'portal-quotation': { title: 'Commercial Proposal', breadcrumb: 'DealFlow360 / Customer Workspace / Quotation Review' }
   };
 
   /**
@@ -47,6 +50,8 @@
         navId = viewName === 'approval-policies' ? 'approvals' : (viewName === 'billing-plans' ? 'billing' : 'settings');
       } else if (viewName === 'quotation-builder') {
         navId = 'quotations';
+      } else if (viewName === 'portal' || viewName === 'portal-quotation') {
+        navId = 'customerQuotes';
       }
       global.DealFlowNav.setActiveNav(navId);
     }
@@ -78,6 +83,25 @@
       case 'quotation-builder':
         if (global.QuotationBuilderView) {
           await global.QuotationBuilderView.render(container, extraParams);
+        }
+        break;
+
+      case 'negotiations':
+        if (global.NegotiationsView) {
+          await global.NegotiationsView.render(container);
+        }
+        break;
+
+      case 'portal':
+        if (global.PortalView) {
+          await global.PortalView.render(container, 'list');
+        }
+        break;
+
+      case 'portal-quotation':
+        if (global.PortalView) {
+          const qId = extraParams.quoteId || extraParams.id || (typeof params === 'number' ? params : null);
+          await global.PortalView.renderQuotationDetail(container, qId);
         }
         break;
 
@@ -200,11 +224,21 @@
         else if (navId === 'billing') switchView('billing-plans');
         else if (navId === 'pipeline') switchView('pipeline');
         else if (navId === 'quotations') switchView('quotations');
+        else if (navId === 'negotiations') switchView('negotiations');
+        else if (navId === 'customerQuotes' || navId === 'customerOverview' || navId === 'customerNegotiations') switchView('portal');
         else switchView(navId, targetTab);
       });
     }
 
-    // 5. Setup User Dropdown & Drawer Events
+    // 5. Initialize Real-Time WebSockets & Notification Center
+    if (global.DealFlowWS) {
+      global.DealFlowWS.connect();
+    }
+    if (global.DealFlowNotificationCenter) {
+      global.DealFlowNotificationCenter.init();
+    }
+
+    // 6. Setup User Dropdown & Drawer Events
     const userTrigger = document.getElementById('user-menu-trigger');
     const userDropdown = document.getElementById('user-dropdown-menu');
     ui.initUserDropdown(userTrigger, userDropdown);
@@ -225,10 +259,14 @@
       auth.logout();
     });
 
-    // 6. Mount Initial View (Dashboard)
-    await switchView('dashboard');
+    // 7. Mount Initial View (Customer Portal for CUSTOMER role, Dashboard for internal roles)
+    if (roleName.toUpperCase() === 'CUSTOMER') {
+      await switchView('portal');
+    } else {
+      await switchView('dashboard');
+    }
 
-    // 7. Load Live Backend & Database Health Status
+    // 8. Load Live Backend & Database Health Status
     await checkSystemHealth(api);
 
     // 8. Dismiss Loading Overlay smoothly

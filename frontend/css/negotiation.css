@@ -1,0 +1,178 @@
+/* DealFlow360 — Phase 4 Negotiation & Messaging Styles */
+
+/* ==========================================================================
+   Message Thread & Chat Bubbles
+   ========================================================================== */
+.messages-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.message-bubble-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+}
+
+.message-bubble-wrapper.customer-msg {
+  align-self: flex-start;
+}
+
+.message-bubble-wrapper.sales-msg {
+  align-self: flex-end;
+}
+
+.message-meta {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.customer-msg .message-meta {
+  justify-content: flex-start;
+}
+
+.sales-msg .message-meta {
+  justify-content: flex-end;
+}
+
+.message-bubble {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  line-height: 1.45;
+  box-shadow: var(--shadow-xs);
+}
+
+.customer-msg .message-bubble {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  border-bottom-left-radius: 2px;
+}
+
+.sales-msg .message-bubble {
+  background: var(--color-navy);
+  color: #FFFFFF;
+  border-bottom-right-radius: 2px;
+}
+
+.message-line-ref {
+  font-size: 0.6875rem;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 4px;
+  display: inline-block;
+  font-weight: 600;
+}
+
+.sales-msg .message-line-ref {
+  background: rgba(255, 255, 255, 0.15);
+  color: #E2E8F0;
+}
+
+/* ==========================================================================
+   Sales Rep Negotiation Inbox
+   ========================================================================== */
+.negotiation-inbox-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.negotiation-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-md);
+}
+
+.negotiation-card-left {
+  flex: 1;
+}
+
+.negotiation-card-num {
+  font-family: monospace;
+  font-weight: 700;
+  font-size: var(--font-size-md);
+  color: var(--color-navy);
+  margin-bottom: 2px;
+}
+
+.negotiation-card-cust {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-sm);
+}
+
+.negotiation-deltas-box {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  font-size: var(--font-size-xs);
+  margin-top: var(--space-sm);
+}
+
+.delta-item label {
+  color: var(--color-text-secondary);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.delta-item .val {
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.negotiation-actions-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 140px;
+}
+
+/* ==========================================================================
+   Reapproval Progress Visualization
+   ========================================================================== */
+.reapproval-timeline {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.reapproval-timeline-title {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: #92400E;
+  margin-bottom: var(--space-xs);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reapproval-step-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-xs);
+  color: #78350F;
+  margin-bottom: 4px;
+}
