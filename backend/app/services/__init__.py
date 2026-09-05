@@ -1,10 +1,14 @@
 """Application workflow and orchestration services package."""
 
+from app.services.approval_policy import ApprovalPolicyService
 from app.services.auth import AuthenticationService
+from app.services.billing_plan import BillingPlanService
 from app.services.customer import CustomerService
 from app.services.customer_tier import CustomerTierService
+from app.services.discount_policy import DiscountPolicyService
 from app.services.exceptions import (
     AuthenticationError,
+    CommercialPolicyValidationError,
     DuplicateResourceError,
     ExpiredTokenError,
     InactiveReferenceError,
@@ -13,6 +17,7 @@ from app.services.exceptions import (
     InvalidReferenceError,
     InvalidTokenError,
     InventoryValidationError,
+    PolicyAmbiguityError,
     ResourceNotFoundError,
     RoleNotFoundError,
     ServiceError,
@@ -42,6 +47,8 @@ __all__ = [
     "InvalidReferenceError",
     "InactiveReferenceError",
     "InventoryValidationError",
+    "CommercialPolicyValidationError",
+    "PolicyAmbiguityError",
     "RoleService",
     "UserService",
     "CustomerTierService",
@@ -50,4 +57,7 @@ __all__ = [
     "ProductService",
     "WarehouseService",
     "InventoryService",
+    "DiscountPolicyService",
+    "ApprovalPolicyService",
+    "BillingPlanService",
 ]

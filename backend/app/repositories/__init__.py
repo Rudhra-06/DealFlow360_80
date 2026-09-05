@@ -1,6 +1,9 @@
+from app.repositories.approval_policy import ApprovalPolicyRepository
 from app.repositories.base import BaseRepository
+from app.repositories.billing_plan import BillingPlanRepository
 from app.repositories.customer import CustomerRepository
 from app.repositories.customer_tier import CustomerTierRepository
+from app.repositories.discount_policy import DiscountPolicyRepository
 from app.repositories.inventory import InventoryRepository
 from app.repositories.product import ProductRepository
 from app.repositories.product_category import ProductCategoryRepository
@@ -18,4 +21,7 @@ __all__ = [
     "ProductRepository",
     "WarehouseRepository",
     "InventoryRepository",
+    "DiscountPolicyRepository",
+    "ApprovalPolicyRepository",
+    "BillingPlanRepository",
 ]

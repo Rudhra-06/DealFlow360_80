@@ -69,4 +69,51 @@ This document defines the entity-relationship architecture, database schemas, an
 - **Workflow Isolation**: Actual password hashing (e.g. bcrypt/argon2) will be implemented in future authentication modules. Plain-text passwords are never accepted into database storage.
 
 ### Customer Portal Association (Future Scope)
-The `CUSTOMER` role is registered in `Role.name`. However, because the `Customer` business model does not exist yet in Phase 1, no foreign key (`customer_id`) is defined on `User` at this stage. A dedicated relationship (`User` $\leftrightarrow$ `Customer`) will be introduced in subsequent customer portal phases.
+## 4. Phase 2 Data Models
+
+### ER Diagram Architecture
+
+```text
+CustomerTier
+   │
+   ├──< Customer
+   │
+   ├──< DiscountPolicy
+   │
+   └──< ApprovalPolicy
+
+
+ProductCategory
+   │
+   ├──< Product
+   └──< DiscountPolicy
+
+
+Product
+   │
+   ├──< Inventory
+   └──< DiscountPolicy
+
+
+BillingPlan
+   (Future reference by Quote / QuoteLine)
+
+
+Warehouse
+   └──< Inventory
+```
+
+---
+
+### Phase 2 Tables Overview
+
+1. **`customer_tiers`**: Customer tier levels (`GOLD`, `SILVER`, `BRONZE`).
+2. **`customers`**: Customer accounts with credit limits, currency, and payment terms.
+3. **`product_categories`**: Catalog product categories.
+4. **`products`**: Product catalog items with SKU, list price, cost price, and category FK.
+5. **`warehouses`**: Storage locations.
+6. **`inventory`**: Stock levels per warehouse/product (`on_hand_qty`, `reserved_qty`).
+7. **`discount_policies`**: Configurable commercial discount rules and precedence.
+8. **`approval_policies`**: Configurable approval threshold triggers and approver roles.
+9. **`billing_plans`**: Billing frequency and payment due day definitions (`ONE_TIME`, `RECURRING`).
+

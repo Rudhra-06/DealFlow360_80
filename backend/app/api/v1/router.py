@@ -3,9 +3,12 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.approval_policies import router as approval_policies_router
 from app.api.v1.auth import auth_router
+from app.api.v1.billing_plans import router as billing_plans_router
 from app.api.v1.customer_tiers import router as customer_tiers_router
 from app.api.v1.customers import router as customers_router
+from app.api.v1.discount_policies import router as discount_policies_router
 from app.api.v1.inventory import router as inventory_router
 from app.api.v1.product_categories import router as product_categories_router
 from app.api.v1.products import router as products_router
@@ -20,6 +23,9 @@ api_router.include_router(product_categories_router, prefix="/product-categories
 api_router.include_router(products_router, prefix="/products", tags=["Products"])
 api_router.include_router(warehouses_router, prefix="/warehouses", tags=["Warehouses"])
 api_router.include_router(inventory_router, prefix="/inventory", tags=["Inventory"])
+api_router.include_router(discount_policies_router, prefix="/discount-policies", tags=["Discount Policies"])
+api_router.include_router(approval_policies_router, prefix="/approval-policies", tags=["Approval Policies"])
+api_router.include_router(billing_plans_router, prefix="/billing-plans", tags=["Billing Plans"])
 
 
 @api_router.get("/health", tags=["Health"])

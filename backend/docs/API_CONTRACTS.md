@@ -51,6 +51,25 @@ This document specifies the REST API endpoints, request/response formats, query 
 - `POST /api/v1/inventory`
 - `PATCH /api/v1/inventory/{inventory_id}`
 
+### 7. Discount Policies
+- `GET /api/v1/discount-policies?customer_tier_id=1&product_id=5&is_active=true&effective_only=true&limit=100&offset=0`
+- `GET /api/v1/discount-policies/resolve?customer_tier_id=1&product_id=5`
+- `GET /api/v1/discount-policies/{policy_id}`
+- `POST /api/v1/discount-policies`
+- `PATCH /api/v1/discount-policies/{policy_id}`
+
+### 8. Approval Policies
+- `GET /api/v1/approval-policies?customer_tier_id=1&approval_role=SALES_MANAGER&is_active=true&effective_only=true&limit=100&offset=0`
+- `GET /api/v1/approval-policies/{policy_id}`
+- `POST /api/v1/approval-policies`
+- `PATCH /api/v1/approval-policies/{policy_id}`
+
+### 9. Billing Plans
+- `GET /api/v1/billing-plans?billing_type=RECURRING&is_active=true&limit=100&offset=0`
+- `GET /api/v1/billing-plans/{plan_id}`
+- `POST /api/v1/billing-plans`
+- `PATCH /api/v1/billing-plans/{plan_id}`
+
 ---
 
 ## Example Payload & Response Formats
@@ -83,50 +102,25 @@ This document specifies the REST API endpoints, request/response formats, query 
 }
 ```
 
-### Inventory Response (`InventoryRead`)
+### Discount Policy Resolution Response (`DiscountPolicyResolutionRead`)
 ```json
 {
-  "id": 1,
-  "warehouse_id": 1,
-  "product_id": 5,
-  "on_hand_qty": "100.000",
-  "reserved_qty": "20.000",
-  "available_qty": "80.000",
-  "reorder_level": "15.000",
-  "created_at": "2026-09-05T15:00:00Z",
-  "updated_at": "2026-09-05T15:00:00Z",
-  "warehouse": {
-    "id": 1,
-    "code": "WH-MAIN",
-    "name": "Main Distribution Center",
-    "location": "Chicago",
-    "address": "100 Warehouse Way",
-    "is_active": true,
-    "created_at": "2026-09-05T14:00:00Z",
-    "updated_at": "2026-09-05T14:00:00Z"
-  },
-  "product": {
+  "applicable_policy": {
     "id": 5,
-    "sku": "SKU-PROD-001",
-    "name": "Enterprise Server Unit",
-    "description": "High performance server",
-    "category_id": 1,
-    "list_price": "1200.00",
-    "cost_price": "800.00",
-    "currency": "USD",
-    "unit_of_measure": "EA",
+    "name": "Gold Tier Hardware Discount",
+    "customer_tier_id": 2,
+    "product_category_id": null,
+    "product_id": 10,
+    "standard_discount_pct": "10.00",
+    "max_discount_pct": "20.00",
+    "priority": 50,
+    "effective_from": "2026-09-05T00:00:00Z",
+    "effective_to": null,
     "is_active": true,
-    "created_at": "2026-09-05T14:30:00Z",
-    "updated_at": "2026-09-05T14:30:00Z",
-    "category": {
-      "id": 1,
-      "name": "Hardware",
-      "description": "IT Hardware and Equipment",
-      "is_active": true,
-      "created_at": "2026-09-05T14:00:00Z",
-      "updated_at": "2026-09-05T14:00:00Z"
-    }
-  }
+    "created_at": "2026-09-05T16:00:00Z",
+    "updated_at": "2026-09-05T16:00:00Z"
+  },
+  "specificity_level": "tier+product"
 }
 ```
 
@@ -134,8 +128,8 @@ This document specifies the REST API endpoints, request/response formats, query 
 
 ## Standard Error Responses
 
-- **400 Bad Request**: Invalid/inactive entity reference or quantity validation failure.
+- **400 Bad Request**: Invalid/inactive entity reference, quantity validation failure, or policy parameter conflict.
 - **401 Unauthorized**: Missing, expired, or invalid Bearer JWT token.
 - **403 Forbidden**: Authenticated user role lacks required permissions (or `CUSTOMER` role).
 - **404 Not Found**: Resource primary key does not exist.
-- **409 Conflict**: Duplicate unique constraint (code, SKU, email, tier/category name, inventory pair).
+- **409 Conflict**: Duplicate unique constraint (code, SKU, email, billing plan code) or ambiguous overlapping policy.

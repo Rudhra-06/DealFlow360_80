@@ -60,6 +60,16 @@ class InventoryValidationError(ServiceError):
     pass
 
 
+class CommercialPolicyValidationError(ServiceError):
+    """Raised when commercial policy definitions or thresholds violate domain constraints."""
+    pass
+
+
+class PolicyAmbiguityError(ServiceError):
+    """Raised when conflicting or ambiguous overlapping commercial policies exist."""
+    pass
+
+
 __all__ = [
     "ServiceError",
     "UserAlreadyExistsError",
@@ -75,6 +85,8 @@ __all__ = [
     "InvalidReferenceError",
     "InactiveReferenceError",
     "InventoryValidationError",
+    "CommercialPolicyValidationError",
+    "PolicyAmbiguityError",
 ]
 
 
