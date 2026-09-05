@@ -32,6 +32,7 @@ from app.models.user_device import UserDevice
 
 from app.models.sales_order import SalesOrder
 from app.models.sales_order_line import SalesOrderLine
+from app.models.order_audit_event import OrderAuditEvent
 from app.models.fulfillment_plan import FulfillmentPlan
 from app.models.fulfillment_allocation import FulfillmentAllocation
 from app.models.backorder import Backorder
@@ -45,7 +46,13 @@ from app.models.credit_note import CreditNote
 from app.models.credit_note_line import CreditNoteLine
 from app.models.payment import Payment
 from app.models.payment_allocation import PaymentAllocation
-from app.models.order_audit_event import OrderAuditEvent
+from app.models.deal_health_config import DealHealthConfig
+from app.models.deal_health_snapshot import DealHealthSnapshot
+from app.models.deal_health_signal import DealHealthSignal
+from app.models.deal_alert import DealAlert
+from app.models.deal_action import DealAction
+from app.models.deal_health_audit_event import DealHealthAuditEvent
+from app.models.report_export_audit import ReportExportAudit, ExportStatus
 
 __all__ = [
     "Base",
@@ -92,6 +99,15 @@ __all__ = [
     "Payment",
     "PaymentAllocation",
     "OrderAuditEvent",
+    "DealHealthConfig",
+    "DealHealthSnapshot",
+    "DealHealthSignal",
+    "DealAlert",
+    "DealAction",
+    "DealHealthAuditEvent",
+    "ReportExportAudit",
+    "ExportStatus",
 ]
+
 
 

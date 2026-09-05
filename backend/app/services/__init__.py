@@ -30,6 +30,10 @@ from app.services.product_category import ProductCategoryService
 from app.services.role import RoleService
 from app.services.user import UserService
 from app.services.warehouse import WarehouseService
+from app.services.billing_plan import BillingPlanService
+from app.services.analytics import AnalyticsService
+from app.services.customer_360 import Customer360Service
+from app.services.report_export import ReportExportService
 
 __all__ = [
     "AuthenticationService",
@@ -60,4 +64,7 @@ __all__ = [
     "DiscountPolicyService",
     "ApprovalPolicyService",
     "BillingPlanService",
+    "AnalyticsService",
+    "Customer360Service",
+    "ReportExportService",
 ]

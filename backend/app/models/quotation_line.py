@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from app.models.billing_plan import BillingPlan
     from app.models.discount_policy import DiscountPolicy
     from app.models.product import Product
+    from app.models.product_recommendation_rule import ProductRecommendationRule
     from app.models.quotation import Quotation
 
 
