@@ -18,95 +18,95 @@
 
   const AnalyticsAPI = {
     async getOverview(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/overview${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/overview${buildQuery(params)}`, true);
     },
 
     async getOverviewTrend(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/overview/trend${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/overview/trend${buildQuery(params)}`, true);
     },
 
     async getQuotationFunnel(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/quotation-funnel${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/quotation-funnel${buildQuery(params)}`, true);
     },
 
     async getSalesPerformance(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/sales-performance${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/sales-performance${buildQuery(params)}`, true);
     },
 
     async getDiscounts(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/discounts${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/discounts${buildQuery(params)}`, true);
     },
 
     async getMargins(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/margins${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/margins${buildQuery(params)}`, true);
     },
 
     async getCustomer360(customerId) {
-      return await global.DealFlowAPI.request(`/analytics/customers/${customerId}/360`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/customers/${customerId}/360`, true);
     },
 
     async getProducts(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/products${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/products${buildQuery(params)}`, true);
     },
 
     async getProductCategories(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/product-categories${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/product-categories${buildQuery(params)}`, true);
     },
 
     async getRecommendations(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/recommendations${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/recommendations${buildQuery(params)}`, true);
     },
 
     async getApprovals(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/approvals${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/approvals${buildQuery(params)}`, true);
     },
 
     async getNegotiations(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/negotiations${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/negotiations${buildQuery(params)}`, true);
     },
 
     async getDealHealth(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/deal-health${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/deal-health${buildQuery(params)}`, true);
     },
 
     async getDealHealthTrend(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/deal-health/trend${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/deal-health/trend${buildQuery(params)}`, true);
     },
 
     async getFulfillment(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/fulfillment${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/fulfillment${buildQuery(params)}`, true);
     },
 
     async getWarehouses(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/warehouses${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/warehouses${buildQuery(params)}`, true);
     },
 
     async getBackorders(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/backorders${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/backorders${buildQuery(params)}`, true);
     },
 
     async getShipments(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/shipments${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/shipments${buildQuery(params)}`, true);
     },
 
     async getBilling(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/billing${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/billing${buildQuery(params)}`, true);
     },
 
     async getReceivables(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/receivables${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/receivables${buildQuery(params)}`, true);
     },
 
     async getPayments(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/payments${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/payments${buildQuery(params)}`, true);
     },
 
     async getSubscriptions(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/subscriptions${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/subscriptions${buildQuery(params)}`, true);
     },
 
     async getExecutiveSummaryText(params = {}) {
-      return await global.DealFlowAPI.request(`/analytics/executive-summary-text${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/analytics/executive-summary-text${buildQuery(params)}`, true);
     }
   };
 

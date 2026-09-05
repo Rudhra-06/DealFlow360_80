@@ -11,7 +11,7 @@
      * GET /api/v1/system/demo-readiness
      */
     async getDemoReadiness() {
-      return await global.DealFlowAPI.request('/system/demo-readiness', { method: 'GET' });
+      return await global.DealFlowAPI.get('/api/v1/system/demo-readiness', true);
     },
 
     /**
@@ -19,7 +19,7 @@
      * GET /api/v1/system/info
      */
     async getSystemInfo() {
-      return await global.DealFlowAPI.request('/system/info', { method: 'GET' });
+      return await global.DealFlowAPI.get('/api/v1/system/info', true);
     }
   };
 

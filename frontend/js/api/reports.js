@@ -118,7 +118,7 @@
      * @param {Object} params { limit, offset }
      */
     async getExportHistory(params = {}) {
-      return await global.DealFlowAPI.request(`/reports/exports${buildQuery(params)}`, { method: 'GET' });
+      return await global.DealFlowAPI.get(`/api/v1/reports/exports${buildQuery(params)}`, true);
     }
   };
 

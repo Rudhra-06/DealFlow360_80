@@ -18,6 +18,8 @@
       this.name = 'ApiError';
       this.status = status;
       this.detail = detail;
+      this.ok = false;
+      this.data = null;
     }
   }
 
@@ -97,6 +99,21 @@
         }
 
         throw new ApiError(userMessage, response.status, data);
+      }
+
+      if (data !== null && typeof data === 'object') {
+        try {
+          if (!('ok' in data)) {
+            Object.defineProperty(data, 'ok', { value: true, enumerable: false, writable: true, configurable: true });
+          }
+          if (!('data' in data)) {
+            Object.defineProperty(data, 'data', { value: data, enumerable: false, writable: true, configurable: true });
+          }
+        } catch (e) {
+          // ignore if non-extensible
+        }
+      } else if (data === null) {
+        data = { ok: true, data: null };
       }
 
       return data;
