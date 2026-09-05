@@ -160,7 +160,7 @@ async def test_phase3_complete_end_to_end_acceptance_flow(db_session: AsyncSessi
     await app_service.create_policy(
         ApprovalPolicyCreate(
             name="Finance Blended Risk Policy",
-            blended_risk_above=Decimal("2.00"),
+            blended_risk_above=Decimal("1.00"),
             approval_role=RoleName.FINANCE_OPERATIONS.value,
             priority=50,
         )

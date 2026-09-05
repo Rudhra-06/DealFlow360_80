@@ -33,7 +33,7 @@ class User(Base):
     )
 
     # Many-to-1 Relationship: User -> Role
-    role: Mapped["Role"] = relationship("Role", back_populates="users")
+    role: Mapped["Role"] = relationship("Role", back_populates="users", lazy="selectin")
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, email='{self.email}', role_id={self.role_id})>"

@@ -26,6 +26,12 @@ def upgrade() -> None:
         'approval_policies',
         'blended_risk_above IS NULL OR (blended_risk_above >= 0 AND blended_risk_above <= 100)'
     )
+    op.drop_constraint('ck_approval_policies_at_least_one_trigger', 'approval_policies', type_='check')
+    op.create_check_constraint(
+        'ck_approval_policies_at_least_one_trigger',
+        'approval_policies',
+        'discount_above_pct IS NOT NULL OR margin_below_pct IS NOT NULL OR payment_terms_above_days IS NOT NULL OR blended_risk_above IS NOT NULL'
+    )
 
     # 2. quote_approval_steps
     op.create_table(

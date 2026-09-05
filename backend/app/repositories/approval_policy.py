@@ -49,7 +49,12 @@ class ApprovalPolicyRepository(BaseRepository[ApprovalPolicy]):
         if effective_only:
             now = as_of or datetime.now(timezone.utc)
             filters.append(ApprovalPolicy.is_active == True)
-            filters.append(ApprovalPolicy.effective_from <= now)
+            filters.append(
+                or_(
+                    ApprovalPolicy.effective_from == None,
+                    ApprovalPolicy.effective_from <= now,
+                )
+            )
             filters.append(
                 or_(
                     ApprovalPolicy.effective_to == None,

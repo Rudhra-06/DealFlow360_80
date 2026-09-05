@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 from app.models.customer import Customer
 from app.models.quotation import Quotation
 from app.models.quotation_line import QuoteLine
+from app.models.user import User
 from app.repositories.base import BaseRepository
 
 
@@ -16,7 +17,7 @@ class QuotationRepository(BaseRepository[Quotation]):
     def _default_options(self):
         return [
             selectinload(Quotation.customer).selectinload(Customer.tier),
-            selectinload(Quotation.sales_rep),
+            selectinload(Quotation.sales_rep).selectinload(User.role),
             selectinload(Quotation.lines).selectinload(QuoteLine.product),
             selectinload(Quotation.lines).selectinload(QuoteLine.billing_plan),
             selectinload(Quotation.lines).selectinload(QuoteLine.resolved_discount_policy),
@@ -33,6 +34,7 @@ class QuotationRepository(BaseRepository[Quotation]):
         stmt = (
             select(Quotation)
             .options(*self._default_options())
+            .execution_options(populate_existing=True)
             .where(Quotation.id == quotation_id)
         )
         result = await db.execute(stmt)
@@ -42,6 +44,7 @@ class QuotationRepository(BaseRepository[Quotation]):
         stmt = (
             select(Quotation)
             .options(*self._default_options())
+            .execution_options(populate_existing=True)
             .where(Quotation.quote_number == quote_number)
         )
         result = await db.execute(stmt)

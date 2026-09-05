@@ -58,7 +58,7 @@ def test_margin_engine_calculations():
 
 def test_margin_engine_zero_revenue_protection():
     res = MarginEngine.calculate_line(
-        quantity=Decimal("1.000"),
+        quantity=Decimal("10.000"),
         unit_cost=Decimal("50.00"),
         net_line_total=Decimal("0.00"),
     )

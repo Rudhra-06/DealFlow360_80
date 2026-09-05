@@ -6,6 +6,7 @@ from app.core.enums import AuditEventType, QuotationStatus, RoleName
 from app.engines.approval import ApprovalEngine
 from app.models.quote_approval_step import QuoteApprovalStep
 from app.models.quote_approval_trigger import QuoteApprovalTrigger
+from app.models.quote_audit_event import QuoteAuditEvent
 from app.models.quotation import Quotation
 from app.models.user import User
 from app.repositories.approval_policy import ApprovalPolicyRepository
@@ -233,7 +234,10 @@ class QuoteApprovalService:
             if next_steps:
                 quote.status = QuotationStatus.PENDING_FINANCE_APPROVAL.value
             else:
-                quote.status = QuotationStatus.APPROVED.value
+                if getattr(step, "approval_context", "INITIAL") == "NEGOTIATION":
+                    quote.status = QuotationStatus.SENT_TO_CUSTOMER.value
+                else:
+                    quote.status = QuotationStatus.APPROVED.value
 
             audit_evt = QuoteAuditEvent(
                 quotation_id=quote.id,
