@@ -661,6 +661,7 @@ class QuotationService:
         from app.services.quote_version import QuoteVersionService
 
         quote.status = QuotationStatus.SENT_TO_CUSTOMER.value
+        await self.db.flush()
 
         # Create initial snapshot if current_version_id is not set
         if not quote.current_version_id:

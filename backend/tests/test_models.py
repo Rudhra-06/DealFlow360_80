@@ -14,6 +14,15 @@ from app.schemas.role import RoleRead
 from app.schemas.user import UserRead
 
 
+from sqlalchemy.orm import configure_mappers
+
+
+def test_sqlalchemy_mappers_configure_cleanly():
+    """Verify that all SQLAlchemy ORM mappers initialize without AmbiguousForeignKeysError or InvalidRequestError."""
+    import app.models
+    configure_mappers()
+
+
 def test_base_metadata_contains_roles_and_users_tables():
     """Verify that Base.metadata contains 'roles' and 'users' tables."""
     table_names = Base.metadata.tables.keys()

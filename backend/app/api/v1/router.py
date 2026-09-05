@@ -5,18 +5,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.approval_policies import router as approval_policies_router
 from app.api.v1.auth import auth_router
+from app.api.v1.billing import router as billing_router
 from app.api.v1.billing_plans import router as billing_plans_router
 from app.api.v1.customer_portal_access import router as customer_portal_access_router
 from app.api.v1.customer_tiers import router as customer_tiers_router
 from app.api.v1.customers import router as customers_router
 from app.api.v1.discount_policies import router as discount_policies_router
+from app.api.v1.fulfillment import router as fulfillment_router
 from app.api.v1.inventory import router as inventory_router
 from app.api.v1.notifications import router as notifications_router
+from app.api.v1.orders import router as orders_router
+from app.api.v1.payments import router as payments_router
 from app.api.v1.portal import router as portal_router
 from app.api.v1.product_categories import router as product_categories_router
 from app.api.v1.products import router as products_router
 from app.api.v1.quotations import router as quotations_router
 from app.api.v1.recommendation_rules import router as recommendation_rules_router
+from app.api.v1.shipments import router as shipments_router
 from app.api.v1.warehouses import router as warehouses_router
 from app.api.v1.ws import router as ws_router
 from app.db.session import get_db
@@ -37,6 +42,11 @@ api_router.include_router(recommendation_rules_router, prefix="/recommendation-r
 api_router.include_router(customer_portal_access_router, prefix="/customer-portal-access", tags=["Customer Portal Access"])
 api_router.include_router(portal_router, prefix="/portal", tags=["Customer Portal"])
 api_router.include_router(notifications_router, prefix="/notifications", tags=["Notifications"])
+api_router.include_router(orders_router, prefix="/orders", tags=["Sales Orders"])
+api_router.include_router(fulfillment_router, tags=["Fulfillment"])
+api_router.include_router(shipments_router, tags=["Shipments"])
+api_router.include_router(billing_router, tags=["Billing & Subscriptions"])
+api_router.include_router(payments_router, tags=["Payments"])
 api_router.include_router(ws_router, tags=["Real-time Collaboration"])
 
 

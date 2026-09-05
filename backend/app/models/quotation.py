@@ -93,9 +93,15 @@ class Quotation(Base):
     )
 
     # Phase 4 Versioning & Confirmation Guarantees
-    current_version_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    latest_approved_version_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    confirmed_quote_version_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    current_version_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("quote_versions.id", ondelete="SET NULL", use_alter=True, name="fk_quotation_current_version"), nullable=True
+    )
+    latest_approved_version_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("quote_versions.id", ondelete="SET NULL", use_alter=True, name="fk_quotation_latest_approved_version"), nullable=True
+    )
+    confirmed_quote_version_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("quote_versions.id", ondelete="SET NULL", use_alter=True, name="fk_quotation_confirmed_version"), nullable=True
+    )
     customer_confirmed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     customer_confirmed_by_user_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
@@ -124,5 +130,9 @@ class Quotation(Base):
         "QuoteAuditEvent", back_populates="quotation", cascade="all, delete-orphan", lazy="selectin"
     )
     versions: Mapped[List["QuoteVersion"]] = relationship(
-        "QuoteVersion", back_populates="quotation", cascade="all, delete-orphan", lazy="selectin"
+        "QuoteVersion",
+        back_populates="quotation",
+        foreign_keys="QuoteVersion.quotation_id",
+        cascade="all, delete-orphan",
+        lazy="selectin",
     )

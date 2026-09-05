@@ -119,3 +119,11 @@ class QuoteVersionCompareResult(BaseModel):
             if attr_key:
                 res[attr_key] = {"from": c.from_value, "to": c.to_value}
         return res
+
+    @property
+    def added_lines(self) -> List[Dict[str, Any]]:
+        return self.lines_added
+
+    @property
+    def removed_lines(self) -> List[Dict[str, Any]]:
+        return self.lines_removed

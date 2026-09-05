@@ -52,7 +52,9 @@ class QuoteVersion(Base):
     )
 
     # Relationships
-    quotation: Mapped["Quotation"] = relationship("Quotation", back_populates="versions")
+    quotation: Mapped["Quotation"] = relationship(
+        "Quotation", back_populates="versions", foreign_keys=[quotation_id]
+    )
     lines: Mapped[List["QuoteVersionLine"]] = relationship(
         "QuoteVersionLine", back_populates="quote_version", cascade="all, delete-orphan", lazy="selectin"
     )

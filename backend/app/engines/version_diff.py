@@ -69,6 +69,8 @@ class VersionDiffEngine:
                     {
                         "product_sku": line_to.product_sku_snapshot,
                         "product_name": line_to.product_name_snapshot,
+                        "product_sku_snapshot": line_to.product_sku_snapshot,
+                        "product_name_snapshot": line_to.product_name_snapshot,
                         "quantity": str(line_to.quantity),
                         "unit_list_price": str(line_to.unit_list_price),
                         "line_discount_pct": str(line_to.line_discount_pct),
@@ -106,6 +108,8 @@ class VersionDiffEngine:
                     {
                         "product_sku": line_from.product_sku_snapshot,
                         "product_name": line_from.product_name_snapshot,
+                        "product_sku_snapshot": line_from.product_sku_snapshot,
+                        "product_name_snapshot": line_from.product_name_snapshot,
                         "quantity": str(line_from.quantity),
                         "unit_list_price": str(line_from.unit_list_price),
                         "line_discount_pct": str(line_from.line_discount_pct),

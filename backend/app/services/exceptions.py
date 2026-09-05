@@ -100,6 +100,81 @@ class QuotationValidationError(ServiceError):
     pass
 
 
+class OrderAlreadyExistsError(ServiceError):
+    """Raised when an order already exists for a quotation."""
+    pass
+
+
+class ConfirmedVersionMissingError(ServiceError):
+    """Raised when attempting to convert a quote without a confirmed version snapshot."""
+    pass
+
+
+class InvalidOrderStateError(ServiceError):
+    """Raised when an order action is invalid for current order status."""
+    pass
+
+
+class InsufficientInventoryError(ServiceError):
+    """Raised when requested inventory allocation exceeds available stock."""
+    pass
+
+
+class InvalidFulfillmentAllocationError(ServiceError):
+    """Raised when fulfillment allocation details are invalid."""
+    pass
+
+
+class ReservationConflictError(ServiceError):
+    """Raised when inventory reservation conflicts or fails."""
+    pass
+
+
+class BackorderNotFoundError(ResourceNotFoundError):
+    """Raised when requested backorder does not exist."""
+    pass
+
+
+class ShipmentStateError(ServiceError):
+    """Raised when shipment action is invalid for current shipment status."""
+    pass
+
+
+class BillingAlreadyInitializedError(ServiceError):
+    """Raised when billing is already initialized for an order."""
+    pass
+
+
+class InvalidBillingPlanError(ServiceError):
+    """Raised when billing plan configuration is invalid."""
+    pass
+
+
+class SubscriptionStateError(ServiceError):
+    """Raised when subscription action is invalid for current subscription status."""
+    pass
+
+
+class InvalidProrationDateError(ServiceError):
+    """Raised when proration date parameters are out of valid range."""
+    pass
+
+
+class InvalidPaymentAllocationError(ServiceError):
+    """Raised when payment allocation total does not match payment amount or exceeds balance due."""
+    pass
+
+
+class OverpaymentError(ServiceError):
+    """Raised when payment allocation exceeds invoice balance due."""
+    pass
+
+
+class CreditApplicationError(ServiceError):
+    """Raised when applying a credit note fails validation."""
+    pass
+
+
 __all__ = [
     "ServiceError",
     "UserAlreadyExistsError",
@@ -123,6 +198,21 @@ __all__ = [
     "QuoteAccessDeniedError",
     "CurrencyMismatchError",
     "QuotationValidationError",
+    "OrderAlreadyExistsError",
+    "ConfirmedVersionMissingError",
+    "InvalidOrderStateError",
+    "InsufficientInventoryError",
+    "InvalidFulfillmentAllocationError",
+    "ReservationConflictError",
+    "BackorderNotFoundError",
+    "ShipmentStateError",
+    "BillingAlreadyInitializedError",
+    "InvalidBillingPlanError",
+    "SubscriptionStateError",
+    "InvalidProrationDateError",
+    "InvalidPaymentAllocationError",
+    "OverpaymentError",
+    "CreditApplicationError",
 ]
 
 

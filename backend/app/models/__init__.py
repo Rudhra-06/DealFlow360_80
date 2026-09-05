@@ -30,6 +30,23 @@ from app.models.quote_version import QuoteVersion
 from app.models.quote_version_line import QuoteVersionLine
 from app.models.user_device import UserDevice
 
+from app.models.sales_order import SalesOrder
+from app.models.sales_order_line import SalesOrderLine
+from app.models.fulfillment_plan import FulfillmentPlan
+from app.models.fulfillment_allocation import FulfillmentAllocation
+from app.models.backorder import Backorder
+from app.models.shipment import Shipment
+from app.models.shipment_line import ShipmentLine
+from app.models.invoice import Invoice
+from app.models.invoice_line import InvoiceLine
+from app.models.subscription import Subscription
+from app.models.billing_schedule import BillingSchedule
+from app.models.credit_note import CreditNote
+from app.models.credit_note_line import CreditNoteLine
+from app.models.payment import Payment
+from app.models.payment_allocation import PaymentAllocation
+from app.models.order_audit_event import OrderAuditEvent
+
 __all__ = [
     "Base",
     "Role",
@@ -59,6 +76,22 @@ __all__ = [
     "QuoteNegotiationLineChange",
     "Notification",
     "UserDevice",
+    "SalesOrder",
+    "SalesOrderLine",
+    "FulfillmentPlan",
+    "FulfillmentAllocation",
+    "Backorder",
+    "Shipment",
+    "ShipmentLine",
+    "Invoice",
+    "InvoiceLine",
+    "Subscription",
+    "BillingSchedule",
+    "CreditNote",
+    "CreditNoteLine",
+    "Payment",
+    "PaymentAllocation",
+    "OrderAuditEvent",
 ]
 
 

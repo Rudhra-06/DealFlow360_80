@@ -405,6 +405,7 @@ class QuoteNegotiationService:
                 quote.status = QuotationStatus.REAPPROVAL_REQUIRED.value
                 # Immediately move to first approval state (e.g. PENDING_MANAGER_APPROVAL)
                 quote.status = eval_res.projected_status.value
+                await self.db.flush()
 
                 # Snapshot Version N+1 with PENDING approval status
                 new_ver = await self.version_service.create_version_snapshot(
@@ -441,6 +442,7 @@ class QuoteNegotiationService:
             else:
                 # No reapproval required -> return quote to customer
                 quote.status = QuotationStatus.SENT_TO_CUSTOMER.value
+                await self.db.flush()
 
                 new_ver = await self.version_service.create_version_snapshot(
                     quotation_id=quote.id,
@@ -492,7 +494,7 @@ class QuoteNegotiationService:
 
     async def reject_negotiation_request(
         self, quotation_id: int, request_id: int, obj_in: QuoteNegotiationRequestReject, current_user: User
-    ) -> Quotation:
+    ) -> QuoteNegotiationRequest:
         quote = await self.quote_repo.get_by_id(self.db, quotation_id)
         if not quote:
             raise QuoteNotFoundError(f"Quotation with ID {quotation_id} not found.")
@@ -555,7 +557,7 @@ class QuoteNegotiationService:
                 message_text="Counter-offer declined by Sales Rep.",
             )
 
-            return await self.quote_repo.get_by_id(self.db, quote.id)
+            return await self.req_repo.get_by_id(self.db, req.id)
         except Exception:
             await self.db.rollback()
             raise
@@ -591,3 +593,11 @@ class QuoteNegotiationService:
         except Exception:
             await self.db.rollback()
             raise
+
+    async def get_negotiation_inbox(self, quotation_id: int) -> List[QuoteNegotiationRequest]:
+        """Canonical method to query negotiation requests for a quotation inbox."""
+        quote = await self.quote_repo.get_by_id(self.db, quotation_id)
+        if not quote:
+            raise QuoteNotFoundError(f"Quotation with ID {quotation_id} not found.")
+        return await self.req_repo.list_requests(self.db, quotation_id)
+

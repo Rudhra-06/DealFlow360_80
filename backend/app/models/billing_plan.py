@@ -37,6 +37,8 @@ class BillingPlan(Base):
     billing_type: Mapped[str] = mapped_column(String(20), nullable=False)  # ONE_TIME or RECURRING
     billing_interval_months: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     payment_due_days: Mapped[int] = mapped_column(Integer, nullable=False, server_default="30")
+    proration_method: Mapped[str] = mapped_column(String(30), nullable=False, server_default="DAILY")
+    cancellation_method: Mapped[str] = mapped_column(String(30), nullable=False, server_default="END_OF_PERIOD")
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")
     created_at: Mapped[datetime] = mapped_column(

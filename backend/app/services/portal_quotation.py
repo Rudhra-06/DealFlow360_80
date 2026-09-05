@@ -150,6 +150,21 @@ class PortalQuotationService:
 
         try:
             await self.db.flush()
+
+            # Automatic Phase 5 Operational Order Conversion & Initial Fulfillment / Billing Initialization
+            from app.services.order import OrderService
+            from app.services.fulfillment import FulfillmentService
+            from app.services.billing import BillingService
+
+            order_svc = OrderService(self.db)
+            order = await order_svc.ensure_order_for_confirmed_quote(quotation_id, user_id)
+
+            ful_svc = FulfillmentService(self.db)
+            await ful_svc.generate_and_reserve_initial_fulfillment(order.id, user_id)
+
+            bill_svc = BillingService(self.db)
+            await bill_svc.initialize_order_billing(order.id, user_id)
+
             await self.db.commit()
             quote_result = await self.quote_repo.get_by_id(self.db, quotation_id)
         except Exception:
