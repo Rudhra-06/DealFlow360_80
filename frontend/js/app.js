@@ -1,14 +1,111 @@
 /**
- * DealFlow360 — Dashboard & Application Controller
- * Bootstraps authenticated workspace, loads live system health, renders role-aware UI.
+ * DealFlow360 — Application Router & Workspace Controller
+ * Handles route authentication, view mounting, live system health, and role-governed navigation.
  */
 (function (global) {
   'use strict';
 
+  let currentViewName = 'dashboard';
+
+  const VIEW_TITLES = {
+    'dashboard': { title: 'Dashboard', breadcrumb: 'DealFlow360 / Workspace Overview' },
+    'customers': { title: 'Customers Master', breadcrumb: 'DealFlow360 / Master Data / Customers' },
+    'products': { title: 'Products Catalog', breadcrumb: 'DealFlow360 / Master Data / Products' },
+    'inventory': { title: 'Inventory Stock', breadcrumb: 'DealFlow360 / Master Data / Inventory' },
+    'settings': { title: 'Settings & Configuration', breadcrumb: 'DealFlow360 / Commercial Configuration Hub' },
+    'discount-policies': { title: 'Discount Policies', breadcrumb: 'DealFlow360 / Commercial Configuration / Discount Policies' },
+    'approval-policies': { title: 'Approval Policies', breadcrumb: 'DealFlow360 / Commercial Configuration / Approval Policies' },
+    'billing-plans': { title: 'Billing Plans', breadcrumb: 'DealFlow360 / Commercial Configuration / Billing Plans' }
+  };
+
   /**
-   * Main dashboard initialization function.
+   * Switch the active view in the main content container.
+   * @param {string} viewName
+   * @param {string|null} initialSubTab
    */
-  async function initDashboard() {
+  async function switchView(viewName, initialSubTab = null) {
+    currentViewName = viewName;
+    const container = document.getElementById('main-view-container');
+    if (!container) return;
+
+    // Update Header Title & Breadcrumb
+    const meta = VIEW_TITLES[viewName] || { title: 'Workspace', breadcrumb: 'DealFlow360' };
+    const titleEl = document.getElementById('header-view-title');
+    const breadcrumbEl = document.getElementById('header-view-breadcrumb');
+    if (titleEl) titleEl.textContent = meta.title;
+    if (breadcrumbEl) breadcrumbEl.textContent = meta.breadcrumb;
+
+    // Update Sidebar active state
+    if (global.DealFlowNav) {
+      let navId = viewName;
+      if (['discount-policies', 'approval-policies', 'billing-plans'].includes(viewName)) {
+        navId = viewName === 'approval-policies' ? 'approvals' : (viewName === 'billing-plans' ? 'billing' : 'settings');
+      }
+      global.DealFlowNav.setActiveNav(navId);
+    }
+
+    // Mount View
+    switch (viewName) {
+      case 'dashboard':
+        if (global.DashboardView) {
+          await global.DashboardView.render(container, (targetView, subTab) => switchView(targetView, subTab));
+        }
+        break;
+
+      case 'customers':
+        if (global.CustomersView) {
+          await global.CustomersView.render(container, initialSubTab || 'customers');
+        }
+        break;
+
+      case 'products':
+        if (global.ProductsView) {
+          await global.ProductsView.render(container, initialSubTab || 'products');
+        }
+        break;
+
+      case 'inventory':
+        if (global.InventoryView) {
+          await global.InventoryView.render(container, initialSubTab || 'inventory');
+        }
+        break;
+
+      case 'settings':
+        if (global.SettingsView) {
+          await global.SettingsView.render(container, (targetView, subTab) => switchView(targetView, subTab));
+        }
+        break;
+
+      case 'discount-policies':
+        if (global.DiscountPoliciesView) {
+          await global.DiscountPoliciesView.render(container);
+        }
+        break;
+
+      case 'approval-policies':
+        if (global.ApprovalPoliciesView) {
+          await global.ApprovalPoliciesView.render(container);
+        }
+        break;
+
+      case 'billing-plans':
+        if (global.BillingPlansView) {
+          await global.BillingPlansView.render(container);
+        }
+        break;
+
+      default:
+        if (global.DashboardView) {
+          await global.DashboardView.render(container, (targetView, subTab) => switchView(targetView, subTab));
+        }
+        break;
+    }
+  }
+
+  /**
+   * Main application bootstrap function.
+   */
+  async function initApp() {
     const pageLoader = document.getElementById('page-loader');
     const auth = global.DealFlowAuth;
     const api = global.DealFlowAPI;
@@ -25,21 +122,19 @@
     try {
       // 1. Guard route: verify token and fetch safe current user profile from GET /api/v1/auth/me
       currentUser = await auth.requireAuth();
-      if (!currentUser) return; // redirect already initiated in requireAuth
+      if (!currentUser) return;
     } catch (err) {
       console.error('[DealFlow360] Auth initialization error:', err);
       auth.logout('Unable to verify session with backend.');
       return;
     }
 
-    // 2. Extract and format user details
+    // 2. Extract user details
     const fullName = currentUser.full_name || 'Enterprise User';
-    const firstName = fullName.split(' ')[0] || 'User';
     const email = currentUser.email || '';
     const roleName = (currentUser.role && currentUser.role.name) ? currentUser.role.name : 'ADMIN';
     const formattedRole = nav.formatRole(roleName);
     const userInitials = ui.getInitials(fullName);
-    const isCustomer = roleName.toUpperCase() === 'CUSTOMER';
 
     // 3. Update Header UI
     const headerUserNameEl = document.getElementById('header-user-name');
@@ -56,71 +151,39 @@
     if (dropdownUserEmailEl) dropdownUserEmailEl.textContent = email;
     if (dropdownUserRoleBadgeEl) dropdownUserRoleBadgeEl.textContent = formattedRole;
 
-    // 4. Update Dashboard Greeting & User Info Cards
-    const welcomeGreetingEl = document.getElementById('welcome-greeting');
-    const welcomeRoleBadgeEl = document.getElementById('welcome-role-badge');
-    if (welcomeGreetingEl) welcomeGreetingEl.textContent = `Welcome back, ${firstName}`;
-    if (welcomeRoleBadgeEl) welcomeRoleBadgeEl.textContent = formattedRole;
-
-    // Account Info Card
-    const accountCardNameEl = document.getElementById('account-card-name');
-    const accountCardEmailEl = document.getElementById('account-card-email');
-    const accountCardRoleEl = document.getElementById('account-card-role');
-    const accountCardStatusEl = document.getElementById('account-card-status');
-    const accountCardCreatedEl = document.getElementById('account-card-created');
-
-    if (accountCardNameEl) accountCardNameEl.textContent = fullName;
-    if (accountCardEmailEl) accountCardEmailEl.textContent = email;
-    if (accountCardRoleEl) accountCardRoleEl.textContent = formattedRole;
-    if (accountCardStatusEl) {
-      accountCardStatusEl.innerHTML = currentUser.is_active
-        ? `<span class="badge badge-teal"><span class="status-dot status-dot-teal"></span>Active</span>`
-        : `<span class="badge badge-coral"><span class="status-dot status-dot-coral"></span>Inactive</span>`;
-    }
-    if (accountCardCreatedEl && currentUser.created_at) {
-      accountCardCreatedEl.textContent = new Date(currentUser.created_at).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
+    // 4. Render Role-Aware Sidebar Navigation with View Switcher callback
+    const sidebarNavContainer = document.getElementById('sidebar-nav-container');
+    if (sidebarNavContainer) {
+      nav.renderSidebar(roleName, sidebarNavContainer, (navId, targetTab) => {
+        if (navId === 'approvals') switchView('approval-policies');
+        else if (navId === 'billing') switchView('billing-plans');
+        else switchView(navId, targetTab);
       });
     }
 
-    // 5. Render Role-Aware Sidebar Navigation
-    const sidebarNavContainer = document.getElementById('sidebar-nav-container');
-    if (sidebarNavContainer) {
-      nav.renderSidebar(roleName, sidebarNavContainer);
-    }
-
-    // Adapt workspace subtitle if customer role
-    const workspaceSubtitleEl = document.getElementById('workspace-subtitle');
-    if (workspaceSubtitleEl && isCustomer) {
-      workspaceSubtitleEl.textContent = 'Your DealFlow360 Customer Portal is ready.';
-    }
-
-    // 6. Setup Interactive UI Events
-    // User dropdown
+    // 5. Setup User Dropdown & Drawer Events
     const userTrigger = document.getElementById('user-menu-trigger');
     const userDropdown = document.getElementById('user-dropdown-menu');
     ui.initUserDropdown(userTrigger, userDropdown);
 
-    // Mobile sidebar toggle
     const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
     const appSidebar = document.getElementById('app-sidebar');
     const sidebarBackdrop = document.getElementById('sidebar-backdrop');
     ui.initMobileSidebar(sidebarToggleBtn, appSidebar, sidebarBackdrop);
 
-    // Profile modal trigger
     document.getElementById('dropdown-view-profile')?.addEventListener('click', (e) => {
       e.preventDefault();
       userDropdown?.classList.remove('show');
       ui.showProfileModal(currentUser);
     });
 
-    // Logout trigger
     document.getElementById('dropdown-logout-btn')?.addEventListener('click', (e) => {
       e.preventDefault();
       auth.logout();
     });
+
+    // 6. Mount Initial View (Dashboard)
+    await switchView('dashboard');
 
     // 7. Load Live Backend & Database Health Status
     await checkSystemHealth(api);
@@ -137,55 +200,59 @@
    * @param {object} api
    */
   async function checkSystemHealth(api) {
-    const apiStatusBadge = document.getElementById('status-api-badge');
-    const apiStatusVal = document.getElementById('status-api-val');
-    const dbStatusBadge = document.getElementById('status-db-badge');
-    const dbStatusVal = document.getElementById('status-db-val');
     const connectionIndicator = document.getElementById('header-connection-indicator');
+    const dashApiBadge = document.getElementById('dash-api-badge');
+    const dashApiVal = document.getElementById('dash-api-val');
+    const dashDbBadge = document.getElementById('dash-db-badge');
+    const dashDbVal = document.getElementById('dash-db-val');
 
     // Root / v1 API Health
     const apiHealth = await api.getHealth();
     if (apiHealth.ok && apiHealth.data && apiHealth.data.status === 'healthy') {
-      if (apiStatusBadge) {
-        apiStatusBadge.className = 'badge badge-teal';
-        apiStatusBadge.innerHTML = `<span class="status-dot status-dot-teal status-dot-pulse"></span>Online`;
-      }
-      if (apiStatusVal) apiStatusVal.textContent = 'Online';
       if (connectionIndicator) {
         connectionIndicator.innerHTML = `<span class="status-dot status-dot-teal status-dot-pulse"></span><span>Connected</span>`;
       }
-    } else {
-      if (apiStatusBadge) {
-        apiStatusBadge.className = 'badge badge-coral';
-        apiStatusBadge.innerHTML = `<span class="status-dot status-dot-coral"></span>Unavailable`;
+      if (dashApiBadge) {
+        dashApiBadge.className = 'badge badge-teal';
+        dashApiBadge.innerHTML = `<span class="status-dot status-dot-teal status-dot-pulse"></span>Online`;
       }
-      if (apiStatusVal) apiStatusVal.textContent = 'Offline';
+      if (dashApiVal) dashApiVal.textContent = 'Online';
+    } else {
       if (connectionIndicator) {
         connectionIndicator.innerHTML = `<span class="status-dot status-dot-coral"></span><span>Disconnected</span>`;
       }
+      if (dashApiBadge) {
+        dashApiBadge.className = 'badge badge-coral';
+        dashApiBadge.innerHTML = `<span class="status-dot status-dot-coral"></span>Unavailable`;
+      }
+      if (dashApiVal) dashApiVal.textContent = 'Offline';
     }
 
-    // PostgreSQL Database Health
+    // Database Health
     const dbHealth = await api.getDatabaseHealth();
     if (dbHealth.ok && dbHealth.data && dbHealth.data.database === 'connected') {
-      if (dbStatusBadge) {
-        dbStatusBadge.className = 'badge badge-teal';
-        dbStatusBadge.innerHTML = `<span class="status-dot status-dot-teal"></span>Connected`;
+      if (dashDbBadge) {
+        dashDbBadge.className = 'badge badge-teal';
+        dashDbBadge.innerHTML = `<span class="status-dot status-dot-teal"></span>Connected`;
       }
-      if (dbStatusVal) dbStatusVal.textContent = 'Connected';
+      if (dashDbVal) dashDbVal.textContent = 'Connected';
     } else {
-      if (dbStatusBadge) {
-        dbStatusBadge.className = 'badge badge-coral';
-        dbStatusBadge.innerHTML = `<span class="status-dot status-dot-coral"></span>Disconnected`;
+      if (dashDbBadge) {
+        dashDbBadge.className = 'badge badge-coral';
+        dashDbBadge.innerHTML = `<span class="status-dot status-dot-coral"></span>Disconnected`;
       }
-      if (dbStatusVal) dbStatusVal.textContent = 'Unavailable';
+      if (dashDbVal) dashDbVal.textContent = 'Unavailable';
     }
   }
 
-  // Execute on DOM Ready
+  global.DealFlowApp = {
+    init: initApp,
+    switchView: switchView
+  };
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initDashboard);
+    document.addEventListener('DOMContentLoaded', initApp);
   } else {
-    initDashboard();
+    initApp();
   }
 })(typeof window !== 'undefined' ? window : this);

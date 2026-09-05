@@ -254,5 +254,227 @@
     }
   };
 
+    /**
+     * Show a lightweight Toast notification.
+     * @param {string} message
+     * @param {'teal'|'coral'|'navy'} type
+     */
+    showToast(message, type = 'teal') {
+      let container = document.getElementById('dealflow-toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'dealflow-toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+      }
+
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      
+      const iconSvg = type === 'teal' 
+        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`
+        : (type === 'coral'
+          ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+          : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`);
+
+      toast.innerHTML = `
+        <span style="flex-shrink:0; display:flex; align-items:center;">${iconSvg}</span>
+        <span style="flex:1;">${message}</span>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.transition = 'opacity 300ms ease, transform 300ms ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    },
+
+    /**
+     * Show a generic Confirmation Modal.
+     * @param {string} title
+     * @param {string} message
+     * @param {Function} onConfirm
+     * @param {string} confirmLabel
+     * @param {'danger'|'primary'} variant
+     */
+    confirmModal(title, message, onConfirm, confirmLabel = 'Confirm', variant = 'danger') {
+      let modalOverlay = document.getElementById('dealflow-modal-overlay');
+      if (!modalOverlay) {
+        modalOverlay = document.createElement('div');
+        modalOverlay.id = 'dealflow-modal-overlay';
+        modalOverlay.className = 'modal-overlay';
+        document.body.appendChild(modalOverlay);
+      }
+
+      const btnClass = variant === 'danger' ? 'btn-danger' : 'btn-primary';
+
+      modalOverlay.innerHTML = `
+        <div class="modal-card" role="dialog" aria-modal="true">
+          <div class="card-header">
+            <h3 class="card-title">${title}</h3>
+            <button class="btn btn-ghost btn-sm" id="confirm-modal-close-btn" aria-label="Close">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="card-body">
+            <p style="font-size: var(--font-size-sm); color: var(--color-text);">${message}</p>
+          </div>
+          <div class="card-footer" style="display:flex;justify-content:flex-end;gap:var(--space-xs);">
+            <button class="btn btn-secondary btn-sm" id="confirm-modal-cancel-btn">Cancel</button>
+            <button class="btn ${btnClass} btn-sm" id="confirm-modal-action-btn">${confirmLabel}</button>
+          </div>
+        </div>
+      `;
+
+      modalOverlay.classList.add('show');
+
+      const closeHandler = () => {
+        modalOverlay.classList.remove('show');
+      };
+
+      document.getElementById('confirm-modal-close-btn')?.addEventListener('click', closeHandler);
+      document.getElementById('confirm-modal-cancel-btn')?.addEventListener('click', closeHandler);
+      document.getElementById('confirm-modal-action-btn')?.addEventListener('click', async () => {
+        closeHandler();
+        if (typeof onConfirm === 'function') {
+          await onConfirm();
+        }
+      });
+    },
+
+    /**
+     * Show a custom form dialog inside modal.
+     */
+    showFormModal({ title, size = 'lg', formHtml, submitLabel = 'Save', onSubmit }) {
+      let modalOverlay = document.getElementById('dealflow-modal-overlay');
+      if (!modalOverlay) {
+        modalOverlay = document.createElement('div');
+        modalOverlay.id = 'dealflow-modal-overlay';
+        modalOverlay.className = 'modal-overlay';
+        document.body.appendChild(modalOverlay);
+      }
+
+      const sizeClass = size === 'xl' ? 'modal-card-xl' : (size === 'lg' ? 'modal-card-lg' : '');
+
+      modalOverlay.innerHTML = `
+        <div class="modal-card ${sizeClass}" role="dialog" aria-modal="true">
+          <div class="card-header">
+            <h3 class="card-title">${title}</h3>
+            <button class="btn btn-ghost btn-sm" id="form-modal-close-btn" aria-label="Close modal">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <form id="dynamic-form" novalidate>
+            <div class="card-body" style="max-height: calc(85vh - 140px); overflow-y: auto;">
+              <div id="form-modal-alert" class="alert alert-coral" style="display:none;" role="alert">
+                <svg class="alert-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span id="form-modal-alert-text"></span>
+              </div>
+              ${formHtml}
+            </div>
+            <div class="card-footer" style="display:flex;justify-content:flex-end;gap:var(--space-xs);">
+              <button type="button" class="btn btn-secondary btn-sm" id="form-modal-cancel-btn">Cancel</button>
+              <button type="submit" class="btn btn-primary btn-sm" id="form-modal-submit-btn">
+                <span id="form-modal-spinner" class="spinner" style="display:none;"></span>
+                <span id="form-modal-submit-label">${submitLabel}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+
+      modalOverlay.classList.add('show');
+
+      const closeHandler = () => {
+        modalOverlay.classList.remove('show');
+      };
+
+      document.getElementById('form-modal-close-btn')?.addEventListener('click', closeHandler);
+      document.getElementById('form-modal-cancel-btn')?.addEventListener('click', closeHandler);
+
+      const form = document.getElementById('dynamic-form');
+      const submitBtn = document.getElementById('form-modal-submit-btn');
+      const spinner = document.getElementById('form-modal-spinner');
+      const submitLabelEl = document.getElementById('form-modal-submit-label');
+      const alertBox = document.getElementById('form-modal-alert');
+      const alertText = document.getElementById('form-modal-alert-text');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        alertBox.style.display = 'none';
+
+        if (typeof onSubmit === 'function') {
+          submitBtn.disabled = true;
+          spinner.style.display = 'inline-block';
+          submitLabelEl.textContent = 'Saving...';
+
+          try {
+            await onSubmit(form, (errMessage) => {
+              alertText.textContent = errMessage;
+              alertBox.style.display = 'flex';
+            });
+            closeHandler();
+          } catch (err) {
+            alertText.textContent = err.message || 'Failed to submit form.';
+            alertBox.style.display = 'flex';
+          } finally {
+            submitBtn.disabled = false;
+            spinner.style.display = 'none';
+            submitLabelEl.textContent = submitLabel;
+          }
+        }
+      });
+    },
+
+    /**
+     * Show a Slide-out Detail Drawer.
+     */
+    showDrawer({ title, contentHtml, footerHtml = '' }) {
+      let backdrop = document.getElementById('dealflow-drawer-backdrop');
+      let panel = document.getElementById('dealflow-drawer-panel');
+
+      if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.id = 'dealflow-drawer-backdrop';
+        backdrop.className = 'drawer-backdrop';
+        document.body.appendChild(backdrop);
+      }
+
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'dealflow-drawer-panel';
+        panel.className = 'drawer-panel';
+        document.body.appendChild(panel);
+      }
+
+      panel.innerHTML = `
+        <div class="drawer-header">
+          <h3 class="card-title">${title}</h3>
+          <button class="btn btn-ghost btn-sm" id="drawer-close-btn" aria-label="Close drawer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="drawer-body">
+          ${contentHtml}
+        </div>
+        ${footerHtml ? `<div class="drawer-footer">${footerHtml}</div>` : ''}
+      `;
+
+      backdrop.classList.add('show');
+      panel.classList.add('open');
+
+      const closeHandler = () => {
+        backdrop.classList.remove('show');
+        panel.classList.remove('open');
+      };
+
+      document.getElementById('drawer-close-btn')?.addEventListener('click', closeHandler);
+      backdrop.addEventListener('click', closeHandler);
+    }
+  };
+
   global.DealFlowUI = UI;
 })(typeof window !== 'undefined' ? window : this);
