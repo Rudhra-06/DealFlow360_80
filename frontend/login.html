@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DealFlow360 | Sign In</title>
+  <meta name="description" content="Sign in to DealFlow360 — Enterprise B2B Deal Management and Commercial Operations Platform." />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <div class="login-container">
+    <!-- Left Side: Deep Navy Brand Panel -->
+    <div class="login-brand-panel">
+      <div class="brand-header">
+        <div class="brand-logo">
+          <div class="logo-icon">DF</div>
+          <span>DealFlow<span class="logo-accent">360</span></span>
+        </div>
+      </div>
+
+      <div class="brand-body">
+        <h1 class="brand-headline">
+          Smarter Deals.<br />
+          <span>Faster Decisions.</span>
+        </h1>
+        <p class="brand-copy">
+          Manage commercial workflows, approvals and deal execution from one connected workspace.
+        </p>
+
+        <div class="brand-features-list">
+          <div class="brand-feature-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Role-governed commercial workflow access</span>
+          </div>
+          <div class="brand-feature-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Secure JWT Bearer session architecture</span>
+          </div>
+          <div class="brand-feature-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Unified Deal Management Platform</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="brand-footer">
+        <span>DealFlow360 Enterprise Platform &copy; 2026. All rights reserved.</span>
+      </div>
+    </div>
+
+    <!-- Right Side: Login Form Panel -->
+    <div class="login-form-panel">
+      <div class="login-card-wrapper animate-fade-in">
+        <div class="login-form-card">
+          <div class="login-card-header">
+            <h2>Welcome back</h2>
+            <p>Sign in to continue to DealFlow360</p>
+          </div>
+
+          <!-- Alert / Error Banner -->
+          <div id="login-alert" class="alert alert-coral" style="display: none;" role="alert">
+            <svg class="alert-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span id="login-alert-text"></span>
+          </div>
+
+          <!-- Login Form -->
+          <form id="login-form" novalidate>
+            <!-- Email Input -->
+            <div class="form-group">
+              <label for="email" class="form-label">Email Address</label>
+              <div class="input-wrapper">
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  class="form-input"
+                  placeholder="name@company.com"
+                  autocomplete="email"
+                  required
+                />
+              </div>
+              <div id="email-error" class="form-error" style="display: none;"></div>
+            </div>
+
+            <!-- Password Input -->
+            <div class="form-group">
+              <label for="password" class="form-label">Password</label>
+              <div class="input-wrapper">
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  class="form-input"
+                  placeholder="Enter your password"
+                  autocomplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  id="password-toggle-btn"
+                  class="password-toggle-btn"
+                  aria-label="Show password"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+              <div id="password-error" class="form-error" style="display: none;"></div>
+            </div>
+
+            <!-- Submit Button -->
+            <div style="margin-top: var(--space-lg);">
+              <button type="submit" id="submit-btn" class="btn btn-primary btn-block btn-lg">
+                <span id="btn-spinner" class="spinner" style="display: none;"></span>
+                <span id="btn-label">Sign In</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core JavaScript Services -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/ui.js"></script>
+
+  <!-- Login Page Controller -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginForm = document.getElementById('login-form');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const submitBtn = document.getElementById('submit-btn');
+      const btnSpinner = document.getElementById('btn-spinner');
+      const btnLabel = document.getElementById('btn-label');
+      const alertBox = document.getElementById('login-alert');
+      const alertText = document.getElementById('login-alert-text');
+      const emailError = document.getElementById('email-error');
+      const passwordError = document.getElementById('password-error');
+      const passwordToggleBtn = document.getElementById('password-toggle-btn');
+
+      // Initialize Password Show/Hide Toggle
+      window.DealFlowUI.initPasswordToggle(passwordToggleBtn, passwordInput);
+
+      // Check URL parameters for session notifications
+      const urlParams = new URLSearchParams(window.location.search);
+      const reason = urlParams.get('reason');
+      if (reason === 'session_expired') {
+        showAlert('Your session has expired. Please sign in again.', 'coral');
+      } else if (reason === 'account_inactive') {
+        showAlert('Your account is currently inactive.', 'coral');
+      } else if (reason) {
+        showAlert(decodeURIComponent(reason), 'coral');
+      } else if (window.DealFlowAuth && window.DealFlowAuth.hasToken()) {
+        // If token already present and no logout/expiration reason, verify session silently
+        window.DealFlowAuth.fetchCurrentUser()
+          .then(user => {
+            if (user && user.is_active) {
+              window.location.href = 'index.html';
+            }
+          })
+          .catch(() => {
+            // Token was invalid or expired, clear quietly
+            window.DealFlowAuth.clearAccessToken();
+            window.DealFlowAuth.clearCurrentUser();
+          });
+      }
+
+      function showAlert(msg, type = 'coral') {
+        alertText.textContent = msg;
+        alertBox.className = `alert alert-${type} animate-fade-in`;
+        alertBox.style.display = 'flex';
+      }
+
+      function hideAlert() {
+        alertBox.style.display = 'none';
+        alertText.textContent = '';
+      }
+
+      function setFormLoading(isLoading) {
+        if (isLoading) {
+          submitBtn.disabled = true;
+          btnSpinner.style.display = 'inline-block';
+          btnLabel.textContent = 'Signing in...';
+        } else {
+          submitBtn.disabled = false;
+          btnSpinner.style.display = 'none';
+          btnLabel.textContent = 'Sign In';
+        }
+      }
+
+      function clearValidationErrors() {
+        emailInput.classList.remove('has-error');
+        passwordInput.classList.remove('has-error');
+        emailError.style.display = 'none';
+        passwordError.style.display = 'none';
+      }
+
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideAlert();
+        clearValidationErrors();
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        // Simple client-side validation
+        let hasError = false;
+        if (!email) {
+          emailInput.classList.add('has-error');
+          emailError.textContent = 'Please enter your email address.';
+          emailError.style.display = 'block';
+          hasError = true;
+        } else if (!email.includes('@')) {
+          emailInput.classList.add('has-error');
+          emailError.textContent = 'Please enter a valid email address.';
+          emailError.style.display = 'block';
+          hasError = true;
+        }
+
+        if (!password) {
+          passwordInput.classList.add('has-error');
+          passwordError.textContent = 'Please enter your password.';
+          passwordError.style.display = 'block';
+          hasError = true;
+        }
+
+        if (hasError) return;
+
+        setFormLoading(true);
+
+        try {
+          // Perform backend login via Centralized Auth service
+          await window.DealFlowAuth.login(email, password);
+
+          // Success: smoothly redirect to authenticated dashboard
+          window.location.href = 'index.html';
+        } catch (err) {
+          setFormLoading(false);
+          let displayMsg = 'Unable to connect to DealFlow360. Please try again.';
+
+          if (err.status === 401) {
+            displayMsg = 'Invalid email or password.';
+          } else if (err.status === 403) {
+            displayMsg = 'Your account is currently inactive.';
+          } else if (err.message) {
+            displayMsg = err.message;
+          }
+
+          showAlert(displayMsg, 'coral');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

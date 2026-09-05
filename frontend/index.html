@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DealFlow360 | Dashboard</title>
+  <meta name="description" content="DealFlow360 — Enterprise B2B Deal Management and Commercial Operations Platform Workspace." />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <!-- Full-Page Initialization Loader (Prevents unauthenticated flicker) -->
+  <div id="page-loader" class="page-loader-overlay">
+    <div class="brand-logo" style="color: var(--color-navy); font-size: var(--font-size-2xl);">
+      <div class="logo-icon" style="width: 40px; height: 40px; font-size: 1.1rem;">DF</div>
+      <span>DealFlow<span class="logo-accent" style="color: var(--color-teal);">360</span></span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; color: var(--color-text-secondary); font-size: var(--font-size-sm); margin-top: 10px;">
+      <span class="spinner spinner-teal"></span>
+      <span>Loading DealFlow360 workspace...</span>
+    </div>
+  </div>
+
+  <!-- Mobile Drawer Backdrop -->
+  <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+  <!-- Application Shell -->
+  <div class="app-shell">
+    <!-- Left Navigation Sidebar -->
+    <aside id="app-sidebar" class="app-sidebar">
+      <!-- Sidebar Brand Header -->
+      <div class="sidebar-brand">
+        <div class="brand-logo" style="font-size: var(--font-size-lg);">
+          <div class="logo-icon">DF</div>
+          <span>DealFlow<span class="logo-accent">360</span></span>
+        </div>
+      </div>
+
+      <!-- Dynamic Role-Aware Navigation Menu -->
+      <nav id="sidebar-nav-container" class="sidebar-nav-container" aria-label="Main Navigation">
+        <!-- Rendered dynamically by navigation.js based on authenticated role -->
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <span>DealFlow360 Phase 1</span>
+        <span class="badge badge-navy" style="font-size: 0.65rem; padding: 2px 6px;">v1.0.0</span>
+      </div>
+    </aside>
+
+    <!-- Main Content Workspace Wrapper -->
+    <div class="main-wrapper">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" aria-label="Toggle navigation drawer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div class="header-title-area">
+            <h2 class="header-title">Dashboard</h2>
+            <span class="header-breadcrumb">DealFlow360 / Workspace Overview</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Live API Connectivity Indicator -->
+          <div id="header-connection-indicator" class="connection-indicator">
+            <span class="status-dot status-dot-teal status-dot-pulse"></span>
+            <span>Connecting...</span>
+          </div>
+
+          <!-- User Profile & Dropdown -->
+          <div class="user-dropdown-wrapper">
+            <button
+              id="user-menu-trigger"
+              class="user-trigger"
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-label="User profile menu"
+            >
+              <div id="header-user-avatar" class="user-avatar">DF</div>
+              <div class="user-meta">
+                <span id="header-user-name" class="user-meta-name">Loading...</span>
+                <span id="header-user-role" class="user-meta-role">Role</span>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-text-muted);">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+
+            <!-- Dropdown Menu Content -->
+            <div id="user-dropdown-menu" class="dropdown-menu" role="menu">
+              <div class="dropdown-header">
+                <div id="dropdown-user-name" class="dropdown-header-name">User</div>
+                <div id="dropdown-user-email" class="dropdown-header-email">user@example.com</div>
+                <div style="margin-top: 6px;">
+                  <span id="dropdown-user-role-badge" class="badge badge-navy">Role</span>
+                </div>
+              </div>
+              <button class="dropdown-item" id="dropdown-view-profile" role="menuitem">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>View Account Profile</span>
+              </button>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item danger" id="dropdown-logout-btn" role="menuitem">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="content-area">
+        <!-- Dashboard Welcome Heading -->
+        <div class="dashboard-welcome-banner animate-fade-in">
+          <div style="display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap;">
+            <h1 id="welcome-greeting">Welcome back</h1>
+            <span id="welcome-role-badge" class="badge badge-navy" style="font-size: var(--font-size-xs);">Role</span>
+          </div>
+          <p id="workspace-subtitle">Your DealFlow360 workspace is ready.</p>
+        </div>
+
+        <!-- ROW 1: System Status Cards Grid -->
+        <div class="status-grid animate-fade-in">
+          <!-- API Status -->
+          <div class="status-card">
+            <div class="status-card-header">
+              <span class="status-card-label">API Health</span>
+              <span id="status-api-badge" class="badge badge-teal">
+                <span class="status-dot status-dot-teal status-dot-pulse"></span>
+                Online
+              </span>
+            </div>
+            <div id="status-api-val" class="status-card-value">Online</div>
+            <div class="status-card-sub">FastAPI v1 Services</div>
+          </div>
+
+          <!-- Database Status -->
+          <div class="status-card">
+            <div class="status-card-header">
+              <span class="status-card-label">Database</span>
+              <span id="status-db-badge" class="badge badge-teal">
+                <span class="status-dot status-dot-teal"></span>
+                Connected
+              </span>
+            </div>
+            <div id="status-db-val" class="status-card-value">Connected</div>
+            <div class="status-card-sub">PostgreSQL via asyncpg</div>
+          </div>
+
+          <!-- Authentication Status -->
+          <div class="status-card">
+            <div class="status-card-header">
+              <span class="status-card-label">Security</span>
+              <span class="badge badge-teal">
+                <span class="status-dot status-dot-teal"></span>
+                Active
+              </span>
+            </div>
+            <div class="status-card-value">JWT Session</div>
+            <div class="status-card-sub">Bearer Token Validated</div>
+          </div>
+
+          <!-- Account Status -->
+          <div class="status-card">
+            <div class="status-card-header">
+              <span class="status-card-label">Account</span>
+              <span class="badge badge-teal">
+                <span class="status-dot status-dot-teal"></span>
+                Verified
+              </span>
+            </div>
+            <div class="status-card-value">Active Tier</div>
+            <div class="status-card-sub">RBAC Role-Aware</div>
+          </div>
+        </div>
+
+        <!-- ROW 2: Information Cards Grid -->
+        <div class="info-cards-grid animate-fade-in">
+          <!-- Account Information Card -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Account Information</h3>
+                <div class="card-subtitle">Authenticated profile details retrieved via /api/v1/auth/me</div>
+              </div>
+              <span class="badge badge-teal">Authenticated</span>
+            </div>
+            <div class="card-body">
+              <div class="key-value-list">
+                <div class="key-value-item">
+                  <span class="key-label">Full Name</span>
+                  <span id="account-card-name" class="key-value">—</span>
+                </div>
+                <div class="key-value-item">
+                  <span class="key-label">Email Address</span>
+                  <span id="account-card-email" class="key-value">—</span>
+                </div>
+                <div class="key-value-item">
+                  <span class="key-label">Assigned Role</span>
+                  <span id="account-card-role" class="key-value">—</span>
+                </div>
+                <div class="key-value-item">
+                  <span class="key-label">Account Status</span>
+                  <span id="account-card-status" class="key-value">—</span>
+                </div>
+                <div class="key-value-item">
+                  <span class="key-label">Member Since</span>
+                  <span id="account-card-created" class="key-value">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Platform Architecture Overview Card -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">DealFlow360 Architecture</h3>
+                <div class="card-subtitle">Phase 1 Foundations & Platform Readiness</div>
+              </div>
+              <span class="badge badge-navy">Phase 1</span>
+            </div>
+            <div class="card-body">
+              <div class="key-value-list">
+                <div class="key-value-item">
+                  <span class="key-label">Identity & Access Management</span>
+                  <span class="key-value">
+                    <span class="badge badge-teal">Ready</span>
+                  </span>
+                </div>
+                <div class="key-value-item">
+                  <span class="key-label">Backend Framework</span>
+                  <span class="key-value">FastAPI + Asyncpg</span>
+                </div>
+                <div class="key-value-item">
+                  <span class="key-label">Security Protocol</span>
+                  <span class="key-value">JWT Bearer (HS256)</span>
+                </div>
+                <div class="key-value-item">
+                  <span class="key-label">Role-Based Access Control</span>
+                  <span class="key-value">Authoritative Backend RBAC</span>
+                </div>
+                <div class="key-value-item">
+                  <span class="key-label">API Version Prefix</span>
+                  <span class="key-value"><code>/api/v1</code></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 3: Upcoming DealFlow360 Capabilities Grid -->
+        <div style="margin-bottom: var(--space-md); margin-top: var(--space-lg);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <h2>Upcoming DealFlow360 Capabilities</h2>
+              <p>Commercial operations modules scheduled for future release phases.</p>
+            </div>
+            <span class="badge badge-gray">Product Roadmap</span>
+          </div>
+        </div>
+
+        <div class="capabilities-grid animate-fade-in">
+          <!-- Quotation Intelligence -->
+          <div class="capability-card">
+            <div class="capability-header">
+              <div class="capability-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+              </div>
+              <span class="badge badge-gray">Coming Soon</span>
+            </div>
+            <h4 class="capability-title">Quotation Intelligence</h4>
+            <p class="capability-desc">Dynamic pricing calculators, volume tier discounts, and automated commercial quote generation.</p>
+          </div>
+
+          <!-- Approval Workflow -->
+          <div class="capability-card">
+            <div class="capability-header">
+              <div class="capability-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <span class="badge badge-gray">Coming Soon</span>
+            </div>
+            <h4 class="capability-title">Approval Workflow</h4>
+            <p class="capability-desc">Multi-tier escalation rules for manager and finance reviews on custom discount exceptions.</p>
+          </div>
+
+          <!-- Customer Negotiation -->
+          <div class="capability-card">
+            <div class="capability-header">
+              <div class="capability-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+              </div>
+              <span class="badge badge-gray">Coming Soon</span>
+            </div>
+            <h4 class="capability-title">Customer Negotiation</h4>
+            <p class="capability-desc">Interactive external customer portal for direct quote feedback, revisions, and digital sign-off.</p>
+          </div>
+
+          <!-- Warehouse Fulfillment -->
+          <div class="capability-card">
+            <div class="capability-header">
+              <div class="capability-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </div>
+              <span class="badge badge-gray">Coming Soon</span>
+            </div>
+            <h4 class="capability-title">Warehouse Fulfillment</h4>
+            <p class="capability-desc">Real-time stock reservation, multi-warehouse routing, and commercial order dispatch coordination.</p>
+          </div>
+
+          <!-- Commercial Billing -->
+          <div class="capability-card">
+            <div class="capability-header">
+              <div class="capability-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect width="20" height="14" x="2" y="5" rx="2"></rect>
+                  <line x1="2" y1="10" x2="22" y2="10"></line>
+                </svg>
+              </div>
+              <span class="badge badge-gray">Coming Soon</span>
+            </div>
+            <h4 class="capability-title">Commercial Billing</h4>
+            <p class="capability-desc">Automated invoicing, milestone payment tracking, credit terms, and ERP financial ledger sync.</p>
+          </div>
+
+          <!-- Deal Health & Risk Scoring -->
+          <div class="capability-card">
+            <div class="capability-header">
+              <div class="capability-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                </svg>
+              </div>
+              <span class="badge badge-gray">Coming Soon</span>
+            </div>
+            <h4 class="capability-title">Deal Health & Risk</h4>
+            <p class="capability-desc">Commercial margin protection metrics, customer credit scoring, and deal velocity analytics.</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal Overlay Container -->
+  <div id="dealflow-modal-overlay" class="modal-overlay"></div>
+
+  <!-- Core JavaScript Services -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
