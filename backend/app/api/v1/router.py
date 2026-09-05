@@ -23,6 +23,11 @@ from app.api.v1.quotations import router as quotations_router
 from app.api.v1.recommendation_rules import router as recommendation_rules_router
 from app.api.v1.shipments import router as shipments_router
 from app.api.v1.warehouses import router as warehouses_router
+from app.api.v1.deal_health import deal_health_router
+from app.api.v1.deal_alerts import deal_alerts_router
+from app.api.v1.analytics import router as analytics_router
+from app.api.v1.reports import router as reports_router
+from app.api.v1.system import router as system_router
 from app.api.v1.ws import router as ws_router
 from app.db.session import get_db
 
@@ -47,7 +52,14 @@ api_router.include_router(fulfillment_router, tags=["Fulfillment"])
 api_router.include_router(shipments_router, tags=["Shipments"])
 api_router.include_router(billing_router, tags=["Billing & Subscriptions"])
 api_router.include_router(payments_router, tags=["Payments"])
+api_router.include_router(deal_health_router, tags=["Deal Health Engine"])
+api_router.include_router(deal_alerts_router, tags=["Deal Alerts & Actions"])
+api_router.include_router(analytics_router, tags=["Analytics"])
+api_router.include_router(reports_router, tags=["Reports"])
+api_router.include_router(system_router, tags=["System"])
 api_router.include_router(ws_router, tags=["Real-time Collaboration"])
+
+
 
 
 
