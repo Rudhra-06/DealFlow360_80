@@ -1,9 +1,11 @@
 from typing import List, Optional
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
 from app.models.customer import Customer
+from app.models.discount_policy import DiscountPolicy
+from app.models.product import Product
 from app.models.quotation import Quotation
 from app.models.quotation_line import QuoteLine
 from app.models.user import User
@@ -18,9 +20,13 @@ class QuotationRepository(BaseRepository[Quotation]):
         return [
             selectinload(Quotation.customer).selectinload(Customer.tier),
             selectinload(Quotation.sales_rep).selectinload(User.role),
-            selectinload(Quotation.lines).selectinload(QuoteLine.product),
+            selectinload(Quotation.lines).joinedload(QuoteLine.product).joinedload(Product.category),
             selectinload(Quotation.lines).selectinload(QuoteLine.billing_plan),
-            selectinload(Quotation.lines).selectinload(QuoteLine.resolved_discount_policy),
+            selectinload(Quotation.lines).selectinload(QuoteLine.resolved_discount_policy).options(
+                joinedload(DiscountPolicy.customer_tier),
+                joinedload(DiscountPolicy.product_category),
+                joinedload(DiscountPolicy.product).joinedload(Product.category),
+            ),
             selectinload(Quotation.risk_reasons),
             selectinload(Quotation.audit_events),
             selectinload(Quotation.current_version),

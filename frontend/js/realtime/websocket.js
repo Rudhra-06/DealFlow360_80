@@ -122,6 +122,14 @@
     }
 
     /**
+     * Alias for subscribeQuotation
+     * @param {number} quotationId
+     */
+    subscribe(quotationId) {
+      return this.subscribeQuotation(quotationId);
+    }
+
+    /**
      * Re-subscribe active quote rooms upon reconnection.
      */
     resubscribeQuotes() {

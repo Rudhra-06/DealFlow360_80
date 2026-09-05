@@ -799,7 +799,7 @@ class AnalyticsRepository:
         r_cnt = sum(1 for s in snaps if s.health_level == "AT_RISK")
         c_cnt = sum(1 for s in snaps if s.health_level == "CRITICAL")
         scores = [Decimal(str(s.health_score)) for s in snaps if s.health_score is not None]
-        avg_score = (sum(scores) / Decimal(str(len(scores)))).round(2) if scores else None
+        avg_score = (sum(scores) / Decimal(str(len(scores)))).quantize(Decimal("0.01")) if scores else None
 
         a_stmt = select(DealAlert).where(DealAlert.status.in_(["OPEN", "ACKNOWLEDGED"]))
         if sales_rep_id:

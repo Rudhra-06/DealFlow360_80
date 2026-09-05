@@ -383,6 +383,16 @@
       global.DealFlowNotificationCenter.init();
     }
 
+    const notifBellBtn = document.getElementById('header-notif-btn');
+    if (notifBellBtn) {
+      notifBellBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (global.DealFlowNotificationCenter) {
+          global.DealFlowNotificationCenter.toggleDrawer();
+        }
+      });
+    }
+
     // 7. Setup User Dropdown & Drawer Events
     const userTrigger = document.getElementById('user-menu-trigger');
     const userDropdown = document.getElementById('user-dropdown-menu');

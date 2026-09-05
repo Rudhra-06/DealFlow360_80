@@ -99,22 +99,13 @@
         limit: 100
       });
 
-      if (!res.ok) {
-        document.getElementById('orders-table-container').innerHTML = `
-          <div class="alert alert-coral" style="margin: 20px;">
-            <span>Failed to load sales orders: ${res.data?.detail || res.error || 'Server error'}</span>
-          </div>
-        `;
-        return;
-      }
-
-      orders = res.data || [];
+      orders = Array.isArray(res) ? res : (res && res.data ? res.data : []);
       renderOrdersTable();
     } catch (err) {
       console.error('Error loading orders:', err);
       document.getElementById('orders-table-container').innerHTML = `
         <div class="alert alert-coral" style="margin: 20px;">
-          <span>Error connecting to Orders services.</span>
+          <span>Failed to load sales orders: ${err.message || 'Server error'}</span>
         </div>
       `;
     }

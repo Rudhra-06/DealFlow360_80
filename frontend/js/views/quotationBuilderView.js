@@ -87,7 +87,11 @@
       billingPlans = planRes.ok ? planRes.data : [];
 
       if (global.DealFlowWS) {
-        global.DealFlowWS.subscribe(quoteId);
+        if (typeof global.DealFlowWS.subscribeQuotation === 'function') {
+          global.DealFlowWS.subscribeQuotation(quoteId);
+        } else if (typeof global.DealFlowWS.subscribe === 'function') {
+          global.DealFlowWS.subscribe(quoteId);
+        }
       }
 
       renderWorkspace();
@@ -1242,6 +1246,13 @@
   }
 
   async function handleSubmitQuote() {
+    if (!currentQuote) return;
+
+    if (!currentQuote.lines || currentQuote.lines.length === 0) {
+      global.DealFlowUI.toast('Cannot submit an empty quotation. Please add at least one product line.', 'coral');
+      return;
+    }
+
     if (!confirm(`Submit quotation ${currentQuote.quote_number} for commercial approval routing?`)) {
       return;
     }
@@ -1249,7 +1260,8 @@
     try {
       const res = await global.QuotationsAPI.submit(quoteId);
       if (!res.ok) {
-        global.DealFlowUI.toast(res.data?.detail || res.error || 'Submission failed.', 'coral');
+        const errorDetail = res.data?.detail || res.error || 'Submission failed.';
+        global.DealFlowUI.toast(errorDetail, 'coral');
         return;
       }
 

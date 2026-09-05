@@ -24,7 +24,7 @@ class InvoiceLineRead(BaseModel):
 class InvoiceRead(BaseModel):
     id: int
     invoice_number: str
-    sales_order_id: int
+    sales_order_id: Optional[int] = None
     customer_id: int
     invoice_type: str
     status: str

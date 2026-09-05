@@ -42,7 +42,7 @@ class Customer(Base):
     )
 
     # Many-to-1 Relationship: Customer -> CustomerTier
-    tier: Mapped["CustomerTier"] = relationship("CustomerTier", back_populates="customers")
+    tier: Mapped["CustomerTier"] = relationship("CustomerTier", back_populates="customers", lazy="selectin")
 
     @property
     def assigned_sales_rep_id(self) -> Optional[int]:

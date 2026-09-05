@@ -24,13 +24,28 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # Development & Demo User Bootstrap Configuration
-    DEMO_USER_PASSWORD: str = "replace-with-local-demo-password"
+    DEMO_USER_PASSWORD: str = "DealFlow360Demo123!"
 
     # Optional full DATABASE_URL override
     DATABASE_URL: str | None = None
 
     POSTGRES_TEST_DB: str = "dealflow360_test"
     TEST_DATABASE_URL: str | None = None
+
+    # Razorpay Payment Gateway Configuration
+    RAZORPAY_KEY_ID: str = "rzp_test_TYVhOpGcj7mkYU"
+    RAZORPAY_KEY_SECRET: str = "MKP2k6sNNjn4GVecxIOIjm7H"
+
+    # Firebase Web App & Analytics Configuration
+    FIREBASE_API_KEY: str = "AIzaSyCQMQ9teEy9X_4Fe0JpPPKRCCysvY8v89w"
+    FIREBASE_AUTH_DOMAIN: str = "dealflow360-9bb5c.firebaseapp.com"
+    FIREBASE_PROJECT_ID: str = "dealflow360-9bb5c"
+    FIREBASE_STORAGE_BUCKET: str = "dealflow360-9bb5c.firebasestorage.app"
+    FIREBASE_MESSAGING_SENDER_ID: str = "510730462531"
+    FIREBASE_APP_ID: str = "1:510730462531:web:28f1ca48cf4c5445c8bbf6"
+    FIREBASE_MEASUREMENT_ID: str = "G-N8TXSVSW0K"
+
+
 
 
     @property

@@ -100,19 +100,14 @@
         limit: 100
       });
 
-      if (!res.ok) {
-        document.getElementById('payments-table-container').innerHTML = `
-          <div class="alert alert-coral" style="margin: 20px;">Failed to load payments.</div>
-        `;
-        return;
-      }
-
-      payments = res.data || [];
+      payments = Array.isArray(res) ? res : (res && res.data ? res.data : []);
       renderTable();
     } catch (err) {
-      console.error(err);
+      console.error('Error loading payments:', err);
       document.getElementById('payments-table-container').innerHTML = `
-        <div class="alert alert-coral" style="margin: 20px;">Error connecting to Payments service.</div>
+        <div class="alert alert-coral" style="margin: 20px;">
+          <span>Failed to load payments: ${err.message || 'Server error'}</span>
+        </div>
       `;
     }
   }
@@ -208,6 +203,7 @@
             <div>
               <label style="font-size: 0.75rem; font-weight: 600;">Payment Method</label>
               <select id="pay-method-select" class="form-input">
+                <option value="RAZORPAY">Razorpay Online Gateway (rzp_test_TYVhOpGcj7mkYU)</option>
                 <option value="BANK_TRANSFER">Bank Wire Transfer</option>
                 <option value="CREDIT_CARD">Credit Card</option>
                 <option value="ACH">ACH Direct Debit</option>
@@ -357,6 +353,13 @@
         });
 
         if (res.ok) {
+          if (window.DealFlowFirebase) {
+            window.DealFlowFirebase.logAnalyticsEvent('payment_recorded', {
+              customer_id: custId,
+              amount: amount,
+              payment_method: method
+            });
+          }
           global.DealFlowUI.toast('Payment recorded and allocated successfully.', 'teal');
           closeModal();
           await loadPayments();

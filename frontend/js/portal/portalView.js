@@ -404,21 +404,18 @@
       if (!text) return;
 
       try {
-        const res = await global.PortalAPI.postMessage(quoteId, {
+        await global.PortalAPI.postMessage(quoteId, {
           quotation_line_id: lineId,
           message: text,
           message_type: 'LINE_QUESTION'
         });
 
         global.DealFlowUI.closeModal();
-        if (res.ok) {
-          global.DealFlowUI.toast('Question sent to your sales representative!', 'teal');
-          await renderQuotationDetail(document.getElementById('main-view-container'), quoteId);
-        } else {
-          global.DealFlowUI.toast(res.data?.detail || 'Failed to submit question.', 'coral');
-        }
+        global.DealFlowUI.toast('Question sent to your sales representative!', 'teal');
+        await renderQuotationDetail(document.getElementById('main-view-container'), quoteId);
       } catch (err) {
-        global.DealFlowUI.toast('Network error sending question.', 'coral');
+        const msg = err.message || (err.detail && err.detail.detail) || 'Failed to submit question.';
+        global.DealFlowUI.toast(msg, 'coral');
       }
     });
   }
@@ -522,8 +519,12 @@
       };
 
       try {
-        const res = await global.PortalAPI.submitCounterOffer(quoteId, payload);
-        if (res.status === 409) {
+        await global.PortalAPI.submitCounterOffer(quoteId, payload);
+        global.DealFlowUI.closeModal();
+        global.DealFlowUI.toast('Counter offer submitted to sales team!', 'teal');
+        await renderQuotationDetail(document.getElementById('main-view-container'), quoteId);
+      } catch (err) {
+        if (err.status === 409) {
           // Stale version protection
           errBox.innerHTML = `
             <div><strong>Quotation Updated:</strong> This quotation has been updated since you opened it. Please review the latest version before submitting changes.</div>
@@ -535,17 +536,8 @@
           return;
         }
 
-        if (!res.ok) {
-          errBox.textContent = res.data?.detail || res.error || 'Failed to submit counter offer.';
-          errBox.style.display = 'block';
-          return;
-        }
-
-        global.DealFlowUI.closeModal();
-        global.DealFlowUI.toast('Counter offer submitted to sales team!', 'teal');
-        await renderQuotationDetail(document.getElementById('main-view-container'), quoteId);
-      } catch (err) {
-        errBox.textContent = 'Network error submitting request.';
+        const msg = err.message || (err.detail && err.detail.detail) || 'Failed to submit counter offer.';
+        errBox.textContent = msg;
         errBox.style.display = 'block';
       }
     });
@@ -703,17 +695,14 @@
       }
 
       try {
-        const res = await global.PortalAPI.confirmQuotation(quoteId);
-        if (!res.ok) {
-          alert(res.data?.detail || 'Confirmation failed.');
-          return;
-        }
+        await global.PortalAPI.confirmQuotation(quoteId);
 
         global.DealFlowUI.closeModal();
         global.DealFlowUI.toast(`🎉 Quotation confirmed successfully!`, 'teal');
         await renderQuotationDetail(document.getElementById('main-view-container'), quoteId);
       } catch (e) {
-        alert('Network error confirming quotation.');
+        const msg = e.message || (e.detail && e.detail.detail) || 'Confirmation failed.';
+        global.DealFlowUI.toast(msg, 'coral');
       }
     });
   }

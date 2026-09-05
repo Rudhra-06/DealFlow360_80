@@ -38,10 +38,10 @@ class SalesOrderLineRead(BaseModel):
 class SalesOrderListItem(BaseModel):
     id: int
     order_number: str
-    quotation_id: int
-    confirmed_quote_version_id: int
+    quotation_id: Optional[int] = None
+    confirmed_quote_version_id: Optional[int] = None
     customer_id: int
-    sales_rep_id: int
+    sales_rep_id: Optional[int] = None
     status: str
     currency: str
     net_total: Decimal

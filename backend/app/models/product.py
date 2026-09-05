@@ -41,7 +41,7 @@ class Product(Base):
     )
 
     # Relationships
-    category: Mapped["ProductCategory"] = relationship("ProductCategory", back_populates="products")
+    category: Mapped["ProductCategory"] = relationship("ProductCategory", back_populates="products", lazy="selectin")
     inventory_records: Mapped[List["Inventory"]] = relationship("Inventory", back_populates="product")
 
     def __repr__(self) -> str:

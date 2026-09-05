@@ -96,19 +96,14 @@
         limit: 100
       });
 
-      if (!res.ok) {
-        document.getElementById('subscriptions-table-container').innerHTML = `
-          <div class="alert alert-coral" style="margin: 20px;">Failed to load subscriptions.</div>
-        `;
-        return;
-      }
-
-      subscriptions = res.data || [];
+      subscriptions = Array.isArray(res) ? res : (res && res.data ? res.data : []);
       renderTable();
     } catch (err) {
-      console.error(err);
+      console.error('Error loading subscriptions:', err);
       document.getElementById('subscriptions-table-container').innerHTML = `
-        <div class="alert alert-coral" style="margin: 20px;">Error connecting to Subscriptions service.</div>
+        <div class="alert alert-coral" style="margin: 20px;">
+          <span>Failed to load subscriptions: ${err.message || 'Server error'}</span>
+        </div>
       `;
     }
   }
@@ -207,12 +202,12 @@
 
     try {
       const res = await global.SubscriptionsAPI.get(subscriptionId);
-      if (!res.ok) {
-        document.getElementById('sub-modal-body').innerHTML = `<div class="alert alert-coral">Failed to load subscription.</div>`;
+      const sub = (res && res.data) ? res.data : res;
+      if (!sub || !sub.subscription_number) {
+        document.getElementById('sub-modal-body').innerHTML = `<div class="alert alert-coral">Failed to load subscription details.</div>`;
         return;
       }
 
-      const sub = res.data;
       document.getElementById('sub-modal-body').innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: #F8FAFC; padding: 12px 16px; border-radius: var(--radius-md);">
           <div>
@@ -342,11 +337,16 @@
       });
 
     } catch (e) {
-      console.error(e);
+      console.error('Error loading subscription:', e);
+      const modalBody = document.getElementById('sub-modal-body');
+      if (modalBody) {
+        modalBody.innerHTML = `<div class="alert alert-coral">Failed to load subscription detail: ${e.message || e}</div>`;
+      }
     }
   }
 
   global.SubscriptionsView = {
-    render: render
+    render: render,
+    openSubscriptionDetailModal: openSubscriptionDetailModal
   };
 })(typeof window !== 'undefined' ? window : this);

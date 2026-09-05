@@ -37,6 +37,32 @@
      */
     async record(payload) {
       return global.DealFlowAPI.post('/api/v1/payments', payload, true);
+    },
+
+    /**
+     * Get Razorpay configuration & credentials.
+     * GET /api/v1/payments/razorpay/config
+     */
+    async getRazorpayConfig() {
+      return global.DealFlowAPI.get('/api/v1/payments/razorpay/config', false);
+    },
+
+    /**
+     * Create Razorpay Checkout Order.
+     * POST /api/v1/payments/razorpay/create-order
+     * Payload: { amount, currency, invoice_id, customer_id }
+     */
+    async createRazorpayOrder(payload) {
+      return global.DealFlowAPI.post('/api/v1/payments/razorpay/create-order', payload, true);
+    },
+
+    /**
+     * Verify Razorpay Payment Signature and record payment.
+     * POST /api/v1/payments/razorpay/verify
+     * Payload: { razorpay_order_id, razorpay_payment_id, razorpay_signature, customer_id, invoice_id, amount, currency }
+     */
+    async verifyRazorpayPayment(payload) {
+      return global.DealFlowAPI.post('/api/v1/payments/razorpay/verify', payload, true);
     }
   };
 

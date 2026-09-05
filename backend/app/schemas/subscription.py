@@ -22,10 +22,10 @@ class BillingScheduleRead(BaseModel):
 class SubscriptionRead(BaseModel):
     id: int
     subscription_number: str
-    sales_order_id: int
-    sales_order_line_id: int
+    sales_order_id: Optional[int] = None
+    sales_order_line_id: Optional[int] = None
     customer_id: int
-    billing_plan_id: int
+    billing_plan_id: Optional[int] = None
     status: str
     quantity: Decimal
     unit_price: Decimal

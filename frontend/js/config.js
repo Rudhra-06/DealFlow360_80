@@ -19,7 +19,21 @@
     // Application info
     APP_NAME: 'DealFlow360',
     APP_TAGLINE: 'Enterprise B2B Deal Management and Commercial Operations Platform',
-    PHASE: 'Phase 1'
+    PHASE: 'Phase 1',
+
+    // Razorpay Integration Configuration
+    RAZORPAY_KEY_ID: 'rzp_test_TYVhOpGcj7mkYU',
+
+    // Firebase Web App & Analytics Configuration
+    FIREBASE_CONFIG: {
+      apiKey: "AIzaSyCQMQ9teEy9X_4Fe0JpPPKRCCysvY8v89w",
+      authDomain: "dealflow360-9bb5c.firebaseapp.com",
+      projectId: "dealflow360-9bb5c",
+      storageBucket: "dealflow360-9bb5c.firebasestorage.app",
+      messagingSenderId: "510730462531",
+      appId: "1:510730462531:web:28f1ca48cf4c5445c8bbf6",
+      measurementId: "G-N8TXSVSW0K"
+    }
   };
 
   global.DealFlowConfig = Config;
