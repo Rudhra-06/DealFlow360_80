@@ -3,9 +3,11 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.auth import auth_router
 from app.db.session import get_db
 
 api_router = APIRouter()
+api_router.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 
 
 @api_router.get("/health", tags=["Health"])

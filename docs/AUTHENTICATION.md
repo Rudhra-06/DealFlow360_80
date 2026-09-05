@@ -65,10 +65,38 @@ This prevents malicious actors from probing the platform to discover registered 
 ### D. Why `authenticate_user()` Does Not Commit Transactions
 Authentication is a read-and-verify operation. Unlike `UserService.create_user()` which mutates database state, `authenticate_user()` queries PostgreSQL and evaluates password hashes in CPU memory. It does not perform DML statements (`INSERT`, `UPDATE`, `DELETE`) and therefore does not invoke `db.commit()`.
 
-### E. Why HTTP Login Endpoints Are Deferred
-Phase 1 Part 8 focuses strictly on building and verifying domain security primitives and `AuthenticationService` below the API layer. HTTP transport logic (`POST /api/v1/auth/login`, `OAuth2PasswordRequestForm`, `Depends(get_current_user)`) will be introduced in subsequent API integration phases.
+### E. HTTP Transport Layer (Phase 1 — Part 9)
+Phase 1 Part 9 exposes `AuthenticationService` and JWT validation through HTTP endpoints (`POST /api/v1/auth/login`, `GET /api/v1/auth/me`) and the `get_current_user` FastAPI dependency.
 
 ---
+
+## 4. HTTP API Endpoints & Security Dependency
+
+### A. Login Endpoint (`POST /api/v1/auth/login`)
+- **Request Body**: `LoginRequest` (`email: EmailStr`, `password: str`)
+- **Response**: `TokenResponse` (`access_token: str`, `token_type: "bearer"`)
+- **Status Codes**:
+  - `200 OK`: Valid credentials, returns access token.
+  - `401 Unauthorized`: Invalid credentials (wrong password or unknown email). Detail: `"Invalid email or password"`.
+  - `403 Forbidden`: Inactive user account. Detail: `"User account is inactive"`.
+  - `422 Unprocessable Entity`: Validation failure (malformed email or empty body).
+
+### B. Bearer Security Dependency (`get_current_user`)
+Located in [`backend/app/api/dependencies/auth.py`](file:///c:/Users/Nami..%21%21/DealFlow360_80/backend/app/api/dependencies/auth.py):
+1. Extracts Bearer token from `Authorization: Bearer <token>` header via `HTTPBearer(auto_error=True)`.
+2. Decodes JWT token using `decode_access_token(token)`.
+3. Converts `sub` claim to integer user ID (`int(payload["sub"])`).
+4. Re-validates active user and loads role from PostgreSQL using `UserRepository.get_by_id(db, user_id, load_role=True)`.
+5. Ensures fresh user entity and role verification on every request.
+
+### C. Current User Endpoint (`GET /api/v1/auth/me`)
+- **Headers**: `Authorization: Bearer <token>`
+- **Response**: `UserRead` (`id`, `email`, `full_name`, `is_active`, `role_id`, `role`)
+- **Security**: Password hash (`hashed_password`) is **never** exposed in responses.
+- **Status Codes**:
+  - `200 OK`: Returns authenticated user details with loaded role.
+  - `401 Unauthorized`: Missing token, invalid signature/format, expired token, or user missing.
+  - `403 Forbidden`: User account is deactivated.
 
 ## 3. Core Modules & Exception Hierarchy
 
