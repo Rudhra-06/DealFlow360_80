@@ -28,7 +28,24 @@ def test_alembic_config_resolves_database_url():
 
 def test_alembic_target_metadata_binds_to_base():
     """Verify that Alembic env.py target_metadata matches app.db.base.Base.metadata."""
-    from alembic.env import target_metadata
+    import importlib.util
+    from unittest.mock import MagicMock
+    import alembic.context
+
+    mock_cfg = MagicMock()
+    mock_cfg.config_file_name = None
+    alembic.context.config = mock_cfg
+    alembic.context.is_offline_mode = MagicMock(return_value=True)
+    alembic.context.configure = MagicMock()
+    alembic.context.run_migrations = MagicMock()
+    alembic.context.begin_transaction = MagicMock()
+
+    env_path = backend_dir / "alembic" / "env.py"
+    spec = importlib.util.spec_from_file_location("alembic_env", env_path)
+    alembic_env = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(alembic_env)
+
+    target_metadata = alembic_env.target_metadata
 
     assert target_metadata is Base.metadata
     # In Phase 1 - Part 3, target_metadata should currently have no business tables
