@@ -27,6 +27,8 @@ class ReportTypeEnum(str, Enum):
     BILLING = "BILLING"
     RECEIVABLES = "RECEIVABLES"
     SUBSCRIPTIONS = "SUBSCRIPTIONS"
+    QUOTATION = "QUOTATION"
+    INVOICE = "INVOICE"
 
 
 class ReportExportRequest(BaseModel):
@@ -36,6 +38,8 @@ class ReportExportRequest(BaseModel):
     end_date: Optional[datetime] = None
     customer_id: Optional[int] = None
     sales_rep_id: Optional[int] = None
+    quotation_id: Optional[int] = None
+    invoice_id: Optional[int] = None
     currency: Optional[str] = None
     filters: Optional[Dict[str, Any]] = None
 

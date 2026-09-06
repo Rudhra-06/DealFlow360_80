@@ -553,23 +553,94 @@
   visibility: visible;
 }
 
-.modal-card {
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-lg);
-  max-width: 500px;
-  width: 100%;
+.modal-card,
+.modal-dialog {
+  background: var(--color-surface, #FFFFFF) !important;
+  color: var(--color-text, #1E293B) !important;
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--color-border, #E2E8F0);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
+  max-width: 520px;
+  width: 92%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  animation: fadeIn 200ms ease-out;
+  position: relative;
+  z-index: 2001;
+  margin: auto;
+  animation: modalSlideUp 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.modal-card-lg {
-  max-width: 680px;
+.modal-dialog-sm, .modal-card-sm { max-width: 420px; }
+.modal-dialog-lg, .modal-card-lg { max-width: 680px; }
+.modal-dialog-xl, .modal-card-xl { max-width: 860px; }
+
+.modal-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--color-border, #E2E8F0);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-surface, #FFFFFF);
+  border-top-left-radius: var(--radius-lg, 12px);
+  border-top-right-radius: var(--radius-lg, 12px);
+  flex-shrink: 0;
 }
 
-.modal-card-xl {
-  max-width: 860px;
+.modal-title {
+  font-size: var(--font-size-md, 1rem);
+  font-weight: 700;
+  color: var(--color-navy, #172A46);
+  margin: 0;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--color-text-muted, #64748B);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm, 4px);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.modal-close:hover {
+  color: var(--color-navy, #172A46);
+  background-color: var(--color-background, #F1F5F9);
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  background: var(--color-surface, #FFFFFF);
+  color: var(--color-text, #1E293B);
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border, #E2E8F0);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm, 8px);
+  background: var(--color-surface, #FFFFFF);
+  border-bottom-left-radius: var(--radius-lg, 12px);
+  border-bottom-right-radius: var(--radius-lg, 12px);
+  flex-shrink: 0;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ==========================================================================

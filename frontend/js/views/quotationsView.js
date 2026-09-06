@@ -268,6 +268,9 @@
                   <td>${formatRiskBadge(q.risk_level, q.blended_risk_score)}</td>
                   <td style="font-size: var(--font-size-xs); color: var(--color-text-muted);">${updatedAt}</td>
                   <td style="text-align: right;">
+                    <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.QuotationsView.exportQuotePdf(${q.id}, '${q.quote_number}');" title="Export Quotation PDF" style="margin-right: 4px; padding: 2px 8px; font-size: 0.75rem;">
+                      <span>PDF</span>
+                    </button>
                     <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.DealFlowApp.switchView('quotation-builder', { quoteId: ${q.id} });">
                       <span>Open</span>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -521,9 +524,24 @@
     });
   }
 
+  async function exportQuotePdf(quoteId, quoteNumber) {
+    try {
+      if (global.DealFlowUI) global.DealFlowUI.toast(`Generating PDF for quotation ${quoteNumber || quoteId}...`, 'info');
+      await global.ReportsAPI.exportReport({
+        report_type: 'QUOTATION',
+        quotation_id: quoteId,
+        format: 'PDF'
+      });
+      if (global.DealFlowUI) global.DealFlowUI.toast(`Quotation ${quoteNumber || quoteId} PDF exported successfully!`, 'teal');
+    } catch (err) {
+      if (global.DealFlowUI) global.DealFlowUI.toast('Failed to export quotation PDF: ' + err.message, 'coral');
+    }
+  }
+
   global.QuotationsView = {
     render: render,
-    openNewQuotationModal: openNewQuotationModal
+    openNewQuotationModal: openNewQuotationModal,
+    exportQuotePdf: exportQuotePdf
   };
 })(typeof window !== 'undefined' ? window : this);
 

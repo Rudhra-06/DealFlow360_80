@@ -30,7 +30,9 @@
       BACKORDERS: 'BACKORDERS',
       BILLING: 'BILLING',
       RECEIVABLES: 'RECEIVABLES',
-      SUBSCRIPTIONS: 'SUBSCRIPTIONS'
+      SUBSCRIPTIONS: 'SUBSCRIPTIONS',
+      QUOTATION: 'QUOTATION',
+      INVOICE: 'INVOICE'
     },
 
     REPORT_LABELS: {
@@ -46,7 +48,9 @@
       BACKORDERS: 'Backorder Analysis',
       BILLING: 'Billing & Invoicing Summary',
       RECEIVABLES: 'Receivables Aging Report',
-      SUBSCRIPTIONS: 'Recurring Revenue & Subscriptions'
+      SUBSCRIPTIONS: 'Recurring Revenue & Subscriptions',
+      QUOTATION: 'Commercial Quotation Document',
+      INVOICE: 'Customer Invoice Document'
     },
 
     /**

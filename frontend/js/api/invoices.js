@@ -30,6 +30,18 @@
      */
     async get(id) {
       return global.DealFlowAPI.get(`/api/v1/invoices/${id}`, true);
+    },
+
+    /**
+     * Download Invoice PDF.
+     * GET /api/v1/invoices/{id}/pdf
+     */
+    async downloadPdf(id) {
+      return global.ReportsAPI.exportReport({
+        report_type: 'INVOICE',
+        format: 'PDF',
+        invoice_id: id
+      });
     }
   };
 

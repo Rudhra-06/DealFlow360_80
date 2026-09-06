@@ -11,7 +11,7 @@ class CustomerBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     email: Optional[EmailStr] = None
     phone: Optional[str] = Field(None, max_length=50)
-    tier_id: int
+    tier_id: Optional[int] = None
     billing_address: Optional[str] = None
     shipping_address: Optional[str] = None
     default_payment_terms_days: int = Field(30, ge=0)

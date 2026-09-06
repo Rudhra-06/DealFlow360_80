@@ -44,9 +44,20 @@ class QuoteApprovalService:
         if quote.status not in {QuotationStatus.DRAFT.value, QuotationStatus.RETURNED_FOR_REVISION.value}:
             raise QuoteNotEditableError(f"Quotation {quote.quote_number} is in '{quote.status}' status and cannot be submitted.")
 
-        # Ownership check for Sales Rep
-        is_admin = hasattr(current_user, "role") and current_user.role and current_user.role.name == RoleName.ADMIN
-        if not is_admin and quote.sales_rep_id != current_user.id:
+        # Ownership check for Sales Rep & Management
+        user_role_name = getattr(current_user.role, "name", None) if hasattr(current_user, "role") and current_user.role else None
+        if hasattr(user_role_name, "value"):
+            user_role_name = user_role_name.value
+        privileged_roles = {
+            RoleName.ADMIN.value if hasattr(RoleName.ADMIN, "value") else str(RoleName.ADMIN),
+            RoleName.SALES_MANAGER.value if hasattr(RoleName.SALES_MANAGER, "value") else str(RoleName.SALES_MANAGER),
+            RoleName.FINANCE_OPERATIONS.value if hasattr(RoleName.FINANCE_OPERATIONS, "value") else str(RoleName.FINANCE_OPERATIONS),
+            "ADMIN",
+            "SALES_MANAGER",
+            "FINANCE_OPERATIONS",
+        }
+        is_privileged = (user_role_name in privileged_roles) or (hasattr(current_user, "role_id") and current_user.role_id in (1, 2, 3))
+        if not is_privileged and quote.sales_rep_id != current_user.id:
             raise QuoteAccessDeniedError("You do not have permission to submit this quotation.")
 
         if not quote.lines:

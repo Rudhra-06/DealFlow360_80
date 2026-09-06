@@ -182,6 +182,11 @@
             </div>
 
             <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+              <button id="btn-portal-export-pdf" class="btn btn-secondary btn-sm" title="Export Quote PDF">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>Export PDF</span>
+              </button>
+
               ${activeVersions.length > 1 ? `
                 <button id="btn-compare-versions" class="btn btn-secondary btn-sm">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -323,6 +328,22 @@
     // Request Changes / Counter Offer
     document.getElementById('btn-request-changes')?.addEventListener('click', () => {
       openCounterOfferDrawer(quoteId, versionNum);
+    });
+
+    // Export PDF
+    document.getElementById('btn-portal-export-pdf')?.addEventListener('click', async () => {
+      if (!activeQuote || !activeQuote.id) return;
+      try {
+        global.DealFlowUI?.toast(`Generating PDF for quotation ${activeQuote.quote_number}...`, 'info');
+        await global.ReportsAPI.exportReport({
+          report_type: 'QUOTATION',
+          quotation_id: activeQuote.id,
+          format: 'PDF'
+        });
+        global.DealFlowUI?.toast(`Quotation ${activeQuote.quote_number} PDF exported successfully!`, 'teal');
+      } catch (err) {
+        global.DealFlowUI?.toast('Failed to export quotation PDF: ' + err.message, 'coral');
+      }
     });
 
     // Compare Versions

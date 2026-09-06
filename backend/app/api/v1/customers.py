@@ -1,12 +1,16 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.dependencies.auth import get_current_active_user
 from app.api.dependencies.rbac import require_roles
 from app.core.roles import RoleName
 from app.db.session import get_db
+from app.models.user import User
 from app.schemas.customer import CustomerCreate, CustomerRead, CustomerUpdate
+from app.schemas.reports import ReportExportFormat, ReportExportRequest, ReportTypeEnum
 from app.services.customer import CustomerService
+from app.services.report_export import ReportExportService
 from app.services.exceptions import (
     DuplicateResourceError,
     InactiveReferenceError,
@@ -109,3 +113,26 @@ async def update_customer(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     except (InvalidReferenceError, InactiveReferenceError) as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get(
+    "/{customer_id}/report/pdf",
+    summary="Export Customer Activity Report as PDF Document",
+)
+async def export_customer_pdf(
+    customer_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    service = ReportExportService(db)
+    req = ReportExportRequest(
+        report_type=ReportTypeEnum.CUSTOMER_360,
+        format=ReportExportFormat.PDF,
+        customer_id=customer_id,
+    )
+    file_bytes, filename, mime_type = await service.export_report(req, current_user)
+    return Response(
+        content=file_bytes,
+        media_type=mime_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )

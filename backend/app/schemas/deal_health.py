@@ -119,10 +119,10 @@ class DealHealthHistoryItem(BaseModel):
 class DealHealthListItem(BaseModel):
     quotation_id: int
     quote_number: str
-    customer_id: int
-    customer_name: str
-    sales_rep_id: int
-    sales_rep_name: str
+    customer_id: Optional[int] = None
+    customer_name: Optional[str] = "Unknown"
+    sales_rep_id: Optional[int] = None
+    sales_rep_name: Optional[str] = "Unassigned"
     quotation_status: str
     health_score: Decimal
     health_level: str
@@ -177,8 +177,8 @@ class DealAlertListItem(BaseModel):
     id: int
     quotation_id: int
     quote_number: str
-    customer_name: str
-    sales_rep_name: str
+    customer_name: Optional[str] = "Unknown"
+    sales_rep_name: Optional[str] = "Unassigned"
     alert_type: str
     severity: str
     status: str

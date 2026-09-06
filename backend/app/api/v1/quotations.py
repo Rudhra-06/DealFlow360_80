@@ -1,11 +1,14 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.dependencies.auth import get_current_active_user
 from app.api.dependencies.rbac import require_roles
 from app.core.enums import RoleName
 from app.db.session import get_db
 from app.models.user import User
+from app.schemas.reports import ReportExportFormat, ReportExportRequest, ReportTypeEnum
+from app.services.report_export import ReportExportService
 from app.schemas.quote_audit_event import QuoteAuditEventRead
 from app.schemas.quotation import (
     QuotationCreate,
@@ -49,6 +52,8 @@ READ_ROLES = (
 WRITE_ROLES = (
     RoleName.ADMIN,
     RoleName.SALES_REP,
+    RoleName.SALES_MANAGER,
+    RoleName.FINANCE_OPERATIONS,
 )
 
 
@@ -527,6 +532,29 @@ async def send_quotation_to_customer(
 
 
 @router.get(
+    "/{quotation_id}/pdf",
+    summary="Export Individual Quotation as PDF Document",
+)
+async def export_quotation_pdf(
+    quotation_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    service = ReportExportService(db)
+    req = ReportExportRequest(
+        report_type=ReportTypeEnum.QUOTATION,
+        format=ReportExportFormat.PDF,
+        quotation_id=quotation_id,
+    )
+    file_bytes, filename, mime_type = await service.export_report(req, current_user)
+    return Response(
+        content=file_bytes,
+        media_type=mime_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
+
+@router.get(
     "/{quotation_id}/versions",
     response_model=List[QuoteVersionRead],
     summary="List Internal Quotation Version Snapshots",
@@ -666,5 +694,28 @@ async def reply_internal_message(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except QuoteAccessDeniedError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+
+
+@router.get(
+    "/{quotation_id}/pdf",
+    summary="Export quotation PDF document",
+)
+async def export_quotation_pdf(
+    quotation_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    service = ReportExportService(db)
+    req = ReportExportRequest(
+        report_type=ReportTypeEnum.QUOTATION,
+        format=ReportExportFormat.PDF,
+        quotation_id=quotation_id,
+    )
+    pdf_bytes, filename, mime_type = await service.export_report(req, current_user)
+    return Response(
+        content=pdf_bytes,
+        media_type=mime_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 

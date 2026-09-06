@@ -27,19 +27,19 @@ class QuotationUpdate(BaseModel):
 class QuotationListItem(BaseModel):
     id: int
     quote_number: str
-    customer_id: int
-    sales_rep_id: int
+    customer_id: Optional[int] = None
+    sales_rep_id: Optional[int] = None
     status: str
     currency: str
-    payment_terms_days: int
-    order_discount_pct: Decimal
-    gross_subtotal: Decimal
-    discount_amount: Decimal
-    net_total: Decimal
-    margin_pct: Decimal
-    weighted_effective_discount_pct: Decimal
-    blended_risk_score: Decimal
-    risk_level: str
+    payment_terms_days: int = 30
+    order_discount_pct: Decimal = Decimal("0.00")
+    gross_subtotal: Decimal = Decimal("0.00")
+    discount_amount: Decimal = Decimal("0.00")
+    net_total: Decimal = Decimal("0.00")
+    margin_pct: Optional[Decimal] = Decimal("0.00")
+    weighted_effective_discount_pct: Optional[Decimal] = Decimal("0.00")
+    blended_risk_score: Optional[Decimal] = Decimal("0.00")
+    risk_level: Optional[str] = "GREEN"
     created_at: datetime
     updated_at: datetime
     customer: Optional[CustomerRead] = None
@@ -51,23 +51,23 @@ class QuotationListItem(BaseModel):
 class QuotationRead(BaseModel):
     id: int
     quote_number: str
-    customer_id: int
-    sales_rep_id: int
+    customer_id: Optional[int] = None
+    sales_rep_id: Optional[int] = None
     status: str
     currency: str
-    payment_terms_days: int
-    order_discount_pct: Decimal
+    payment_terms_days: int = 30
+    order_discount_pct: Decimal = Decimal("0.00")
 
-    gross_subtotal: Decimal
-    discount_amount: Decimal
-    net_total: Decimal
-    total_cost: Decimal
-    margin_amount: Decimal
-    margin_pct: Decimal
-    weighted_effective_discount_pct: Decimal
+    gross_subtotal: Decimal = Decimal("0.00")
+    discount_amount: Decimal = Decimal("0.00")
+    net_total: Decimal = Decimal("0.00")
+    total_cost: Optional[Decimal] = Decimal("0.00")
+    margin_amount: Optional[Decimal] = Decimal("0.00")
+    margin_pct: Optional[Decimal] = Decimal("0.00")
+    weighted_effective_discount_pct: Optional[Decimal] = Decimal("0.00")
 
-    blended_risk_score: Decimal
-    risk_level: str
+    blended_risk_score: Optional[Decimal] = Decimal("0.00")
+    risk_level: Optional[str] = "GREEN"
 
     submitted_at: Optional[datetime] = None
     created_at: datetime

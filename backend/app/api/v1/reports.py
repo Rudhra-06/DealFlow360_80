@@ -24,7 +24,6 @@ INTERNAL_ROLES = [
 
 @router.post(
     "/export",
-    dependencies=[Depends(require_roles(*INTERNAL_ROLES))],
 )
 async def export_report(
     req: ReportExportRequest,

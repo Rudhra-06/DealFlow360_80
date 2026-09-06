@@ -209,8 +209,9 @@
     try {
       global.DealFlowUI.toast(`Downloading PDF for Invoice ${invoiceNumber}...`, 'teal');
       await global.ReportsAPI.exportReport({
-        report_type: 'BILLING',
-        format: 'PDF'
+        report_type: 'INVOICE',
+        format: 'PDF',
+        invoice_id: invoiceId
       });
       global.DealFlowUI.toast(`Invoice ${invoiceNumber} PDF downloaded successfully!`, 'teal');
     } catch (err) {

@@ -1,12 +1,15 @@
 from datetime import datetime
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.dependencies.auth import get_current_active_user
 from app.api.dependencies.rbac import require_roles
 from app.core.roles import RoleName
 from app.db.session import get_db
 from app.models.user import User
+from app.schemas.reports import ReportExportFormat, ReportExportRequest, ReportTypeEnum
+from app.services.report_export import ReportExportService
 from app.schemas.credit_note import CreditNoteApplyRequest, CreditNoteRead
 from app.schemas.invoice import InvoiceRead
 from app.schemas.subscription import (
@@ -104,6 +107,29 @@ async def get_invoice(
     if not inv:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Invoice {invoice_id} not found.")
     return inv
+
+
+@router.get(
+    "/invoices/{invoice_id}/pdf",
+    summary="Export single invoice PDF document",
+)
+async def export_invoice_pdf(
+    invoice_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    service = ReportExportService(db)
+    req = ReportExportRequest(
+        report_type=ReportTypeEnum.INVOICE,
+        format=ReportExportFormat.PDF,
+        invoice_id=invoice_id,
+    )
+    pdf_bytes, filename, mime_type = await service.export_report(req, current_user)
+    return Response(
+        content=pdf_bytes,
+        media_type=mime_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.post(

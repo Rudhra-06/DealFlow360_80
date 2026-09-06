@@ -136,23 +136,37 @@
    ========================================================================== */
 .audit-timeline {
   position: relative;
-  padding-left: 24px;
-  margin-top: var(--space-md);
+  padding-left: 28px;
+  padding-right: 4px;
+  margin-top: var(--space-xs);
+  max-height: 480px;
+  overflow-y: auto;
 }
 
 .audit-timeline::before {
   content: "";
   position: absolute;
-  left: 7px;
-  top: 6px;
-  bottom: 6px;
+  left: 9px;
+  top: 12px;
+  bottom: 12px;
   width: 2px;
-  background: var(--color-border);
+  background: var(--color-border, #E2E8F0);
 }
 
 .audit-event-item {
   position: relative;
-  margin-bottom: var(--space-lg);
+  background: var(--color-background, #F8FAFC);
+  border: 1px solid var(--color-border, #E2E8F0);
+  border-radius: var(--radius-md, 8px);
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.audit-event-item:hover {
+  border-color: var(--color-teal, #19B5A5);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .audit-event-item:last-child {
@@ -161,47 +175,49 @@
 
 .audit-dot {
   position: absolute;
-  left: -24px;
-  top: 3px;
-  width: 16px;
-  height: 16px;
+  left: -28px;
+  top: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: var(--color-surface);
-  border: 2px solid var(--color-teal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: #FFFFFF;
+  border: 3px solid var(--color-teal, #19B5A5);
+  box-shadow: 0 0 0 2px rgba(25, 181, 165, 0.15);
+  z-index: 2;
 }
 
 .audit-event-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .audit-event-title {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-navy);
+  font-size: var(--font-size-xs, 0.8125rem);
+  font-weight: 700;
+  color: var(--color-navy, #172A46);
 }
 
 .audit-event-time {
-  font-size: 0.6875rem;
-  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #64748B);
+  font-weight: 500;
 }
 
 .audit-event-actor {
   font-size: 0.75rem;
-  color: var(--color-text-secondary);
-  margin-bottom: 4px;
+  color: var(--color-text-secondary, #475569);
+  margin-bottom: 6px;
+  font-weight: 500;
 }
 
 .audit-event-reason {
-  background: var(--color-background);
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
+  background: #FFFFFF;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm, 6px);
   font-size: 0.75rem;
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
+  color: var(--color-text, #1E293B);
+  border: 1px solid var(--color-border, #E2E8F0);
+  margin-top: 6px;
 }

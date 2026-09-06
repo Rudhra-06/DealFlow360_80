@@ -67,14 +67,27 @@ class QuotationService:
             )
 
     def _verify_ownership(self, quotation: Quotation, current_user: User) -> None:
-        # ADMIN can edit any quotation; SALES_REP can only edit their own
-        is_admin = False
-        if hasattr(current_user, "role") and current_user.role:
-            is_admin = current_user.role.name == RoleName.ADMIN
-        elif hasattr(current_user, "role_id") and current_user.role_id == 1:
-            is_admin = True
+        # ADMIN, SALES_MANAGER, and FINANCE_OPERATIONS can edit/manage any quotation;
+        # SALES_REP can only edit their own assigned quotation.
+        is_privileged = False
+        user_role_name = getattr(current_user.role, "name", None) if hasattr(current_user, "role") and current_user.role else None
+        if hasattr(user_role_name, "value"):
+            user_role_name = user_role_name.value
 
-        if not is_admin and quotation.sales_rep_id != current_user.id:
+        privileged_roles = {
+            RoleName.ADMIN.value if hasattr(RoleName.ADMIN, "value") else str(RoleName.ADMIN),
+            RoleName.SALES_MANAGER.value if hasattr(RoleName.SALES_MANAGER, "value") else str(RoleName.SALES_MANAGER),
+            RoleName.FINANCE_OPERATIONS.value if hasattr(RoleName.FINANCE_OPERATIONS, "value") else str(RoleName.FINANCE_OPERATIONS),
+            "ADMIN",
+            "SALES_MANAGER",
+            "FINANCE_OPERATIONS",
+        }
+        if user_role_name in privileged_roles:
+            is_privileged = True
+        elif hasattr(current_user, "role_id") and current_user.role_id in (1, 2, 3):
+            is_privileged = True
+
+        if not is_privileged and quotation.sales_rep_id != current_user.id:
             raise QuoteAccessDeniedError("You do not have permission to modify this quotation.")
 
     async def _generate_unique_quote_number(self) -> str:

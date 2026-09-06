@@ -165,6 +165,12 @@
             <span>Messages / Negotiation</span>
           </button>
 
+          <!-- Export PDF Action -->
+          <button id="btn-export-quote-pdf" class="btn btn-secondary btn-sm" title="Export this quotation as a PDF document">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>Export PDF</span>
+          </button>
+
           <!-- Send to Customer (Only if APPROVED) -->
           ${q.status === 'APPROVED' ? `
             <button id="btn-send-to-customer" class="btn btn-teal btn-sm" style="font-weight: 700; box-shadow: 0 2px 6px rgba(13,148,136,0.25);">
@@ -679,6 +685,22 @@
     // Customer Negotiation & Messages
     document.getElementById('btn-view-messages')?.addEventListener('click', () => {
       openMessagesDrawer();
+    });
+
+    // Export Quotation PDF Action
+    document.getElementById('btn-export-quote-pdf')?.addEventListener('click', async () => {
+      if (!currentQuote || !currentQuote.id) return;
+      try {
+        global.DealFlowUI.toast(`Generating PDF for quotation ${currentQuote.quote_number}...`, 'info');
+        await global.ReportsAPI.exportReport({
+          report_type: 'QUOTATION',
+          quotation_id: currentQuote.id,
+          format: 'PDF'
+        });
+        global.DealFlowUI.toast(`Quotation ${currentQuote.quote_number} PDF exported successfully!`, 'teal');
+      } catch (err) {
+        global.DealFlowUI.toast('Failed to export quotation PDF: ' + err.message, 'coral');
+      }
     });
 
     // Send to Customer Action
