@@ -978,10 +978,13 @@
     modal.innerHTML = `
       <div class="modal-dialog animate-fade-in" style="max-width: 600px;">
         <div class="modal-header">
-          <h3 class="modal-title">Risk Evaluation & Explainability</h3>
-          <button class="modal-close" onclick="window.DealFlowUI.closeModal();">&times;</button>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-coral);"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <h3 class="modal-title">Risk Evaluation & Explainability</h3>
+          </div>
+          <button class="modal-close" aria-label="Close" onclick="window.DealFlowUI.closeModal();">&times;</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="padding: 16px 20px;">
           <div style="margin-bottom: var(--space-md); font-size: var(--font-size-sm); color: var(--color-text-secondary);">
             DealFlow360 evaluates commercial policy compliance across each line item. Blended risk score: <strong>${Number(currentQuote.blended_risk_score).toFixed(1)}</strong> (${currentQuote.risk_level}).
           </div>
@@ -1008,10 +1011,9 @@
               `).join('')}
             </div>
           `}
-
-          <div style="text-align: right; margin-top: var(--space-lg);">
-            <button class="btn btn-secondary" onclick="window.DealFlowUI.closeModal();">Close</button>
-          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary btn-sm" onclick="window.DealFlowUI.closeModal();">Close</button>
         </div>
       </div>
     `;
@@ -1028,10 +1030,13 @@
     modal.innerHTML = `
       <div class="modal-dialog animate-fade-in" style="max-width: 800px;">
         <div class="modal-header">
-          <h3 class="modal-title">What-If Deal Simulator</h3>
-          <button class="modal-close" onclick="window.DealFlowUI.closeModal();">&times;</button>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-teal);"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <h3 class="modal-title">What-If Deal Simulator</h3>
+          </div>
+          <button class="modal-close" aria-label="Close" onclick="window.DealFlowUI.closeModal();">&times;</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="padding: 16px 20px;">
           <div class="whatif-container">
             <div class="whatif-alert">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
@@ -1284,18 +1289,21 @@
     if (!modal) return;
 
     modal.innerHTML = `
-      <div class="modal-dialog animate-fade-in" style="max-width: 650px;">
+      <div class="modal-dialog animate-fade-in" style="max-width: 620px;">
         <div class="modal-header">
-          <h3 class="modal-title">Quotation Activity & Audit Trail</h3>
-          <button class="modal-close" onclick="window.DealFlowUI.closeModal();">&times;</button>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-teal);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <h3 class="modal-title">Quotation Activity & Audit Trail</h3>
+          </div>
+          <button class="modal-close" aria-label="Close" onclick="window.DealFlowUI.closeModal();">&times;</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="padding: 16px 20px;">
           <div id="audit-trail-content">
             <div style="text-align: center; padding: 30px;"><span class="spinner spinner-teal"></span> Loading audit events...</div>
           </div>
-          <div style="text-align: right; margin-top: var(--space-lg);">
-            <button class="btn btn-secondary" onclick="window.DealFlowUI.closeModal();">Close</button>
-          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary btn-sm" onclick="window.DealFlowUI.closeModal();">Close</button>
         </div>
       </div>
     `;
@@ -1314,7 +1322,7 @@
 
       const events = res.data || [];
       if (events.length === 0) {
-        content.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--color-text-muted);">No audit events recorded yet.</div>`;
+        content.innerHTML = `<div style="text-align: center; padding: 24px; color: var(--color-text-muted);">No audit events recorded yet.</div>`;
         return;
       }
 
@@ -1322,8 +1330,8 @@
         <div class="audit-timeline">
           ${events.map(ev => {
             const timeStr = new Date(ev.created_at).toLocaleString();
-            const actorName = ev.user ? ev.user.full_name : `User #${ev.user_id}`;
-            const actorRole = ev.user?.role?.name ? global.DealFlowNav?.formatRole(ev.user.role.name) : 'User';
+            const actorName = ev.user ? ev.user.full_name : (ev.user_id ? `User #${ev.user_id}` : 'System');
+            const actorRole = ev.user?.role?.name ? (global.DealFlowNav?.formatRole ? global.DealFlowNav.formatRole(ev.user.role.name) : ev.user.role.name) : 'User';
 
             return `
               <div class="audit-event-item">
@@ -1334,8 +1342,11 @@
                 </div>
                 <div class="audit-event-actor">${actorName} (${actorRole})</div>
                 ${ev.from_status && ev.to_status ? `
-                  <div style="font-size: 0.75rem; margin-bottom: 4px;">
-                    Transition: <span class="badge badge-navy" style="font-size: 0.65rem;">${ev.from_status}</span> &rarr; <span class="badge badge-teal" style="font-size: 0.65rem;">${ev.to_status}</span>
+                  <div style="font-size: 0.75rem; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                    <span style="color: #64748b; font-weight: 500;">Status:</span>
+                    <span class="badge badge-navy" style="font-size: 0.65rem;">${ev.from_status}</span>
+                    <span style="color: #94a3b8;">&rarr;</span>
+                    <span class="badge badge-teal" style="font-size: 0.65rem;">${ev.to_status}</span>
                   </div>
                 ` : ''}
                 ${ev.reason ? `<div class="audit-event-reason">Reason: ${ev.reason}</div>` : ''}
@@ -1355,18 +1366,23 @@
     if (!overlay) return;
 
     overlay.innerHTML = `
-      <div class="modal-card" style="max-width: 800px; width: 90%;">
+      <div class="modal-dialog animate-fade-in" style="max-width: 800px; width: 90%;">
         <div class="modal-header">
-          <h3>Quotation Revisions & Version Comparison</h3>
-          <button class="modal-close-btn" id="btn-close-ver-modal">&times;</button>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-teal);"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <h3 class="modal-title">Quotation Revisions & Version Comparison</h3>
+          </div>
+          <button class="modal-close" aria-label="Close" onclick="window.DealFlowUI.closeModal();">&times;</button>
         </div>
-        <div class="modal-body" id="ver-modal-body">
+        <div class="modal-body" id="ver-modal-body" style="padding: 16px 20px;">
           <div style="text-align: center; padding: 24px;"><span class="spinner spinner-teal"></span> Loading revision history...</div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary btn-sm" onclick="window.DealFlowUI.closeModal();">Close</button>
         </div>
       </div>
     `;
-    overlay.classList.add('active');
-    document.getElementById('btn-close-ver-modal').onclick = () => overlay.classList.remove('active');
+    global.DealFlowUI.openModal();
 
     try {
       const res = await global.NegotiationAPI.listVersions(quoteId);

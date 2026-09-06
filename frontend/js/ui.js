@@ -29,7 +29,23 @@
         modalOverlay.className = 'modal-overlay';
         document.body.appendChild(modalOverlay);
       }
-      modalOverlay.classList.add('show');
+      
+      if (!modalOverlay._hasBackdropListener) {
+        modalOverlay.addEventListener('click', (e) => {
+          if (e.target === modalOverlay) {
+            UI.closeModal();
+          }
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && (modalOverlay.classList.contains('show') || modalOverlay.classList.contains('active'))) {
+            UI.closeModal();
+          }
+        });
+        modalOverlay._hasBackdropListener = true;
+      }
+
+      modalOverlay.classList.add('show', 'active');
+      document.body.style.overflow = 'hidden';
     },
 
     /**
@@ -38,8 +54,9 @@
     closeModal() {
       const modalOverlay = document.getElementById('dealflow-modal-overlay');
       if (modalOverlay) {
-        modalOverlay.classList.remove('show');
+        modalOverlay.classList.remove('show', 'active');
       }
+      document.body.style.overflow = '';
     },
 
     /**

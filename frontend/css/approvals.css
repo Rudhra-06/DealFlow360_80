@@ -136,23 +136,27 @@
    ========================================================================== */
 .audit-timeline {
   position: relative;
-  padding-left: 24px;
-  margin-top: var(--space-md);
+  padding-left: 28px;
+  padding-right: 8px;
+  margin-top: var(--space-xs);
+  max-height: 480px;
+  overflow-y: auto;
 }
 
 .audit-timeline::before {
   content: "";
   position: absolute;
-  left: 7px;
-  top: 6px;
-  bottom: 6px;
+  left: 9px;
+  top: 8px;
+  bottom: 8px;
   width: 2px;
-  background: var(--color-border);
+  background: #cbd5e1;
 }
 
 .audit-event-item {
   position: relative;
-  margin-bottom: var(--space-lg);
+  margin-bottom: 16px;
+  padding-bottom: 4px;
 }
 
 .audit-event-item:last-child {
@@ -161,47 +165,55 @@
 
 .audit-dot {
   position: absolute;
-  left: -24px;
-  top: 3px;
+  left: -28px;
+  top: 2px;
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--color-surface);
-  border: 2px solid var(--color-teal);
+  background: #ffffff;
+  border: 3px solid var(--color-teal);
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 2;
 }
 
 .audit-event-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2px;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 3px;
 }
 
 .audit-event-title {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-navy);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f1c30 !important;
 }
 
 .audit-event-time {
-  font-size: 0.6875rem;
-  color: var(--color-text-muted);
+  font-size: 0.725rem;
+  font-weight: 500;
+  color: #64748b !important;
+  white-space: nowrap;
 }
 
 .audit-event-actor {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
+  font-size: 0.775rem;
+  color: #334155 !important;
+  font-weight: 600;
   margin-bottom: 4px;
 }
 
 .audit-event-reason {
-  background: var(--color-background);
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
+  background: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #1e293b !important;
+  border: 1px solid #e2e8f0;
+  margin-top: 4px;
+  line-height: 1.4;
 }
