@@ -8,9 +8,18 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 
+from decimal import Decimal
+
+
 def sanitize_xlsx_value(val: Any) -> Any:
     if val is None:
         return ""
+    if isinstance(val, datetime):
+        return val.strftime("%Y-%m-%d %H:%M:%S")
+    if isinstance(val, Decimal):
+        return float(val)
+    if isinstance(val, (dict, list)):
+        return str(val)
     if isinstance(val, str):
         if val.startswith(("=", "+", "-", "@")):
             return "'" + val
@@ -50,15 +59,27 @@ class XLSXReportRenderer:
 
         current_row = 5
         for k, v in data.items():
-            if isinstance(v, (int, float, str)) and k not in ["start_date", "end_date", "granularity"]:
+            if k in ["start_date", "end_date", "granularity"]:
+                continue
+
+            if isinstance(v, (int, float, str, bool, Decimal, datetime)):
                 ws_summary.cell(row=current_row, column=1, value=sanitize_xlsx_value(k.replace("_", " ").title())).border = thin_border
                 ws_summary.cell(row=current_row, column=2, value=sanitize_xlsx_value(v)).border = thin_border
                 current_row += 1
-            elif isinstance(v, dict) and all(isinstance(val, (int, float, str)) for val in v.values()):
-                val_str = ", ".join(f"{curr}: {val}" for curr, val in v.items())
-                ws_summary.cell(row=current_row, column=1, value=sanitize_xlsx_value(k.replace("_", " ").title())).border = thin_border
-                ws_summary.cell(row=current_row, column=2, value=sanitize_xlsx_value(val_str)).border = thin_border
-                current_row += 1
+            elif isinstance(v, dict):
+                if all(isinstance(val, (int, float, str, Decimal, bool)) for val in v.values()):
+                    val_str = ", ".join(f"{curr}: {val}" for curr, val in v.items())
+                    ws_summary.cell(row=current_row, column=1, value=sanitize_xlsx_value(k.replace("_", " ").title())).border = thin_border
+                    ws_summary.cell(row=current_row, column=2, value=sanitize_xlsx_value(val_str)).border = thin_border
+                    current_row += 1
+                else:
+                    # Nested section dict
+                    for nk, nv in v.items():
+                        if isinstance(nv, (int, float, str, Decimal, bool, datetime)):
+                            metric_label = f"{k.replace('_', ' ').title()} - {nk.replace('_', ' ').title()}"
+                            ws_summary.cell(row=current_row, column=1, value=sanitize_xlsx_value(metric_label)).border = thin_border
+                            ws_summary.cell(row=current_row, column=2, value=sanitize_xlsx_value(nv)).border = thin_border
+                            current_row += 1
             elif isinstance(v, list) and v and isinstance(v[0], dict):
                 # Add extra sheet for list datasets
                 sheet_title = k.replace("_", " ").title()[:30]

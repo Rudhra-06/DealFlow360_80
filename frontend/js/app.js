@@ -24,6 +24,11 @@
     'billing-plans': { title: 'Billing Plans', breadcrumb: 'DealFlow360 / Commercial Configuration / Billing Plans' },
     'portal': { title: 'Customer Portal', breadcrumb: 'DealFlow360 / Customer Workspace / My Quotations' },
     'portal-quotation': { title: 'Commercial Proposal', breadcrumb: 'DealFlow360 / Customer Workspace / Quotation Review' },
+    'customerOverview': { title: 'Portal Overview', breadcrumb: 'DealFlow360 / Customer Workspace / Overview' },
+    'customerQuotes': { title: 'Customer Portal', breadcrumb: 'DealFlow360 / Customer Workspace / My Quotations' },
+    'customerNegotiations': { title: 'Negotiations & Messages', breadcrumb: 'DealFlow360 / Customer Workspace / Negotiations' },
+    'customerOrders': { title: 'Customer Orders', breadcrumb: 'DealFlow360 / Customer Workspace / Orders' },
+    'customerAccount': { title: 'Account Profile', breadcrumb: 'DealFlow360 / Customer Workspace / Profile' },
     'orders': { title: 'Sales Orders', breadcrumb: 'DealFlow360 / Operations / Sales Orders' },
     'order-detail': { title: 'Order Execution & Fulfillment Hub', breadcrumb: 'DealFlow360 / Operations / Order Detail' },
     'invoices': { title: 'Customer Invoices', breadcrumb: 'DealFlow360 / Billing & Revenue / Invoices' },
@@ -49,9 +54,19 @@
     const currentUser = global.DealFlowAuth?.getCurrentUser();
     const isCustomer = (currentUser?.role?.name || '').toUpperCase() === 'CUSTOMER';
 
-    // Strict Customer Role Guard: Customers are strictly confined to Customer Portal
-    if (isCustomer && viewName !== 'portal' && viewName !== 'portal-quotation') {
-      viewName = 'portal';
+    const customerAllowedViews = [
+      'portal',
+      'portal-quotation',
+      'customerOverview',
+      'customerQuotes',
+      'customerNegotiations',
+      'customerOrders',
+      'customerAccount'
+    ];
+
+    // Strict Customer Role Guard: Customers are strictly confined to Customer Portal views
+    if (isCustomer && !customerAllowedViews.includes(viewName)) {
+      viewName = 'customerOverview';
     }
 
     currentViewName = viewName;
@@ -88,8 +103,16 @@
         navId = 'quotations';
       } else if (viewName === 'order-detail') {
         navId = 'orders';
-      } else if (viewName === 'portal' || viewName === 'portal-quotation') {
+      } else if (viewName === 'portal' || viewName === 'portal-quotation' || viewName === 'customerQuotes') {
         navId = 'customerQuotes';
+      } else if (viewName === 'customerOverview') {
+        navId = 'customerOverview';
+      } else if (viewName === 'customerNegotiations') {
+        navId = 'customerNegotiations';
+      } else if (viewName === 'customerOrders') {
+        navId = 'customerOrders';
+      } else if (viewName === 'customerAccount') {
+        navId = 'customerAccount';
       }
       global.DealFlowNav.setActiveNav(navId);
     }
@@ -161,8 +184,33 @@
         break;
 
       case 'portal':
+      case 'customerQuotes':
         if (global.PortalView) {
           await global.PortalView.render(container, 'list');
+        }
+        break;
+
+      case 'customerOverview':
+        if (global.PortalView) {
+          await global.PortalView.renderOverview(container);
+        }
+        break;
+
+      case 'customerNegotiations':
+        if (global.PortalView) {
+          await global.PortalView.renderNegotiations(container);
+        }
+        break;
+
+      case 'customerOrders':
+        if (global.PortalView) {
+          await global.PortalView.renderOrders(container);
+        }
+        break;
+
+      case 'customerAccount':
+        if (global.PortalView) {
+          await global.PortalView.renderAccount(container);
         }
         break;
 
@@ -348,7 +396,11 @@
         else if (navId === 'analytics') switchView('analytics');
         else if (navId === 'reports') switchView('reports');
         else if (navId === 'demoReadiness') switchView('demo-readiness');
-        else if (navId === 'customerQuotes' || navId === 'customerOverview' || navId === 'customerNegotiations') switchView('portal');
+        else if (navId === 'customerOverview') switchView('customerOverview');
+        else if (navId === 'customerQuotes') switchView('customerQuotes');
+        else if (navId === 'customerNegotiations') switchView('customerNegotiations');
+        else if (navId === 'customerOrders') switchView('customerOrders');
+        else if (navId === 'customerAccount') switchView('customerAccount');
         else switchView(navId, targetTab);
       });
     }
@@ -416,7 +468,7 @@
 
     // 8. Mount Initial View (Customer Portal for CUSTOMER role, or Hash Route, or Dashboard for internal roles)
     if (roleName.toUpperCase() === 'CUSTOMER') {
-      await switchView('portal');
+      await switchView('customerOverview');
     } else {
       const routed = handleHashRoute();
       if (!routed) {

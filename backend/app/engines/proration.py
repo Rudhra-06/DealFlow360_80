@@ -35,15 +35,18 @@ class ProrationEngine:
         unit_price: Decimal,
         proration_method: str = "DAILY",
     ) -> ProrationCalculationResult:
-        delta_qty = new_quantity - old_quantity
+        old_qty = Decimal(str(old_quantity))
+        new_qty = Decimal(str(new_quantity))
+        u_price = Decimal(str(unit_price))
+        delta_qty = new_qty - old_qty
 
-        if proration_method != "DAILY":
+        if (proration_method or "").upper() not in ("DAILY", "EXACT_DAY", "EXACT_DAYS"):
             return ProrationCalculationResult(
                 proration_fraction=Decimal("0.0000"),
                 period_days=(period_end - period_start).days,
                 remaining_days=0,
                 delta_quantity=delta_qty,
-                unit_price=unit_price,
+                unit_price=u_price,
                 prorated_amount=Decimal("0.00"),
                 explanation=f"Proration method '{proration_method}' evaluates to 0.00 mid-cycle charge.",
             )
@@ -60,7 +63,7 @@ class ProrationEngine:
                 period_days=0,
                 remaining_days=0,
                 delta_quantity=delta_qty,
-                unit_price=unit_price,
+                unit_price=u_price,
                 prorated_amount=Decimal("0.00"),
                 explanation="Invalid period duration.",
             )
@@ -72,12 +75,12 @@ class ProrationEngine:
             Decimal("0.000001"), rounding=ROUND_HALF_UP
         )
 
-        raw_amount = delta_qty * unit_price * fraction
+        raw_amount = delta_qty * u_price * fraction
         prorated_amount = raw_amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
         action = "charge" if prorated_amount >= Decimal("0.00") else "credit"
         explanation = (
-            f"Prorated {action} of {abs(prorated_amount)} for quantity change from {old_quantity} to {new_quantity} "
+            f"Prorated {action} of {abs(prorated_amount)} for quantity change from {old_qty} to {new_qty} "
             f"across {remaining_days}/{period_days} remaining period days."
         )
 
@@ -86,7 +89,7 @@ class ProrationEngine:
             period_days=period_days,
             remaining_days=remaining_days,
             delta_quantity=delta_qty,
-            unit_price=unit_price,
+            unit_price=u_price,
             prorated_amount=prorated_amount,
             explanation=explanation,
         )

@@ -196,8 +196,12 @@
       </div>
     `;
 
+    overlay.classList.add('show');
     overlay.classList.add('active');
-    const closeModal = () => overlay.classList.remove('active');
+    const closeModal = () => {
+      overlay.classList.remove('show');
+      overlay.classList.remove('active');
+    };
     document.getElementById('btn-close-sub-modal').onclick = closeModal;
 
     try {
@@ -287,15 +291,15 @@
               reason: reason
             });
 
-            if (changeRes.ok) {
+            if (changeRes && (changeRes.ok || changeRes.subscription_number || changeRes.id)) {
               global.DealFlowUI.toast('Subscription quantity updated with backend proration.', 'teal');
               closeModal();
               await loadSubscriptions();
             } else {
-              global.DealFlowUI.toast(changeRes.data?.detail || 'Failed to update quantity.', 'coral');
+              global.DealFlowUI.toast(changeRes?.data?.detail || changeRes?.detail || 'Failed to update quantity.', 'coral');
             }
           } catch (e) {
-            global.DealFlowUI.toast('Network error updating subscription.', 'coral');
+            global.DealFlowUI.toast(e.message || 'Error updating subscription quantity.', 'coral');
           }
         };
       });
@@ -323,15 +327,15 @@
           const reason = document.getElementById('sub-cancel-reason').value;
           try {
             const cancelRes = await global.SubscriptionsAPI.cancel(subscriptionId, { reason });
-            if (cancelRes.ok) {
+            if (cancelRes && (cancelRes.ok || cancelRes.subscription_number || cancelRes.id)) {
               global.DealFlowUI.toast('Subscription cancellation processed.', 'navy');
               closeModal();
               await loadSubscriptions();
             } else {
-              global.DealFlowUI.toast(cancelRes.data?.detail || 'Failed to cancel subscription.', 'coral');
+              global.DealFlowUI.toast(cancelRes?.data?.detail || cancelRes?.detail || 'Failed to cancel subscription.', 'coral');
             }
           } catch (e) {
-            global.DealFlowUI.toast('Network error cancelling subscription.', 'coral');
+            global.DealFlowUI.toast(e.message || 'Error cancelling subscription.', 'coral');
           }
         };
       });

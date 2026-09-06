@@ -139,19 +139,20 @@ class SubscriptionService:
                 if sch.status == "SCHEDULED":
                     sch.scheduled_amount = new_qty * sub.unit_price
 
-            self.db.add(
-                OrderAuditEvent(
-                    sales_order_id=sub.sales_order_id,
-                    actor_user_id=actor_user_id,
-                    event_type="SUBSCRIPTION_QUANTITY_CHANGED",
-                    reason=reason,
-                    event_metadata={
-                        "old_quantity": float(old_qty),
-                        "new_quantity": new_qty,
-                        "prorated_amount": float(pro_res.prorated_amount),
-                    },
+            if sub.sales_order_id:
+                self.db.add(
+                    OrderAuditEvent(
+                        sales_order_id=sub.sales_order_id,
+                        actor_user_id=actor_user_id,
+                        event_type="SUBSCRIPTION_QUANTITY_CHANGED",
+                        reason=reason,
+                        event_metadata={
+                            "old_quantity": float(old_qty),
+                            "new_quantity": new_qty,
+                            "prorated_amount": float(pro_res.prorated_amount),
+                        },
+                    )
                 )
-            )
 
             await self.db.commit()
             return await self.sub_repo.get_by_id(self.db, sub.id)
@@ -228,15 +229,16 @@ class SubscriptionService:
                     if sch.billing_date > sub.current_period_end and sch.status == "SCHEDULED":
                         sch.status = "CANCELLED"
 
-            self.db.add(
-                OrderAuditEvent(
-                    sales_order_id=sub.sales_order_id,
-                    actor_user_id=actor_user_id,
-                    event_type="SUBSCRIPTION_CANCELLED",
-                    reason=reason,
-                    event_metadata={"cancellation_method": sub.cancellation_method},
+            if sub.sales_order_id:
+                self.db.add(
+                    OrderAuditEvent(
+                        sales_order_id=sub.sales_order_id,
+                        actor_user_id=actor_user_id,
+                        event_type="SUBSCRIPTION_CANCELLED",
+                        reason=reason,
+                        event_metadata={"cancellation_method": sub.cancellation_method},
+                    )
                 )
-            )
 
             await self.db.commit()
             return await self.sub_repo.get_by_id(self.db, sub.id)

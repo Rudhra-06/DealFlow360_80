@@ -346,7 +346,7 @@
 
   async function triggerRazorpayPayment(invoice) {
     try {
-      global.DealFlowUI.toast('Initializing Razorpay Checkout...', 'teal');
+      global.DealFlowUI.toast('Initializing Razorpay Payment Gateway...', 'teal');
       const orderRes = await global.PaymentsAPI.createRazorpayOrder({
         amount: Number(invoice.balance_due),
         currency: invoice.currency || 'USD',
@@ -354,28 +354,17 @@
         customer_id: invoice.customer_id
       });
 
-      const keyId = (orderRes && orderRes.key_id) || global.DealFlowConfig.RAZORPAY_KEY_ID;
+      const orderId = (orderRes && orderRes.order_id) || `order_${Date.now()}`;
 
-      const options = {
-        key: keyId,
-        amount: orderRes.amount,
-        currency: orderRes.currency,
-        name: 'DealFlow360',
-        description: `Payment for Invoice ${invoice.invoice_number}`,
-        order_id: orderRes.order_id,
-        handler: async function (response) {
-          try {
-            global.DealFlowUI.toast('Verifying payment with Razorpay...', 'teal');
-            const verifyRes = await global.PaymentsAPI.verifyRazorpayPayment({
-              razorpay_order_id: response.razorpay_order_id || orderRes.order_id,
-              razorpay_payment_id: response.razorpay_payment_id || `pay_${Date.now()}`,
-              razorpay_signature: response.razorpay_signature || `mock_sig_${Date.now()}`,
-              customer_id: invoice.customer_id,
-              invoice_id: invoice.id,
-              amount: Number(invoice.balance_due),
-              currency: invoice.currency || 'USD'
-            });
-
+      if (global.RazorpayGatewayModal) {
+        global.RazorpayGatewayModal.open({
+          order_id: orderId,
+          amount: Number(invoice.balance_due),
+          currency: invoice.currency || 'USD',
+          invoice_number: invoice.invoice_number,
+          invoice_id: invoice.id,
+          customer_id: invoice.customer_id,
+          onSuccess: async (res) => {
             if (window.DealFlowFirebase) {
               window.DealFlowFirebase.logAnalyticsEvent('invoice_payment_completed', {
                 invoice_id: invoice.id,
@@ -383,39 +372,46 @@
                 amount: Number(invoice.balance_due)
               });
             }
-
-            global.DealFlowUI.toast(`Razorpay Payment Successful! Ref: ${response.razorpay_payment_id || 'RZP-PAID'}`, 'teal');
+            global.DealFlowUI.toast(`Razorpay Payment Successful! Ref: ${res.razorpay_payment_id}`, 'teal');
             const backdrop = document.getElementById('dealflow-drawer-backdrop');
             const panel = document.getElementById('dealflow-drawer-panel');
-            if (backdrop) backdrop.classList.remove('active');
-            if (panel) panel.classList.remove('active');
+            if (backdrop) {
+              backdrop.classList.remove('show');
+              backdrop.classList.remove('active');
+            }
+            if (panel) {
+              panel.classList.remove('open');
+              panel.classList.remove('active');
+            }
             await loadInvoices();
-          } catch (err) {
-            global.DealFlowUI.toast('Payment verification error: ' + (err.message || err), 'coral');
+          },
+          onError: (err) => {
+            global.DealFlowUI.toast(err || 'Razorpay payment cancelled.', 'coral');
           }
-        },
-        prefill: {
-          name: 'Customer Billing',
-          email: 'billing@customer.com',
-          contact: '9999999999'
-        },
-        theme: {
-          color: '#0D9488'
-        }
-      };
-
-      if (window.Razorpay) {
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-      } else {
-        global.DealFlowUI.toast('Executing Razorpay payment transaction...', 'teal');
-        setTimeout(async () => {
-          options.handler({
-            razorpay_order_id: orderRes.order_id,
-            razorpay_payment_id: `pay_${Date.now()}`,
-            razorpay_signature: `mock_sig_${Date.now()}`
-          });
-        }, 1000);
+        });
+      } else if (window.Razorpay) {
+        const options = {
+          key: global.DealFlowConfig.RAZORPAY_KEY_ID,
+          amount: orderRes.amount,
+          currency: 'INR',
+          name: 'DealFlow360',
+          description: `Payment for Invoice ${invoice.invoice_number}`,
+          order_id: orderId,
+          handler: async function (response) {
+            await global.PaymentsAPI.verifyRazorpayPayment({
+              razorpay_order_id: response.razorpay_order_id || orderId,
+              razorpay_payment_id: response.razorpay_payment_id || `pay_${Date.now()}`,
+              razorpay_signature: response.razorpay_signature || `mock_sig_${Date.now()}`,
+              customer_id: invoice.customer_id,
+              invoice_id: invoice.id,
+              amount: Number(invoice.balance_due),
+              currency: invoice.currency || 'USD'
+            });
+            global.DealFlowUI.toast('Razorpay Payment Settled.', 'teal');
+            await loadInvoices();
+          }
+        };
+        new window.Razorpay(options).open();
       }
     } catch (err) {
       global.DealFlowUI.toast('Razorpay Error: ' + (err.message || err), 'coral');

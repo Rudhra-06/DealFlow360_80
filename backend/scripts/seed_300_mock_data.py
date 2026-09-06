@@ -142,7 +142,7 @@ async def must_not_already_be_seeded(session) -> None:
 
 async def main() -> None:
     url = settings.async_database_url
-    if "dealflow360_test" in str(url).lower():
+    if "dealflow360_test" in url.lower():
         raise RuntimeError(
             "Refusing to seed dealflow360_test. Point normal app settings to the application database."
         )

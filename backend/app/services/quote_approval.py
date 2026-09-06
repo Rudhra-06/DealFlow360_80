@@ -295,7 +295,10 @@ class QuoteApprovalService:
 
         try:
             await self.db.commit()
-            return await self.quote_repo.get_by_id(self.db, quote.id)
+            res = await self.quote_repo.get_by_id(self.db, quote.id)
+            if not res:
+                raise ResourceNotFoundError("Quotation", quote.id)
+            return res
         except Exception:
             await self.db.rollback()
             raise

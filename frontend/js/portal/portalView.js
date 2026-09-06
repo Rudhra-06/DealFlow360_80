@@ -707,8 +707,342 @@
     });
   }
 
+  async function renderOverview(container) {
+    container.innerHTML = `
+      <div class="portal-container animate-fade-in">
+        <div class="portal-welcome-banner" style="background: linear-gradient(135deg, #0F766E 0%, #0F172A 100%); color: white; padding: 24px; border-radius: var(--radius-md); margin-bottom: var(--space-md);">
+          <div>
+            <h1 class="portal-welcome-title" style="margin:0; font-size: 1.5rem; color: white;">Welcome to Customer Workspace</h1>
+            <p class="portal-welcome-sub" style="margin-top: 4px; opacity: 0.9; font-size: 0.85rem; color: #E2E8F0;">
+              Commercial overview, active deal proposals, confirmed orders, and account management.
+            </p>
+          </div>
+        </div>
+
+        <div id="portal-overview-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div class="card" style="padding: 16px; border-left: 4px solid var(--color-teal);">
+            <div style="font-size: 0.75rem; color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase;">Active Quotations</div>
+            <div id="stat-active-quotes" style="font-size: 1.8rem; font-weight: 800; color: var(--color-navy); margin-top: 4px;">--</div>
+          </div>
+          <div class="card" style="padding: 16px; border-left: 4px solid var(--color-navy);">
+            <div style="font-size: 0.75rem; color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase;">Confirmed Deals</div>
+            <div id="stat-confirmed-quotes" style="font-size: 1.8rem; font-weight: 800; color: var(--color-navy); margin-top: 4px;">--</div>
+          </div>
+          <div class="card" style="padding: 16px; border-left: 4px solid var(--color-teal);">
+            <div style="font-size: 0.75rem; color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase;">Commercial Spend</div>
+            <div id="stat-total-spend" style="font-size: 1.8rem; font-weight: 800; color: var(--color-teal); margin-top: 4px;">--</div>
+          </div>
+          <div class="card" style="padding: 16px; border-left: 4px solid #EAB308;">
+            <div style="font-size: 0.75rem; color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase;">Account Tier</div>
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--color-navy); margin-top: 6px;">
+              <span class="badge badge-teal">Gold Enterprise</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+          <div class="card" style="padding: 20px;">
+            <h3 style="margin-top: 0; font-size: 1rem; color: var(--color-navy);">Recent Commercial Proposals</h3>
+            <div id="portal-recent-quotes-list">
+              <div style="text-align: center; padding: 30px;"><span class="spinner spinner-teal"></span> Loading proposals...</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 20px; background: #F8FAFC; border: 1px solid var(--color-border);">
+            <h3 style="margin-top: 0; font-size: 1rem; color: var(--color-navy);">Account Representative</h3>
+            <div style="display: flex; align-items: center; gap: 12px; margin-top: 16px;">
+              <div style="width: 44px; height: 44px; background: var(--color-teal); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">DR</div>
+              <div>
+                <div style="font-weight: 700; color: var(--color-navy);">Demo Sales Rep</div>
+                <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Enterprise Account Manager</div>
+                <div style="font-size: 0.75rem; color: var(--color-teal); margin-top: 2px;">salesrep.demo@example.com</div>
+              </div>
+            </div>
+            <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--color-border);" />
+            <div style="font-size: 0.75rem; color: var(--color-text-secondary);">
+              <strong>Payment Terms:</strong> NET 30 Days<br />
+              <strong>Credit Limit:</strong> USD 100,000.00<br />
+              <strong>Support Line:</strong> +1 (800) 555-DF360
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    try {
+      const res = await global.PortalAPI.listQuotations();
+      const quotes = (res && res.ok && Array.isArray(res.data)) ? res.data : [];
+
+      const activeCnt = quotes.filter(q => q.status !== 'CUSTOMER_CONFIRMED' && q.status !== 'REJECTED' && q.status !== 'CANCELLED').length;
+      const confCnt = quotes.filter(q => q.status === 'CUSTOMER_CONFIRMED').length;
+      const totalVal = quotes.filter(q => q.status === 'CUSTOMER_CONFIRMED').reduce((acc, q) => acc + Number(q.net_total || 0), 0);
+      const curr = quotes[0]?.currency || 'USD';
+
+      const statActive = document.getElementById('stat-active-quotes');
+      const statConf = document.getElementById('stat-confirmed-quotes');
+      const statSpend = document.getElementById('stat-total-spend');
+
+      if (statActive) statActive.textContent = activeCnt;
+      if (statConf) statConf.textContent = confCnt;
+      if (statSpend) statSpend.textContent = `${curr} ${totalVal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+
+      const recentList = document.getElementById('portal-recent-quotes-list');
+      if (recentList) {
+        if (quotes.length === 0) {
+          recentList.innerHTML = `<div style="text-align: center; color: var(--color-text-muted); padding: 20px;">No proposals found.</div>`;
+        } else {
+          recentList.innerHTML = `
+            <table class="data-table" style="font-size: 0.8rem;">
+              <thead>
+                <tr>
+                  <th>Quote #</th>
+                  <th>Version</th>
+                  <th>Status</th>
+                  <th>Total</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${quotes.slice(0, 5).map(q => `
+                  <tr>
+                    <td style="font-family: monospace; font-weight: 700; color: var(--color-navy);">${q.quote_number}</td>
+                    <td>v${q.current_version_number || 1}</td>
+                    <td>${formatCustomerStatus(q.status)}</td>
+                    <td style="font-family: monospace; font-weight: 700;">${q.currency} ${Number(q.net_total).toFixed(2)}</td>
+                    <td style="text-align: right;">
+                      <button class="btn btn-secondary btn-sm btn-open-portal-q" data-q-id="${q.id}" style="padding: 2px 8px; font-size: 0.75rem;">
+                        Review Offer &rarr;
+                      </button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+
+          recentList.querySelectorAll('.btn-open-portal-q').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const qId = parseInt(btn.dataset.qId, 10);
+              renderQuotationDetail(container, qId);
+            });
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Error loading overview:', e);
+    }
+  }
+
+  async function renderNegotiations(container) {
+    container.innerHTML = `
+      <div class="portal-container animate-fade-in">
+        <div class="page-header" style="margin-bottom: var(--space-md);">
+          <h1 class="page-title" style="margin:0;">Negotiations & Messages</h1>
+          <p class="page-subtitle" style="margin-top: 4px; color: var(--color-text-secondary); font-size: var(--font-size-sm);">
+            Track active counter-offers, commercial adjustments, line item questions, and communication threads.
+          </p>
+        </div>
+
+        <div id="portal-negotiations-list" class="card" style="padding: 0; overflow: hidden;">
+          <div style="text-align: center; padding: 40px;"><span class="spinner spinner-teal"></span> Loading negotiation threads...</div>
+        </div>
+      </div>
+    `;
+
+    try {
+      const res = await global.PortalAPI.listQuotations();
+      const quotes = (res && res.ok && Array.isArray(res.data)) ? res.data : [];
+      const listEl = document.getElementById('portal-negotiations-list');
+      if (!listEl) return;
+
+      if (quotes.length === 0) {
+        listEl.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--color-text-muted);">No active negotiations.</div>`;
+        return;
+      }
+
+      listEl.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Quotation #</th>
+              <th>Current Version</th>
+              <th>Status</th>
+              <th>Net Amount</th>
+              <th>Last Updated</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${quotes.map(q => `
+              <tr>
+                <td><span style="font-family: monospace; font-weight: 700; color: var(--color-navy);">${q.quote_number}</span></td>
+                <td>v${q.current_version_number || 1}</td>
+                <td>${formatCustomerStatus(q.status)}</td>
+                <td style="font-family: monospace; font-weight: 700; color: var(--color-teal);">${q.currency} ${Number(q.net_total).toFixed(2)}</td>
+                <td style="font-size: var(--font-size-xs); color: var(--color-text-secondary);">${new Date(q.updated_at).toLocaleString()}</td>
+                <td style="text-align: right;">
+                  <button class="btn btn-primary btn-sm btn-open-neg-thread" data-q-id="${q.id}">
+                    <span>Open Discussion &rarr;</span>
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      listEl.querySelectorAll('.btn-open-neg-thread').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const qId = parseInt(btn.dataset.qId, 10);
+          renderQuotationDetail(container, qId);
+        });
+      });
+    } catch (e) {
+      console.error('Error loading negotiations:', e);
+    }
+  }
+
+  async function renderOrders(container) {
+    container.innerHTML = `
+      <div class="portal-container animate-fade-in">
+        <div class="page-header" style="margin-bottom: var(--space-md);">
+          <h1 class="page-title" style="margin:0;">Customer Orders</h1>
+          <p class="page-subtitle" style="margin-top: 4px; color: var(--color-text-secondary); font-size: var(--font-size-sm);">
+            Confirmed commercial orders, fulfillment status, and order details.
+          </p>
+        </div>
+
+        <div id="portal-orders-list" class="card" style="padding: 0; overflow: hidden;">
+          <div style="text-align: center; padding: 40px;"><span class="spinner spinner-teal"></span> Loading orders...</div>
+        </div>
+      </div>
+    `;
+
+    try {
+      const res = await global.PortalAPI.listQuotations();
+      const quotes = (res && res.ok && Array.isArray(res.data)) ? res.data : [];
+      const confirmed = quotes.filter(q => q.status === 'CUSTOMER_CONFIRMED');
+      const listEl = document.getElementById('portal-orders-list');
+      if (!listEl) return;
+
+      if (confirmed.length === 0) {
+        listEl.innerHTML = `
+          <div style="text-align: center; padding: 48px; color: var(--color-text-muted);">
+            <div style="font-weight: 600; margin-bottom: 4px;">No Confirmed Orders</div>
+            <p style="font-size: var(--font-size-xs);">Once you accept and confirm a quotation offer, your order will appear here.</p>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Order Ref</th>
+              <th>Quotation #</th>
+              <th>Total Amount</th>
+              <th>Fulfillment Status</th>
+              <th>Confirmation Date</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${confirmed.map((q, idx) => `
+              <tr>
+                <td><span style="font-family: monospace; font-weight: 700; color: var(--color-navy);">SO-2026090${idx + 1}</span></td>
+                <td><span style="font-family: monospace; color: var(--color-text-secondary);">${q.quote_number}</span></td>
+                <td style="font-family: monospace; font-weight: 700; color: var(--color-teal);">${q.currency} ${Number(q.net_total).toFixed(2)}</td>
+                <td><span class="badge badge-teal">PROCESSING / FULFILLED</span></td>
+                <td style="font-size: var(--font-size-xs); color: var(--color-text-secondary);">${new Date(q.updated_at).toLocaleDateString()}</td>
+                <td style="text-align: right;">
+                  <button class="btn btn-secondary btn-sm btn-open-order-q" data-q-id="${q.id}">
+                    <span>View Details</span>
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      listEl.querySelectorAll('.btn-open-order-q').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const qId = parseInt(btn.dataset.qId, 10);
+          renderQuotationDetail(container, qId);
+        });
+      });
+    } catch (e) {
+      console.error('Error loading orders:', e);
+    }
+  }
+
+  async function renderAccount(container) {
+    container.innerHTML = `
+      <div class="portal-container animate-fade-in">
+        <div class="page-header" style="margin-bottom: var(--space-md);">
+          <h1 class="page-title" style="margin:0;">Account Profile & Commercial Terms</h1>
+          <p class="page-subtitle" style="margin-top: 4px; color: var(--color-text-secondary); font-size: var(--font-size-sm);">
+            Your B2B account profile, commercial tier, payment policies, and contact information.
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+          <div class="card" style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">
+              <div>
+                <h2 style="margin: 0; font-size: 1.2rem; color: var(--color-navy);">Omega Corporation</h2>
+                <div style="font-size: 0.8rem; color: var(--color-text-secondary); font-family: monospace; margin-top: 2px;">Code: DEMO-CUST-OMEGA</div>
+              </div>
+              <span class="badge badge-teal" style="font-size: 0.85rem; padding: 6px 12px;">Gold Enterprise Tier</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+              <div style="background: #F8FAFC; padding: 16px; border-radius: 8px; border: 1px solid var(--color-border);">
+                <div style="font-size: 0.75rem; color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase;">Credit Limit</div>
+                <div style="font-size: 1.4rem; font-weight: 800; color: var(--color-navy); margin-top: 4px;">USD 100,000.00</div>
+              </div>
+              <div style="background: #F8FAFC; padding: 16px; border-radius: 8px; border: 1px solid var(--color-border);">
+                <div style="font-size: 0.75rem; color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase;">Payment Terms</div>
+                <div style="font-size: 1.4rem; font-weight: 800; color: var(--color-teal); margin-top: 4px;">NET 30 Days</div>
+              </div>
+            </div>
+
+            <h3 style="font-size: 0.95rem; color: var(--color-navy); margin-bottom: 12px;">Commercial Address & Billing Info</h3>
+            <div style="font-size: 0.85rem; line-height: 1.6; color: var(--color-text-primary); background: #F8FAFC; padding: 16px; border-radius: 8px;">
+              <strong>Billing Address:</strong> 100 Technology Plaza, Suite 400, San Francisco, CA 94107, United States<br />
+              <strong>Primary Contact:</strong> Demo Customer Contact (customer.demo@example.com)<br />
+              <strong>Tax Registration ID:</strong> US-EIN-98421048<br />
+              <strong>Preferred Currency:</strong> USD ($)
+            </div>
+          </div>
+
+          <div class="card" style="padding: 24px; background: #F8FAFC; border: 1px solid var(--color-border);">
+            <h3 style="margin-top: 0; font-size: 1rem; color: var(--color-navy);">Dedicated Commercial Representative</h3>
+            <div style="margin-top: 16px;">
+              <div style="font-weight: 700; color: var(--color-navy); font-size: 1rem;">Demo Sales Rep</div>
+              <div style="font-size: 0.8rem; color: var(--color-text-secondary);">Senior Enterprise Account Manager</div>
+              <div style="font-size: 0.8rem; color: var(--color-teal); margin-top: 4px;">salesrep.demo@example.com</div>
+            </div>
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--color-border);">
+              <div style="font-size: 0.75rem; color: var(--color-text-secondary); font-weight: 600; margin-bottom: 8px;">System Security & Status</div>
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--color-teal); font-weight: 600;">
+                <span style="width: 8px; height: 8px; background: var(--color-teal); border-radius: 50%;"></span>
+                Authenticated Customer Session
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   global.PortalView = {
     render: render,
-    renderQuotationDetail: renderQuotationDetail
+    renderQuotationDetail: renderQuotationDetail,
+    renderOverview: renderOverview,
+    renderNegotiations: renderNegotiations,
+    renderOrders: renderOrders,
+    renderAccount: renderAccount
   };
 })(typeof window !== 'undefined' ? window : this);

@@ -1,7 +1,7 @@
 import hashlib
 import hmac
 import uuid
-from typing import List, Optional
+from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 import razorpay
@@ -62,10 +62,10 @@ async def create_razorpay_order(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_roles(*READ_ROLES)),
 ):
-    amount_in_subunits = int(round(obj_in.amount * 100))
+    amount_in_subunits = round(obj_in.amount * 100)
     currency = obj_in.currency.upper()
     try:
-        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        client: Any = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
         order_data = {
             "amount": amount_in_subunits,
             "currency": currency if currency in ("INR", "USD") else "INR",
@@ -102,7 +102,7 @@ async def verify_razorpay_payment(
 ):
     # Verify HMAC Signature
     try:
-        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        client: Any = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
         client.utility.verify_payment_signature({
             'razorpay_order_id': obj_in.razorpay_order_id,
             'razorpay_payment_id': obj_in.razorpay_payment_id,

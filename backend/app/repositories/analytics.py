@@ -423,7 +423,7 @@ class AnalyticsRepository:
             "by_customer_tier": [],
         }
 
-    async def get_customer_360(self, customer_id: int) -> Dict[str, Any]:
+    async def get_customer_360(self, customer_id: int) -> Optional[Dict[str, Any]]:
         cust = await self.session.get(Customer, customer_id)
         if not cust:
             return None
@@ -685,6 +685,7 @@ class AnalyticsRepository:
             conf_qty = Decimal("0")
             rev_val: Dict[str, Decimal] = {}
 
+            conf_quotes_cnt = 0
             discounts = []
             for l in q_lines:
                 q = await self.session.get(Quotation, l.quotation_id)
@@ -695,11 +696,16 @@ class AnalyticsRepository:
                     if l.discount_pct is not None:
                         discounts.append(Decimal(str(l.discount_pct)))
 
+            for q_id in q_ids:
+                q_obj = await self.session.get(Quotation, q_id)
+                if q_obj and q_obj.status == "CUSTOMER_CONFIRMED":
+                    conf_quotes_cnt += 1
+
             results.append({
                 "category_id": c.id,
                 "category_name": c.name,
                 "quote_count": len(q_ids),
-                "confirmed_quote_count": sum(1 for q_id in q_ids if (await self.session.get(Quotation, q_id)).status == "CUSTOMER_CONFIRMED"),
+                "confirmed_quote_count": conf_quotes_cnt,
                 "confirmed_quantity": conf_qty,
                 "revenue_by_currency": rev_val,
                 "average_discount_pct": (sum(discounts) / Decimal(str(len(discounts)))).quantize(Decimal("0.01")) if discounts else None,
@@ -902,7 +908,7 @@ class AnalyticsRepository:
             (b.resolved_at - b.created_at).total_seconds() / 3600
             for b in bos if b.resolved_at
         ]
-        avg_res = Decimal(str(sum(durations) / len(durations))).round(2) if durations else None
+        avg_res = Decimal(str(sum(durations) / len(durations))).quantize(Decimal("0.01")) if durations else None
 
         return {
             "open_count": open_cnt,
@@ -928,7 +934,7 @@ class AnalyticsRepository:
             (s.shipped_at - s.created_at).total_seconds() / 3600
             for s in shps if s.shipped_at
         ]
-        avg_sh = Decimal(str(sum(hrs) / len(hrs))).round(2) if hrs else None
+        avg_sh = Decimal(str(sum(hrs) / len(hrs))).quantize(Decimal("0.01")) if hrs else None
 
         return {
             "planned_count": pl_cnt,
@@ -997,7 +1003,7 @@ class AnalyticsRepository:
         inv_stmt = select(Invoice).where(Invoice.balance_due > 0)
         invoices = (await self.session.execute(inv_stmt)).scalars().all()
 
-        buckets = {
+        buckets: Dict[str, Dict[str, Any]] = {
             "CURRENT": {"count": 0, "balance": {}},
             "1-30 DAYS": {"count": 0, "balance": {}},
             "31-60 DAYS": {"count": 0, "balance": {}},
@@ -1024,7 +1030,7 @@ class AnalyticsRepository:
                 else:
                     b_name = "90+ DAYS"
 
-            buckets[b_name]["count"] += 1
+            buckets[b_name]["count"] = int(buckets[b_name]["count"]) + 1
             b_bal = buckets[b_name]["balance"]
             b_bal[inv.currency] = b_bal.get(inv.currency, Decimal("0")) + bal
 
@@ -1061,7 +1067,7 @@ class AnalyticsRepository:
 
         avg_val: Dict[str, Decimal] = {}
         for curr, tot in tot_val.items():
-            avg_val[curr] = (tot / Decimal(str(counts_by_curr[curr]))).round(2)
+            avg_val[curr] = (tot / Decimal(str(counts_by_curr[curr]))).quantize(Decimal("0.01"))
 
         return {
             "payment_count": len(payments),
@@ -1091,7 +1097,7 @@ class AnalyticsRepository:
                 mrr_val[s.currency] = mrr_val.get(s.currency, Decimal("0")) + mrr
 
         for curr, mrr in mrr_val.items():
-            arr_val[curr] = (mrr * Decimal("12.00")).round(2)
+            arr_val[curr] = (mrr * Decimal("12.00")).quantize(Decimal("0.01"))
 
         return {
             "active_subscriptions": active_cnt,
