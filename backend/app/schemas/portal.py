@@ -93,3 +93,60 @@ class PortalQuoteVersionRead(BaseModel):
 # Customer-safe quotation detail schema alias
 PortalQuotationDetail = PortalQuotationRead
 
+
+class PortalInvoiceLineRead(BaseModel):
+    id: int
+    invoice_id: int
+    line_type: str
+    description: str
+    quantity: Decimal
+    unit_price: Decimal
+    amount: Decimal
+    billing_period_start: Optional[datetime] = None
+    billing_period_end: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PortalInvoiceListItem(BaseModel):
+    id: int
+    invoice_number: str
+    sales_order_id: Optional[int] = None
+    invoice_type: str
+    status: str
+    currency: str
+    total_amount: Decimal
+    paid_amount: Decimal
+    balance_due: Decimal
+    issue_date: datetime
+    due_date: datetime
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PortalInvoiceRead(BaseModel):
+    id: int
+    invoice_number: str
+    sales_order_id: Optional[int] = None
+    customer_id: int
+    invoice_type: str
+    status: str
+    currency: str
+    subtotal: Decimal
+    tax_amount: Decimal
+    total_amount: Decimal
+    credited_amount: Decimal
+    paid_amount: Decimal
+    balance_due: Decimal
+    issue_date: datetime
+    due_date: datetime
+    billing_period_start: Optional[datetime] = None
+    billing_period_end: Optional[datetime] = None
+    created_at: datetime
+    paid_at: Optional[datetime] = None
+    lines: List[PortalInvoiceLineRead] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+

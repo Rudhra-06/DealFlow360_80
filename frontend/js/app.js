@@ -28,6 +28,8 @@
     'customerQuotes': { title: 'Customer Portal', breadcrumb: 'DealFlow360 / Customer Workspace / My Quotations' },
     'customerNegotiations': { title: 'Negotiations & Messages', breadcrumb: 'DealFlow360 / Customer Workspace / Negotiations' },
     'customerOrders': { title: 'Customer Orders', breadcrumb: 'DealFlow360 / Customer Workspace / Orders' },
+    'customerInvoices': { title: 'My Invoices', breadcrumb: 'DealFlow360 / Customer Workspace / My Invoices' },
+    'portal-invoice': { title: 'Invoice Details', breadcrumb: 'DealFlow360 / Customer Workspace / Invoice Details' },
     'customerAccount': { title: 'Account Profile', breadcrumb: 'DealFlow360 / Customer Workspace / Profile' },
     'orders': { title: 'Sales Orders', breadcrumb: 'DealFlow360 / Operations / Sales Orders' },
     'order-detail': { title: 'Order Execution & Fulfillment Hub', breadcrumb: 'DealFlow360 / Operations / Order Detail' },
@@ -61,6 +63,8 @@
       'customerQuotes',
       'customerNegotiations',
       'customerOrders',
+      'customerInvoices',
+      'portal-invoice',
       'customerAccount'
     ];
 
@@ -111,6 +115,8 @@
         navId = 'customerNegotiations';
       } else if (viewName === 'customerOrders') {
         navId = 'customerOrders';
+      } else if (viewName === 'customerInvoices' || viewName === 'portal-invoice') {
+        navId = 'customerInvoices';
       } else if (viewName === 'customerAccount') {
         navId = 'customerAccount';
       }
@@ -205,6 +211,19 @@
       case 'customerOrders':
         if (global.PortalView) {
           await global.PortalView.renderOrders(container);
+        }
+        break;
+
+      case 'customerInvoices':
+        if (global.PortalView) {
+          await global.PortalView.renderInvoices(container);
+        }
+        break;
+
+      case 'portal-invoice':
+        if (global.PortalView) {
+          const invId = extraParams.invoiceId || extraParams.id || (typeof params === 'number' ? params : null);
+          await global.PortalView.renderInvoiceDetail(container, invId);
         }
         break;
 
@@ -400,6 +419,7 @@
         else if (navId === 'customerQuotes') switchView('customerQuotes');
         else if (navId === 'customerNegotiations') switchView('customerNegotiations');
         else if (navId === 'customerOrders') switchView('customerOrders');
+        else if (navId === 'customerInvoices') switchView('customerInvoices');
         else if (navId === 'customerAccount') switchView('customerAccount');
         else switchView(navId, targetTab);
       });

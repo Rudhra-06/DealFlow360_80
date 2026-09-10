@@ -68,6 +68,48 @@
      */
     async submitCounterOffer(id, payload) {
       return global.DealFlowAPI.post(`/api/v1/portal/quotations/${id}/counter-offer`, payload, true);
+    },
+
+    /**
+     * List invoices assigned to the authenticated customer.
+     * GET /api/v1/portal/invoices
+     */
+    async listInvoices(params = {}) {
+      const query = new URLSearchParams();
+      if (params.status) query.append('status', params.status);
+      const qs = query.toString() ? `?${query.toString()}` : '';
+      return global.DealFlowAPI.get(`/api/v1/portal/invoices${qs}`, true);
+    },
+
+    /**
+     * Get safe details of single invoice.
+     * GET /api/v1/portal/invoices/{id}
+     */
+    async getInvoice(id) {
+      return global.DealFlowAPI.get(`/api/v1/portal/invoices/${id}`, true);
+    },
+
+    /**
+     * Export PDF document for customer invoice.
+     * GET /api/v1/portal/invoices/{id}/pdf
+     */
+    async exportInvoicePdf(id) {
+      const endpoint = `/api/v1/portal/invoices/${id}/pdf`;
+      const token = global.DealFlowAuth ? global.DealFlowAuth.getToken() : null;
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${global.DealFlowAPI.BASE_URL}${endpoint}`, { headers });
+      if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to export PDF`);
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Invoice_${id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
     }
   };
 

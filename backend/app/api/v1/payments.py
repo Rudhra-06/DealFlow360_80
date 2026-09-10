@@ -30,6 +30,45 @@ router = APIRouter()
 
 READ_ROLES = (RoleName.ADMIN, RoleName.SALES_REP, RoleName.SALES_MANAGER, RoleName.FINANCE_OPERATIONS)
 OPS_ROLES = (RoleName.ADMIN, RoleName.FINANCE_OPERATIONS)
+PAYMENT_ROLES = (RoleName.ADMIN, RoleName.SALES_REP, RoleName.SALES_MANAGER, RoleName.FINANCE_OPERATIONS, RoleName.CUSTOMER)
+
+
+async def _verify_customer_payment_permission(
+    db: AsyncSession, current_user: User, invoice_id: Optional[int], amount: float
+):
+    if not invoice_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invoice_id is required.")
+    
+    from decimal import Decimal
+    from app.services.billing import BillingService
+    bill_svc = BillingService(db)
+    inv = await bill_svc.invoice_repo.get_by_id(db, invoice_id)
+    if not inv:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Invoice {invoice_id} not found.")
+
+    if current_user.role and current_user.role.name == RoleName.CUSTOMER:
+        from app.services.customer_portal_access import CustomerPortalAccessService
+        from app.services.exceptions import QuoteAccessDeniedError
+        portal_access = CustomerPortalAccessService(db)
+        try:
+            active_customer_id = await portal_access.get_active_customer_id_for_user(current_user.id)
+        except QuoteAccessDeniedError:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Customer portal access denied.")
+
+        if inv.customer_id != active_customer_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied to customer invoice.")
+
+    if inv.balance_due <= Decimal("0.00") or inv.status == "PAID":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invoice is already fully paid.")
+
+    pay_amt = Decimal(str(amount))
+    if pay_amt <= Decimal("0.00"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Payment amount must be greater than zero.")
+    if pay_amt > inv.balance_due:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Payment amount ({pay_amt}) cannot exceed remaining balance due ({inv.balance_due})."
+        )
 
 
 @router.get(
@@ -60,8 +99,10 @@ async def get_razorpay_config():
 async def create_razorpay_order(
     obj_in: RazorpayOrderCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(*READ_ROLES)),
+    current_user: User = Depends(require_roles(*PAYMENT_ROLES)),
 ):
+    await _verify_customer_payment_permission(db, current_user, obj_in.invoice_id, obj_in.amount)
+
     amount_in_subunits = round(obj_in.amount * 100)
     currency = obj_in.currency.upper()
     try:
@@ -98,8 +139,10 @@ async def create_razorpay_order(
 async def verify_razorpay_payment(
     obj_in: RazorpayVerifyRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(*READ_ROLES)),
+    current_user: User = Depends(require_roles(*PAYMENT_ROLES)),
 ):
+    await _verify_customer_payment_permission(db, current_user, obj_in.invoice_id, obj_in.amount)
+
     # Verify HMAC Signature
     try:
         client: Any = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
@@ -122,6 +165,11 @@ async def verify_razorpay_payment(
             )
 
     service = PaymentService(db)
+    # Check for duplicate payment reference (idempotency check)
+    existing = await service.payment_repo.get_by_reference(db, obj_in.razorpay_payment_id)
+    if existing:
+        return existing
+
     try:
         return await service.record_payment(
             customer_id=obj_in.customer_id,
@@ -136,6 +184,7 @@ async def verify_razorpay_payment(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except (InvalidPaymentAllocationError, OverpaymentError, CurrencyMismatchError) as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
 
 
 @router.post(

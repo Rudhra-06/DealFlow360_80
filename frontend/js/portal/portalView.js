@@ -1058,12 +1058,292 @@
     `;
   }
 
+  async function renderInvoices(container) {
+    container.innerHTML = `
+      <div class="portal-container animate-fade-in">
+        <div class="page-header" style="margin-bottom: var(--space-md);">
+          <h1 class="page-title" style="margin:0;">My Invoices & Payments</h1>
+          <p class="page-subtitle" style="margin-top: 4px; color: var(--color-text-secondary); font-size: var(--font-size-sm);">
+            View account statements, billing details, and process online payments with Razorpay.
+          </p>
+        </div>
+
+        <div id="portal-invoices-list" class="card" style="padding: 0; overflow: hidden;">
+          <div style="text-align: center; padding: 40px;"><span class="spinner spinner-teal"></span> Loading customer invoices...</div>
+        </div>
+      </div>
+    `;
+
+    try {
+      const res = await global.PortalAPI.listInvoices();
+      const listEl = document.getElementById('portal-invoices-list');
+      if (!listEl) return;
+
+      if (!res.ok) {
+        listEl.innerHTML = `<div class="alert alert-coral" style="margin: 20px;">Failed to load invoices.</div>`;
+        return;
+      }
+
+      const invoices = res.data || [];
+      if (invoices.length === 0) {
+        listEl.innerHTML = `
+          <div style="text-align: center; padding: 48px; color: var(--color-text-muted);">
+            <div style="font-weight: 600; margin-bottom: 4px;">No Invoices Found</div>
+            <p style="font-size: var(--font-size-xs);">Any invoices issued for your confirmed orders will appear here.</p>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th>Sales Order</th>
+              <th>Status</th>
+              <th>Total Amount</th>
+              <th>Paid Amount</th>
+              <th>Balance Due</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${invoices.map(inv => {
+              const issueDt = inv.issue_date ? new Date(inv.issue_date).toLocaleDateString() : 'N/A';
+              const dueDt = inv.due_date ? new Date(inv.due_date).toLocaleDateString() : 'N/A';
+              const balDue = Number(inv.balance_due || 0);
+              const canPay = balDue > 0 && inv.status !== 'PAID' && inv.status !== 'CANCELLED';
+
+              return `
+                <tr>
+                  <td><span style="font-family: monospace; font-weight: 700; color: var(--color-navy);">${inv.invoice_number}</span></td>
+                  <td style="font-size: var(--font-size-xs);">${issueDt}</td>
+                  <td style="font-size: var(--font-size-xs);">${dueDt}</td>
+                  <td>${inv.sales_order_id ? `<span style="font-family: monospace; font-size: 0.75rem;">SO-${inv.sales_order_id}</span>` : 'N/A'}</td>
+                  <td>${formatCustomerStatus(inv.status)}</td>
+                  <td style="font-family: monospace; font-weight: 600;">${inv.currency} ${Number(inv.total_amount).toFixed(2)}</td>
+                  <td style="font-family: monospace; color: var(--color-teal);">${inv.currency} ${Number(inv.paid_amount).toFixed(2)}</td>
+                  <td style="font-family: monospace; font-weight: 700; color: ${balDue > 0 ? '#DC2626' : 'var(--color-teal)'};">${inv.currency} ${balDue.toFixed(2)}</td>
+                  <td style="text-align: right;">
+                    <div style="display: flex; justify-content: flex-end; gap: 6px;">
+                      <button class="btn btn-secondary btn-sm btn-view-portal-inv" data-inv-id="${inv.id}" style="padding: 3px 8px; font-size: 0.75rem;">
+                        View Invoice
+                      </button>
+                      ${canPay ? `
+                        <button class="btn btn-primary btn-sm btn-pay-portal-inv" data-inv-id="${inv.id}" data-inv-num="${inv.invoice_number}" data-bal="${balDue}" data-curr="${inv.currency}" style="padding: 3px 10px; font-size: 0.75rem; background: #0D9488;">
+                          Pay Now
+                        </button>
+                      ` : ''}
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+
+      listEl.querySelectorAll('.btn-view-portal-inv').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const invId = parseInt(btn.dataset.invId, 10);
+          global.DealFlowApp.switchView('portal-invoice', { invoiceId: invId });
+        });
+      });
+
+      listEl.querySelectorAll('.btn-pay-portal-inv').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const invId = parseInt(btn.dataset.invId, 10);
+          const invNum = btn.dataset.invNum;
+          const bal = parseFloat(btn.dataset.bal);
+          const curr = btn.dataset.curr;
+          triggerRazorpayPayment(invId, invNum, bal, curr, container);
+        });
+      });
+
+    } catch (e) {
+      console.error('Error loading portal invoices:', e);
+    }
+  }
+
+  async function renderInvoiceDetail(container, invoiceId) {
+    container.innerHTML = `
+      <div class="portal-container animate-fade-in">
+        <div style="margin-bottom: var(--space-md);">
+          <button id="btn-back-to-invoices" class="btn btn-secondary btn-sm">
+            &larr; Back to My Invoices
+          </button>
+        </div>
+        <div id="portal-invoice-detail-content">
+          <div style="text-align: center; padding: 60px;"><span class="spinner spinner-teal"></span> Loading invoice details...</div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('btn-back-to-invoices')?.addEventListener('click', () => {
+      global.DealFlowApp.switchView('customerInvoices');
+    });
+
+    try {
+      const res = await global.PortalAPI.getInvoice(invoiceId);
+      const contentEl = document.getElementById('portal-invoice-detail-content');
+      if (!contentEl) return;
+
+      if (!res.ok) {
+        contentEl.innerHTML = `
+          <div class="alert alert-coral">
+            <span>Invoice not found or access denied.</span>
+          </div>
+        `;
+        return;
+      }
+
+      const inv = res.data;
+      const balDue = Number(inv.balance_due || 0);
+      const canPay = balDue > 0 && inv.status !== 'PAID' && inv.status !== 'CANCELLED';
+
+      contentEl.innerHTML = `
+        <div class="card" style="padding: 24px; margin-bottom: var(--space-lg);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid var(--color-border); padding-bottom: 16px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <span style="font-family: monospace; font-size: 1.4rem; font-weight: 800; color: var(--color-navy);">${inv.invoice_number}</span>
+                ${formatCustomerStatus(inv.status)}
+              </div>
+              <div style="font-size: var(--font-size-xs); color: var(--color-text-secondary);">
+                Issue Date: ${new Date(inv.issue_date).toLocaleDateString()} &bull; Due Date: ${new Date(inv.due_date).toLocaleDateString()}
+              </div>
+            </div>
+
+            <div style="display: flex; gap: var(--space-sm);">
+              <button id="btn-export-inv-pdf" class="btn btn-secondary btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>Download PDF</span>
+              </button>
+
+              ${canPay ? `
+                <button id="btn-pay-razorpay-detail" class="btn btn-primary btn-sm" style="background: #0D9488; font-weight: 700;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                  <span>Pay with Razorpay</span>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- Financial Summary Strip -->
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; background: #F8FAFC; padding: 16px; border-radius: 8px; margin-bottom: 24px; border: 1px solid var(--color-border);">
+            <div>
+              <div style="font-size: 0.7rem; color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase;">Total Invoice Amount</div>
+              <div style="font-size: 1.2rem; font-weight: 700; color: var(--color-navy); margin-top: 2px;">${inv.currency} ${Number(inv.total_amount).toFixed(2)}</div>
+            </div>
+            <div>
+              <div style="font-size: 0.7rem; color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase;">Paid Amount</div>
+              <div style="font-size: 1.2rem; font-weight: 700; color: var(--color-teal); margin-top: 2px;">${inv.currency} ${Number(inv.paid_amount).toFixed(2)}</div>
+            </div>
+            <div>
+              <div style="font-size: 0.7rem; color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase;">Balance Due</div>
+              <div style="font-size: 1.2rem; font-weight: 800; color: ${balDue > 0 ? '#DC2626' : 'var(--color-teal)'}; margin-top: 2px;">${inv.currency} ${balDue.toFixed(2)}</div>
+            </div>
+            <div>
+              <div style="font-size: 0.7rem; color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase;">Invoice Type</div>
+              <div style="font-size: 1rem; font-weight: 600; color: var(--color-text-primary); margin-top: 2px;">${inv.invoice_type || 'Standard'}</div>
+            </div>
+          </div>
+
+          <!-- Line Items Table (Customer-Safe Only) -->
+          <h3 style="font-size: 1rem; color: var(--color-navy); margin-bottom: 12px;">Invoice Line Items</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th style="text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(inv.lines || []).map(line => `
+                <tr>
+                  <td style="font-weight: 600; color: var(--color-navy);">${line.description}</td>
+                  <td><span class="badge badge-navy" style="font-size: 0.7rem;">${line.line_type || 'Item'}</span></td>
+                  <td>${Number(line.quantity)}</td>
+                  <td>${inv.currency} ${Number(line.unit_price).toFixed(2)}</td>
+                  <td style="text-align: right; font-weight: 700;">${inv.currency} ${Number(line.amount).toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      document.getElementById('btn-export-inv-pdf')?.addEventListener('click', async () => {
+        try {
+          global.DealFlowUI?.toast(`Exporting PDF for invoice ${inv.invoice_number}...`, 'info');
+          await global.PortalAPI.exportInvoicePdf(inv.id);
+          global.DealFlowUI?.toast(`Invoice ${inv.invoice_number} PDF downloaded!`, 'teal');
+        } catch (e) {
+          global.DealFlowUI?.toast('Failed to download invoice PDF: ' + e.message, 'coral');
+        }
+      });
+
+      document.getElementById('btn-pay-razorpay-detail')?.addEventListener('click', () => {
+        triggerRazorpayPayment(inv.id, inv.invoice_number, balDue, inv.currency, container);
+      });
+
+    } catch (e) {
+      console.error('Error loading invoice detail:', e);
+    }
+  }
+
+  async function triggerRazorpayPayment(invoiceId, invoiceNumber, balanceDue, currency, container) {
+    try {
+      global.DealFlowUI?.toast(`Initializing Razorpay checkout for ${invoiceNumber}...`, 'info');
+
+      const orderRes = await global.PaymentsAPI.createRazorpayOrder({
+        amount: balanceDue,
+        currency: currency,
+        invoice_id: invoiceId
+      });
+
+      if (!orderRes.ok) {
+        global.DealFlowUI?.toast('Failed to create Razorpay payment order: ' + (orderRes.error || 'Server error'), 'coral');
+        return;
+      }
+
+      const orderData = orderRes.data;
+
+      global.RazorpayGatewayModal.open({
+        order_id: orderData.order_id,
+        amount: balanceDue,
+        currency: currency,
+        invoice_number: invoiceNumber,
+        invoice_id: invoiceId,
+        onSuccess: async (res) => {
+          global.DealFlowUI?.toast(`🎉 Payment of ${currency} ${balanceDue.toFixed(2)} verified successfully!`, 'teal');
+          await renderInvoiceDetail(container, invoiceId);
+        },
+        onError: (errMsg) => {
+          global.DealFlowUI?.toast('Payment Error: ' + errMsg, 'coral');
+        }
+      });
+    } catch (err) {
+      console.error('Razorpay payment trigger error:', err);
+      global.DealFlowUI?.toast('Payment initialization failed: ' + err.message, 'coral');
+    }
+  }
+
   global.PortalView = {
     render: render,
     renderQuotationDetail: renderQuotationDetail,
     renderOverview: renderOverview,
     renderNegotiations: renderNegotiations,
     renderOrders: renderOrders,
+    renderInvoices: renderInvoices,
+    renderInvoiceDetail: renderInvoiceDetail,
     renderAccount: renderAccount
   };
 })(typeof window !== 'undefined' ? window : this);
+

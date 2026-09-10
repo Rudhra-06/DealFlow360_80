@@ -42,6 +42,12 @@ class PaymentRepository(BaseRepository[Payment]):
         res = await db.execute(stmt)
         return res.scalar_one_or_none()
 
+    async def get_by_reference(self, db: AsyncSession, reference: str) -> Optional[Payment]:
+        stmt = select(Payment).options(*self._default_options()).where(Payment.reference == reference)
+        res = await db.execute(stmt)
+        return res.scalar_one_or_none()
+
+
     async def list_payments(
         self,
         db: AsyncSession,

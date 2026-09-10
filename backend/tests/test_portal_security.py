@@ -146,3 +146,74 @@ async def test_portal_safe_quotation_representation(db_session):
 
     assert p_quote.quote_number == "Q-SAFE-001"
     assert p_quote.customer_id == customer.id
+
+
+@pytest.mark.asyncio
+async def test_customer_portal_invoice_security(db_session):
+    from datetime import datetime, timezone
+    from app.models.invoice import Invoice
+    from app.models.sales_order import SalesOrder
+    from app.api.v1.payments import _verify_customer_payment_permission
+    from fastapi import HTTPException
+
+    role_cust = await get_or_create_role(db_session, RoleName.CUSTOMER)
+    role_rep = await get_or_create_role(db_session, RoleName.SALES_REP)
+    tier = await get_or_create_tier(db_session)
+
+    user1 = User(email="inv_cust1@example.com", hashed_password="pw", full_name="Inv Cust 1", role_id=role_cust.id)
+    user2 = User(email="inv_cust2@example.com", hashed_password="pw", full_name="Inv Cust 2", role_id=role_cust.id)
+    user_rep = User(email="inv_rep@example.com", hashed_password="pw", full_name="Inv Rep", role_id=role_rep.id)
+    db_session.add_all([user1, user2, user_rep])
+    await db_session.flush()
+
+    cust1 = Customer(customer_code="CUST-INV-1", name="Alpha Corp", email="a@alpha.com", tier_id=tier.id)
+    cust2 = Customer(customer_code="CUST-INV-2", name="Beta Corp", email="b@beta.com", tier_id=tier.id)
+    db_session.add_all([cust1, cust2])
+    await db_session.flush()
+
+    db_session.add_all([
+        CustomerPortalAccess(user_id=user1.id, customer_id=cust1.id, is_active=True),
+        CustomerPortalAccess(user_id=user2.id, customer_id=cust2.id, is_active=True),
+    ])
+
+    order = SalesOrder(
+        order_number="SO-TEST-INV-SEC",
+        customer_id=cust1.id,
+        sales_rep_id=user_rep.id,
+        status="CONFIRMED",
+        currency="USD",
+        gross_subtotal=Decimal("100.00"),
+        net_total=Decimal("100.00"),
+    )
+    db_session.add(order)
+    await db_session.flush()
+
+    now = datetime.now(timezone.utc)
+    inv1 = Invoice(
+        invoice_number="INV-CUST-SEC-100",
+        sales_order_id=order.id,
+        customer_id=cust1.id,
+        invoice_type="STANDARD",
+        status="ISSUED",
+        currency="USD",
+        subtotal=Decimal("100.00"),
+        tax_amount=Decimal("0.00"),
+        total_amount=Decimal("100.00"),
+        credited_amount=Decimal("0.00"),
+        paid_amount=Decimal("0.00"),
+        balance_due=Decimal("100.00"),
+        issue_date=now,
+        due_date=now,
+    )
+    db_session.add(inv1)
+    await db_session.commit()
+
+    # User 1 (owner) permission check succeeds
+    await _verify_customer_payment_permission(db_session, user1, inv1.id, 50.0)
+
+    # User 2 (different customer) permission check fails with 403 Forbidden
+    with pytest.raises(HTTPException) as exc_info:
+        await _verify_customer_payment_permission(db_session, user2, inv1.id, 50.0)
+    assert exc_info.value.status_code == 403
+
+

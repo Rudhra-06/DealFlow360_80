@@ -7,6 +7,9 @@ from app.core.enums import RoleName
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.portal import (
+    PortalInvoiceLineRead,
+    PortalInvoiceListItem,
+    PortalInvoiceRead,
     PortalQuotationLineRead,
     PortalQuotationListItem,
     PortalQuotationRead,
@@ -20,6 +23,8 @@ from app.schemas.quote_negotiation import (
     QuoteNegotiationRequestRead,
 )
 from app.schemas.quote_version import QuoteVersionCompareResult
+from app.services.billing import BillingService
+from app.services.customer_portal_access import CustomerPortalAccessService
 from app.services.exceptions import (
     CommercialPolicyValidationError,
     InvalidReferenceError,
@@ -29,6 +34,7 @@ from app.services.exceptions import (
 )
 from app.services.portal_quotation import PortalQuotationService
 from app.services.quote_negotiation import QuoteNegotiationService
+
 
 router = APIRouter()
 
@@ -277,3 +283,95 @@ async def submit_customer_counter_offer(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
     except (CommercialPolicyValidationError, InvalidReferenceError) as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get(
+    "/invoices",
+    response_model=List[PortalInvoiceListItem],
+    summary="List safe invoices for customer portal user",
+)
+async def list_portal_invoices(
+    status_filter: Optional[str] = Query(None, alias="status"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles(*CUSTOMER_ROLES)),
+):
+    access_service = CustomerPortalAccessService(db)
+    try:
+        customer_id = await access_service.get_active_customer_id_for_user(current_user.id)
+    except QuoteAccessDeniedError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+
+    billing_service = BillingService(db)
+    invoices = await billing_service.invoice_repo.list_invoices(
+        db, customer_id=customer_id, status=status_filter, limit=500
+    )
+    return [PortalInvoiceListItem.model_validate(inv) for inv in invoices]
+
+
+@router.get(
+    "/invoices/{invoice_id}",
+    response_model=PortalInvoiceRead,
+    summary="Get safe details of single invoice for customer portal",
+)
+async def get_portal_invoice(
+    invoice_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles(*CUSTOMER_ROLES)),
+):
+    access_service = CustomerPortalAccessService(db)
+    try:
+        customer_id = await access_service.get_active_customer_id_for_user(current_user.id)
+    except QuoteAccessDeniedError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+
+    billing_service = BillingService(db)
+    inv = await billing_service.invoice_repo.get_by_id(db, invoice_id)
+    if not inv:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Invoice {invoice_id} not found.")
+
+    if inv.customer_id != customer_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied to customer invoice.")
+
+    return PortalInvoiceRead.model_validate(inv)
+
+
+@router.get(
+    "/invoices/{invoice_id}/pdf",
+    summary="Export single invoice PDF document for customer portal",
+)
+async def export_portal_invoice_pdf(
+    invoice_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles(*CUSTOMER_ROLES)),
+):
+    access_service = CustomerPortalAccessService(db)
+    try:
+        customer_id = await access_service.get_active_customer_id_for_user(current_user.id)
+    except QuoteAccessDeniedError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+
+    billing_service = BillingService(db)
+    inv = await billing_service.invoice_repo.get_by_id(db, invoice_id)
+    if not inv:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Invoice {invoice_id} not found.")
+
+    if inv.customer_id != customer_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied to customer invoice.")
+
+    from app.schemas.reports import ReportExportFormat, ReportExportRequest, ReportTypeEnum
+    from app.services.report_export import ReportExportService
+    from fastapi import Response
+
+    report_service = ReportExportService(db)
+    req = ReportExportRequest(
+        report_type=ReportTypeEnum.INVOICE,
+        format=ReportExportFormat.PDF,
+        invoice_id=invoice_id,
+    )
+    pdf_bytes, filename, mime_type = await report_service.export_report(req, current_user)
+    return Response(
+        content=pdf_bytes,
+        media_type=mime_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
