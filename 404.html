@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DealFlow360 | Redirecting...</title>
+  <script type="text/javascript">
+    (function () {
+      var path = window.location.pathname;
+      var repo = '/DealFlow360_80';
+      var cleanPath = path.replace(repo, '').replace(/^\/frontend/, '').replace(/^\//, '');
+      var hash = window.location.hash || (cleanPath ? '#' + cleanPath : '');
+      var target = repo + '/frontend/index.html' + hash;
+      window.location.replace(target);
+    })();
+  </script>
+</head>
+<body>
+  <div style="font-family: sans-serif; text-align: center; padding: 50px; color: #172A46;">
+    <h2>Redirecting to DealFlow360...</h2>
+    <p>If you are not redirected automatically, <a href="frontend/index.html">click here</a>.</p>
+  </div>
+</body>
+</html>
