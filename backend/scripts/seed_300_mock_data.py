@@ -45,8 +45,13 @@ from __future__ import annotations
 
 import asyncio
 import importlib
+import os
+import sys
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
+
+# Ensure backend path in sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from typing import Any
 
 from sqlalchemy import select, func

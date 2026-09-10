@@ -17,7 +17,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.session import AsyncSessionLocal
+from app.db.session import AsyncSessionLocal, engine
+from app.db.base import Base
 from app.core.security import hash_password as get_password_hash
 from app.models.role import Role, RoleName
 from app.models.user import User
@@ -76,6 +77,8 @@ async def get_or_create_user(session: AsyncSession, email: str, full_name: str, 
 
 async def bootstrap_demo():
     print("Starting DealFlow360 Demo Data Bootstrap...")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     async with AsyncSessionLocal() as session:
         async with session.begin():
             # 1. Roles

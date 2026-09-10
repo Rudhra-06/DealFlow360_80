@@ -5,6 +5,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    JSON,
     Numeric,
     String,
     Text,
@@ -39,7 +40,9 @@ class DealHealthSignal(Base):
     metric_value: Mapped[Optional[Decimal]] = mapped_column(Numeric(15, 4), nullable=True)
     threshold_value: Mapped[Optional[Decimal]] = mapped_column(Numeric(15, 4), nullable=True)
 
-    signal_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    signal_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(
+        JSON().with_variant(JSONB, "postgresql"), nullable=True
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
